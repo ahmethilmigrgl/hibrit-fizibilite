@@ -1,0 +1,8 @@
+﻿,deger
+"Eşik çarpanı (SFK'ya katılım, ≥30 MW)",0.21093750000000003
+Gerekli seviyeli SFK fiyatı [USD/MW-saat],3.5523351562500003
+Baz yolda seviyeli SFK fiyatı [USD/MW-saat],16.8407
+2026 SFK seviyesi [USD/MW-saat],47.6748
+Gerekli fiyat / 2026 seviyesi,0.07451179986596694
+Yan hizmetsiz (yalnız dengesizlik + YEK-G) BESS [MW],11.760000000000002
+Yan hizmetsiz NPV (K=24) [M USD],-0.22157605797408855

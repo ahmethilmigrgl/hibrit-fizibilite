@@ -66,6 +66,9 @@ başvuru için hazırlanıyor. Sonuçlar, varsayımlar ve formülasyonlar mülak
    yatırım kararı ikili (`yatirim="serbest"|"zorunlu"`), seviyelendirilmiş fiyat + vergi düzeltmeli yıllıklandırma.
    Ana sonuçlar tam yılla (≈36 s), ızgaralar 24 temsilî günle. Finansal modele ekonomik kesinti, batarya
    yenilemesi ve yıpranma eklendi; başabaş fiyat `src/finans/metrikler.py`. Düzenleyici anahtarlar: `duzenleme.*`.
-5. **Risk simülasyonu:** Monte Carlo (hava yılı, fiyat, kur, CAPEX, batarya yıpranması), P50/P90,
-   NPV/IRR dağılımları, tornado grafiği.
+5. **Gelir yığını + risk simülasyonu:** ✅ Bkz. `docs/05_risk_ve_gelir_yigini.md`. Bölüm A: yan hizmet (SFK, ikili
+   katılım ≥30 MW), dengesizlik azaltımı, YEK-G, PPA, depolamalı lisans → `kapasite_coz(..., gelir=...)`, anahtarlar
+   `gelir_yigini.*`; `src/05_gelir_yigini.py`. Bölüm B: `src/risk/` (işletme tabloları + ara değerleme, vektörize
+   nakit akışı), `src/05_monte_carlo.py`, dağılımlar `monte_carlo.*`. İşletme tabloları
+   `data/processed/isletme_tablolari/` altında önbellekli (tasarım değişirse yeniden üretilir).
 6. **Streamlit dashboard, README, kısa rapor.**

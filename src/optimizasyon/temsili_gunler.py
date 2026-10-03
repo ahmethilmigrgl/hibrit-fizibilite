@@ -70,7 +70,8 @@ def temsili_gunler(fiyatlar: list[np.ndarray], ges: np.ndarray, res: np.ndarray,
     return {"gunler": gunler, "agirlik": np.array(agirlik), "etiket": etiket, "sse": sse}
 
 
-def segmentleri_kur(fiyatlar: list[np.ndarray], ges: np.ndarray, res: np.ndarray, k: int | None, Segment) -> list:
+def segmentleri_kur(fiyatlar: list[np.ndarray], ges: np.ndarray, res: np.ndarray, k: int | None, Segment,
+                    yanlar: list[np.ndarray] | None = None) -> list:
     """
     Kapasite modeli için segment listesi.
         k = None → tam yıl: her fiyat-yılı bir segment (ağırlık 1/len(fiyatlar))
@@ -80,7 +81,7 @@ def segmentleri_kur(fiyatlar: list[np.ndarray], ges: np.ndarray, res: np.ndarray
                    amaç fonksiyonundaki sistematik sapmayı giderir.
     """
     if k is None:
-        return [Segment(p, ges, res, 1 / len(fiyatlar)) for p in fiyatlar]
+        return [Segment(p, ges, res, 1 / len(fiyatlar), None if yanlar is None else yanlar[i]) for i, p in enumerate(fiyatlar)]
     tg = temsili_gunler(fiyatlar, ges, res, k)
     dilim = lambda a, d: a[d * 24:(d + 1) * 24]
     P = np.array([dilim(fiyatlar[s], d) for s, d in tg["gunler"]])
@@ -91,8 +92,8 @@ def segmentleri_kur(fiyatlar: list[np.ndarray], ges: np.ndarray, res: np.ndarray
     aP = hedef_p / (w @ P.mean(1))
     aG = ges.mean() / (w @ G.mean(1))
     aR = res.mean() / (w @ R.mean(1))
-    segs = [Segment(P[i] * aP, np.clip(G[i] * aG, 0, 1), np.clip(R[i] * aR, 0, 1), tg["agirlik"][i] / 365)
-            for i in range(len(w))]
-    for s in segs:   # ağırlık: yıl başına gün sayısı / 365 → saatlik ağırlık 365·24 saati temsil eder
-        s.agirlik *= 365
+    Y = None if yanlar is None else [dilim(yanlar[s], d) for s, d in tg["gunler"]]
+    # Ağırlık = yıl başına eşdeğer gün sayısı → Σ ağırlık × 24 saat = 8760
+    segs = [Segment(P[i] * aP, np.clip(G[i] * aG, 0, 1), np.clip(R[i] * aR, 0, 1), float(tg["agirlik"][i]),
+                    None if Y is None else Y[i]) for i in range(len(w))]
     return segs

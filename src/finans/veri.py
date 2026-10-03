@@ -57,3 +57,16 @@ def fiyat_sekil_yillari(bas: str = "2025-01", son: str = "2026-09") -> tuple[np.
     b = _standart_yil(son_12.sort_index())
     sekil = np.vstack([a / a.mean(), b / b.mean()])
     return sekil, ["2025", "Eki 2025 – Eyl 2026"]
+
+
+def yan_hizmet_sekil_yillari(urun: str = "sfk") -> np.ndarray:
+    """
+    Yan hizmet kapasite fiyatı [USD/MW-saat], PTF şekil yıllarıyla aynı iki takvim yılı:
+        A = 2025, B = 2026 Oca–Eyl + 2025 Eki–Ara.  Döndürür (2, 8760). Seviye korunur (normalize edilmez).
+    """
+    df = pd.read_parquet(ISLENMIS_VERI / "yan_hizmet_2023_guncel.parquet")[f"{urun}_fiyat_usd"]
+    a = _standart_yil(df.loc["2025-01-01":"2025-12-31 23:00"])
+    son_12 = pd.concat([df.loc["2026-01-01":"2026-09-30 23:00"], df.loc["2025-10-01":"2025-12-31 23:00"]])
+    son_12.index = son_12.index.map(lambda z: z.replace(year=2026))
+    b = _standart_yil(son_12.sort_index())
+    return np.vstack([a, b])

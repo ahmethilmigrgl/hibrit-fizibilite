@@ -159,3 +159,40 @@ def auf_cek(istemci: EpiasIstemcisi, bas: str = "2022-04-01", son: str = "2023-0
                    auf_ithal_komur=("importedCoal", "first"), auf_yerli_komur=("localCoal", "first"),
                    gop_azami_fiyat=("gopMaxPrice", "max"))
               .sort_index())
+
+
+YAN_HIZMET_YOLLARI = {
+    "pfk_fiyat": ("/v1/markets/ancillary-services/data/primary-frequency-capacity-price", "price"),
+    "sfk_fiyat": ("/v1/markets/ancillary-services/data/secondary-frequency-capacity-price", "price"),
+    "pfk_miktar": ("/v1/markets/ancillary-services/data/primary-frequency-capacity-amount", "amount"),
+    "sfk_miktar": ("/v1/markets/ancillary-services/data/secondary-frequency-capacity-amount", "amount"),
+    "smf": ("/v1/markets/bpm/data/system-marginal-price", "systemMarginalPrice"),
+}
+
+
+def saatlik_seri_cek(istemci: EpiasIstemcisi, ad: str, bas: str, son: str, frekans: str = "QS") -> pd.Series:
+    """
+    Yan hizmet kapasite fiyat/miktarı ve SMF gibi saatlik tek değerli seriler (TSİ → UTC).
+    Fiyatlar TL/MW-saat (PFK/SFK) veya TL/MWh (SMF), miktarlar MW. 'hour' alanı bazı servislerde tamsayı,
+    bazılarında ISO tarih; UTC dönüşümü 'date' alanındaki ofsetten yapılır.
+    """
+    yol, alan = YAN_HIZMET_YOLLARI[ad]
+    bas_y = pd.Timestamp(bas).tz_localize("Europe/Istanbul")
+    son_y = (pd.Timestamp(son) + pd.Timedelta(hours=23)).tz_localize("Europe/Istanbul")
+    kayit = []
+    for b, s in _parcalar(bas_y.tz_localize(None), son_y.tz_localize(None), frekans):
+        kayit += istemci.onbellekli_istek(ad, yol, {"startDate": tarih_metni(b), "endDate": tarih_metni(s)})["items"]
+    df = pd.DataFrame(kayit)
+    df["zaman_utc"] = pd.to_datetime(df["date"], utc=True)
+    df = df.drop_duplicates("zaman_utc").set_index("zaman_utc").sort_index()
+    return df[alan].astype(float).rename(ad)
+
+
+def yekg_fiyat_cek(istemci: EpiasIstemcisi, bas: str, son: str) -> pd.DataFrame:
+    """YEK-G (yenilenebilir enerji kaynak garanti) ağırlıklı ortalama fiyatı, kaynak türüne göre [TL, USD /MWh]."""
+    kayit = []
+    for b, s in _parcalar(pd.Timestamp(bas), pd.Timestamp(son) + pd.Timedelta(hours=23), "QS"):
+        r = istemci.onbellekli_istek("yekg_fiyat", "/v1/markets/yek-g/data/weighted-average-price",
+                                     {"startDate": tarih_metni(b), "endDate": tarih_metni(s)})
+        kayit += r.get("items", [])
+    return pd.DataFrame(kayit).drop_duplicates()

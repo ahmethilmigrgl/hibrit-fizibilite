@@ -11,7 +11,7 @@ Türkiye'de seçilen bir saha için güneş (GES), rüzgâr (RES) ve batarya (BE
 2. Piyasa analizi (EPİAŞ PTF, yakalanan fiyat, kanibalizasyon)
 3. Finansal model (NPV, IRR, LCOE)
 4. Kapasite + dispatch optimizasyonu (Pyomo + HiGHS, MILP)
-5. Risk simülasyonu (Monte Carlo, P50/P90, tornado)
+5. Batarya gelir yığını (yan hizmet, PPA) ve risk simülasyonu (Monte Carlo, P50/P90, EVPI)
 6. Streamlit dashboard
 
 ## Kurulum
@@ -120,3 +120,25 @@ tamsayı, yatırım kararı ikili kapasite MILP'i (tam yıl, 2 × 8.760 saat; te
 ![Senaryolar](outputs/04_optimizasyon/b4_senaryo_tasarimlari.png)
 
 Ayrıntılar ve formülasyonlar: [docs/04_optimizasyon.md](docs/04_optimizasyon.md)
+
+### Aşama 5 — Batarya gelir yığını, PPA ve Monte Carlo ✅
+**Bölüm A:** EPİAŞ SFK/PFK kapasite fiyatları (2023–26), dengesizlik azaltımı, YEK-G, kurumsal PPA ve depolamalı
+lisans MILP'e eklendi. **Yan hizmet (SFK) geliri 40 MW / 70 MWh bataryayı tasarıma sokuyor:** NPV −1,6 → +26,4 M$,
+başabaş 59 → 40 $/MWh (PPA ile 33). GES hiçbir kombinasyonda girmiyor; depolamalı lisans kullanılmıyor.
+
+**Bölüm B:** 11 belirsizlik, 10.000 senaryo, önceden hesaplanmış işletme tabloları (hata ~%1, 2 dk).
+
+| Tasarım | E[NPV] [M$] | P(NPV>0) | CVaR %5 [M$] | P(DSCR<1) |
+|---|---|---|---|---|
+| RES 58,8 (tüccar) | −1,9 | %43 | −30,2 | %80 |
+| RES 50 + GES 25 | −6,3 | %33 | −34,9 | %80 |
+| RES 58,8 + BESS 40/70 (gelir yığınlı) | **28,4** | %97 | −2,5 | %35 |
+| + PPA (%70 P90, 12 yıl) | 26,8 | **%99** | **+2,5** | **%16** |
+| RES 58,8 + PPA | −4,9 | %28 | −21,8 | %70 |
+
+- Varyansın %50–85'i fiyattan; bataryalı tasarımda %15–25'i yan hizmet fiyatının geleceğinden.
+- EVPI: tüccar RES 5,2 M$ (bilginin değeri), gelir yığınlı tasarım ~0 (karar zaten sağlam).
+
+![Risk-getiri](outputs/05_risk/b_risk_getiri.png)
+
+Ayrıntılar: [docs/05_risk_ve_gelir_yigini.md](docs/05_risk_ve_gelir_yigini.md)

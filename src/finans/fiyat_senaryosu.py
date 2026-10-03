@@ -25,7 +25,7 @@ import numpy as np
 from scipy.optimize import brentq
 
 from src.ayarlar import deger
-from src.finans.veri import UretimProfili, fiyat_sekil_yillari
+from src.finans.veri import UretimProfili, fiyat_sekil_yillari, yan_hizmet_sekil_yillari
 
 
 @dataclass
@@ -36,6 +36,7 @@ class FiyatSenaryosu:
     ad: str
     gunes_hedef_oran: np.ndarray  # yıl başına Ezine GES yakalanma oranı hedefi
     bilgi: dict = field(default_factory=dict)
+    yan_hizmet: np.ndarray | None = None   # (işletme_yılı, şekil_yılı, 8760) USD/MW-saat kapasite fiyatı
 
 
 def _gunes_orani(sekil: np.ndarray, g: np.ndarray, d: float) -> float:
@@ -51,7 +52,8 @@ def _derinlik(sekil: np.ndarray, g: np.ndarray, hedef: float) -> float:
 
 
 def fiyat_senaryosu_uret(cfg: dict, uretim: UretimProfili, seviye: str | float = "baz",
-                         kanibalizasyon: str | None = None, duzenleyici: bool | None = None) -> FiyatSenaryosu:
+                         kanibalizasyon: str | None = None, duzenleyici: bool | None = None,
+                         taban_oran: float | None = None, yh_azalma: float | None = None) -> FiyatSenaryosu:
     fs = cfg["fiyat_senaryolari"]
     bas_yil = deger(cfg["proje"]["baslangic_yili"])
     omur = deger(cfg["proje"]["omur"])
@@ -72,7 +74,7 @@ def fiyat_senaryosu_uret(cfg: dict, uretim: UretimProfili, seviye: str | float =
     hedef = np.full(len(yillar), oran0)
     if varyant == "devam":
         sekil_yili = 2026  # şekil döneminin merkezi ≈ 2025,9
-        taban, taban_yili = kan["taban_oran"], kan["taban_yili"]
+        taban, taban_yili = (kan["taban_oran"] if taban_oran is None else taban_oran), kan["taban_yili"]
         for i, y in enumerate(yillar):
             oran = oran0 + (taban - oran0) * (y - sekil_yili) / (taban_yili - sekil_yili)
             hedef[i] = max(taban, min(oran0, oran))
@@ -96,7 +98,14 @@ def fiyat_senaryosu_uret(cfg: dict, uretim: UretimProfili, seviye: str | float =
             if 1 <= k <= len(yillar):
                 fiyatlar[k - 1] = np.minimum(fiyatlar[k - 1], duz["tavan_carpani"] * L)
 
+    # Yan hizmet kapasite fiyatı: 2026 seviyesinden yıllık azalma, taban oranında durur
+    yh_cfg = cfg.get("gelir_yigini", {}).get("yan_hizmet")
+    yan = None
+    if yh_cfg is not None:
+        azalma = deger(yh_cfg["yillik_azalma"]) if yh_azalma is None else yh_azalma
+        carpan = np.maximum((1 - azalma) ** (np.array(yillar) - 2026), deger(yh_cfg["taban_oran"]))
+        yan = carpan[:, None, None] * yan_hizmet_sekil_yillari(deger(yh_cfg["urun"]))[None]
     ad = f"{seviye if isinstance(seviye, str) else L} / kanibalizasyon {varyant}" + (" / tavan" if duz_aktif else "")
-    return FiyatSenaryosu(fiyatlar=fiyatlar, yillar=yillar, seviye=L, ad=ad, gunes_hedef_oran=hedef,
+    return FiyatSenaryosu(fiyatlar=fiyatlar, yillar=yillar, seviye=L, ad=ad, gunes_hedef_oran=hedef, yan_hizmet=yan,
                           bilgi={"sekil_yillari": sekil_adlari, "baslangic_gunes_orani": oran0,
                                  "varyant": varyant, "duzenleyici": duz_aktif})

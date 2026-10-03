@@ -1,0 +1,11 @@
+﻿Tasarım,Simülasyon,NPV ara değerleme [M USD],NPV tam LP [M USD],Fark [M USD]
+C: gelir yığınlı optimal,0,41.124,41.214,-0.090
+C: gelir yığınlı optimal,1,17.009,17.403,-0.394
+C: gelir yığınlı optimal,2,76.736,77.148,-0.412
+C: gelir yığınlı optimal,3,30.963,31.361,-0.398
+C: gelir yığınlı optimal,4,52.642,52.934,-0.291
+D: gelir yığınlı + PPA,0,41.137,41.260,-0.123
+D: gelir yığınlı + PPA,1,21.455,21.929,-0.474
+D: gelir yığınlı + PPA,2,60.897,61.127,-0.229
+D: gelir yığınlı + PPA,3,32.116,32.573,-0.457
+D: gelir yığınlı + PPA,4,51.216,51.507,-0.291

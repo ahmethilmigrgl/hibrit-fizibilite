@@ -1,0 +1,62 @@
+{
+ "A: RES 58,8 (Aşama 4)": {
+  "ad": "A: RES 58,8 (Aşama 4)",
+  "res_mw": 58.8,
+  "ges_mw": 0.0,
+  "bess_mw": 0.0,
+  "bess_mwh": 0.0,
+  "sebeke_mw": 50.0,
+  "yan_hizmet": false,
+  "dengesizlik_azaltim": false,
+  "yekg": false,
+  "ppa": false
+ },
+ "B: (b) RES 50 + GES 25": {
+  "ad": "B: (b) RES 50 + GES 25",
+  "res_mw": 50.0,
+  "ges_mw": 25.0,
+  "bess_mw": 0.0,
+  "bess_mwh": 0.0,
+  "sebeke_mw": 50.0,
+  "yan_hizmet": false,
+  "dengesizlik_azaltim": false,
+  "yekg": false,
+  "ppa": false
+ },
+ "C: gelir yığınlı optimal": {
+  "ad": "C: gelir yığınlı optimal",
+  "res_mw": 58.800000000000004,
+  "ges_mw": 0.0,
+  "bess_mw": 39.968043386607874,
+  "bess_mwh": 69.97699861502736,
+  "sebeke_mw": 50.0,
+  "yan_hizmet": true,
+  "dengesizlik_azaltim": true,
+  "yekg": true,
+  "ppa": false
+ },
+ "D: gelir yığınlı + PPA": {
+  "ad": "D: gelir yığınlı + PPA",
+  "res_mw": 58.800000000000004,
+  "ges_mw": 0.0,
+  "bess_mw": 39.48103363669316,
+  "bess_mwh": 62.695310324916896,
+  "sebeke_mw": 50.0,
+  "yan_hizmet": true,
+  "dengesizlik_azaltim": true,
+  "yekg": true,
+  "ppa": true
+ },
+ "E: RES 58,8 + PPA": {
+  "ad": "E: RES 58,8 + PPA",
+  "res_mw": 58.8,
+  "ges_mw": 0.0,
+  "bess_mw": 0.0,
+  "bess_mwh": 0.0,
+  "sebeke_mw": 50.0,
+  "yan_hizmet": false,
+  "dengesizlik_azaltim": false,
+  "yekg": false,
+  "ppa": true
+ }
+}
