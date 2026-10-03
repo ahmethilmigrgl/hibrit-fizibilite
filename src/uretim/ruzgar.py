@@ -72,14 +72,14 @@ def era5_coklu_yil(kod: str, enlem: float, boylam: float, y1: int, y2: int,
         return pd.concat(list(parcalar))
 
 
-def gobek_hizi(df: pd.DataFrame, cfg_ruzgar: dict) -> pd.DataFrame:
+def gobek_hizi(df: pd.DataFrame, cfg_ruzgar: dict, gobek: float | None = None) -> pd.DataFrame:
     """
     Saatlik kayma üssü (α) ve göbek yüksekliğindeki rüzgâr hızını hesaplar.
 
     Kuvvet yasası:  v(h) = v_ref · (h / h_ref)^α
     α, iki yükseklikten:  α = ln(v100 / v10) / ln(100 / 10)
     """
-    h = deger(cfg_ruzgar["gobek_yuksekligi"])
+    h = gobek or deger(cfg_ruzgar["gobek_yuksekligi"])
     a_min, a_max = deger(cfg_ruzgar["kayma_ussu_sinirlari"])
     v10_min = deger(cfg_ruzgar["kayma_min_hiz_10m"])
 
@@ -96,7 +96,7 @@ def gobek_hizi(df: pd.DataFrame, cfg_ruzgar: dict) -> pd.DataFrame:
     return pd.DataFrame({"v10": v10, "v100": v100, "alfa": alfa, "v_gobek": v_gobek})
 
 
-def hava_yogunlugu(df: pd.DataFrame, cfg_ruzgar: dict) -> pd.Series:
+def hava_yogunlugu(df: pd.DataFrame, cfg_ruzgar: dict, gobek: float | None = None) -> pd.Series:
     """
     Göbek yüksekliğinde hava yoğunluğu [kg/m³], ideal gaz yasası:  ρ = p / (R · T)
 
@@ -104,35 +104,40 @@ def hava_yogunlugu(df: pd.DataFrame, cfg_ruzgar: dict) -> pd.Series:
         T_h = T_2m − Γ · (h − 2)
         p_h = p_s · exp(−g · h / (R · T_ort))     (hipsometrik denklem)
     """
-    h = deger(cfg_ruzgar["gobek_yuksekligi"])
+    h = gobek or deger(cfg_ruzgar["gobek_yuksekligi"])
     t_gobek = df["t2m"] - SICAKLIK_GRADYANI * (h - 2)
     t_ort = (df["t2m"] + t_gobek) / 2
     p_gobek = df["sp"] * np.exp(-G * h / (R_KURU_HAVA * t_ort))
     return p_gobek / (R_KURU_HAVA * t_gobek)
 
 
-def turbin(model: str, cfg_ruzgar: dict) -> WindTurbine:
+def turbin(model: str, cfg_ruzgar: dict, gobek: float | None = None) -> WindTurbine:
     """windpowerlib kütüphanesinden türbini güç eğrisiyle yükler."""
-    return WindTurbine(turbine_type=model, hub_height=deger(cfg_ruzgar["gobek_yuksekligi"]))
+    return WindTurbine(turbine_type=model, hub_height=gobek or deger(cfg_ruzgar["gobek_yuksekligi"]))
 
 
 def ruzgar_kapasite_faktoru(df: pd.DataFrame, cfg_ruzgar: dict,
-                            turbin_modeli: str | None = None) -> tuple[pd.Series, pd.DataFrame]:
+                            turbin_modeli: str | None = None, gobek: float | None = None,
+                            katsayi: float | None = None) -> tuple[pd.Series, pd.DataFrame]:
     """
     Saatlik RES kapasite faktörü (MW başına, 0-1, kayıplar düşülmüş).
+
+    Opsiyonel argümanlar config'i geçersiz kılar (kalibrasyonda referans santrali kendi
+    türbini ve göbek yüksekliğiyle modellemek, katsayıyı taramak için).
 
     Döndürür: (kf serisi, ara hesaplar tablosu: hızlar, α, yoğunluk, brüt kf)
     """
     model = turbin_modeli or deger(cfg_ruzgar["turbin_modeli"])
-    t = turbin(model, cfg_ruzgar)
+    t = turbin(model, cfg_ruzgar, gobek)
     egri = t.power_curve  # sütunlar: wind_speed [m/s], value [W]
 
-    ara = gobek_hizi(df, cfg_ruzgar)
-    ara["yogunluk"] = hava_yogunlugu(df, cfg_ruzgar)
+    ara = gobek_hizi(df, cfg_ruzgar, gobek)
+    ara["yogunluk"] = hava_yogunlugu(df, cfg_ruzgar, gobek)
 
     # Kalibrasyon: ERA5'in hız sapmasını düzeltmek için hız güç eğrisinden önce ölçeklenir.
     # v_gobek ham (kalibrasyonsuz) hız olarak saklanır; v_kalibre güç eğrisine giren hızdır.
-    katsayi = deger(cfg_ruzgar["ruzgar_hiz_kalibrasyon_katsayisi"])
+    if katsayi is None:
+        katsayi = deger(cfg_ruzgar["ruzgar_hiz_kalibrasyon_katsayisi"])
     ara["v_kalibre"] = ara["v_gobek"] * katsayi
 
     # IEC 61400-12 yoğunluk düzeltmesi: güç eğrisinin hız ekseni her saat için

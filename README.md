@@ -22,6 +22,9 @@ cp .env.example .env   # CDS ve EPİAŞ bilgilerini doldurun
 .venv/bin/python src/00_kurulum_testi.py      # ısınma LP modeli
 .venv/bin/python src/01_saha_taramasi.py      # Aşama 1: 4 saha taraması
 .venv/bin/python src/01_uretim_profilleri.py  # Aşama 1: Ezine 10 yıllık profiller
+.venv/bin/python src/02_piyasa_verisi.py      # Aşama 2: EPİAŞ verisi (önbellekli)
+.venv/bin/python src/02_ruzgar_kalibrasyonu.py # Aşama 2: rüzgâr kalibrasyonu (öneri k)
+.venv/bin/python src/02_piyasa_analizi.py     # Aşama 2: yakalanan fiyat, batarya göstergeleri
 ```
 
 ## Klasör yapısı
@@ -43,11 +46,34 @@ tamamlayıcılığı.
 
 | Ezine, 2014–2023 | 1 MW GES | 1 MW RES | 1+1 MW / 1 MW bağlantı |
 |---|---|---|---|
-| Ortalama kapasite faktörü | %20,6 | %34,5 | %52,1 (bağlantı kullanımı) |
-| P50 [MWh/yıl] | 1.815 | 3.060 | 4.620 |
-| P90 [MWh/yıl] (normal) | 1.741 | 2.766 | 4.316 |
-| Yıllar arası değişkenlik katsayısı | %2,6 | %6,6 | %4,2 |
+| Ortalama kapasite faktörü | %20,6 | %38,1 | %55,1 (bağlantı kullanımı) |
+| P50 [MWh/yıl] | 1.815 | 3.378 | 4.880 |
+| P90 [MWh/yıl] (normal) | 1.741 | 3.080 | 4.582 |
+| Yıllar arası değişkenlik katsayısı | %2,6 | %6,1 | %4,0 |
+
+RES değerleri Aşama 2'de Ezine'deki gerçek santral üretimiyle kalibre edildi (ERA5 hız katsayısı 1,065).
 
 ![Aylık kapasite faktörü](outputs/01_uretim_modeli/aylik_kapasite_faktoru.png)
 
 Ayrıntılar, doğrulama ve sınırlamalar: [docs/01_uretim_modeli.md](docs/01_uretim_modeli.md)
+
+### Aşama 2 — Piyasa analizi ve rüzgâr kalibrasyonu ✅
+EPİAŞ Şeffaflık Platformu'ndan 2014–2026 saatlik PTF ve üretim verisi çekildi (yaz saati geçişleri
+ele alınarak UTC'ye çevrildi).
+
+| Yakalanma oranı (yakalanan / ortalama PTF, USD) | 2016 | 2023 | 2025 | 2026 (Oca–Eyl) |
+|---|---|---|---|---|
+| Ezine GES | 1,21 | 0,92 | 0,82* | 0,71* |
+| Ezine RES | 0,98 | 0,96 | 0,97* | 1,04* |
+| Ezine hibrit (1+1 MW / 1 MW) | 1,05 | 0,96 | 0,93* | 0,94* |
+| Türkiye güneş şekli | — | 0,90 | 0,83 | 0,75 |
+
+\* 2024 sonrası: 10 hava yılı × gerçek fiyat, eşzamanlılık düzeltmeli.
+
+- **Güneş kanibalizasyonu:** Kurulu güneş 25 GW'a çıktıkça öğle fiyatları çöktü. Akşam/öğle fiyat oranı 2015'te 0,89, 2025'te 1,60, 2026'da 2,33.
+- **Batarya göstergeleri:** 2026'da 10 $/MWh altındaki saat sayısı 1.564 ve günlük spread ortalama fiyatın 1,4 katı.
+- **2022–2023 azami uzlaştırma fiyatı (AUF):** YEKDEM dışı yenilenebilir gelirlerini ~%44 kırptı.
+
+![Yakalanma oranı trendi](outputs/02_piyasa/yakalanma_orani_trendi.png)
+
+Ayrıntılar: [docs/02_piyasa_analizi.md](docs/02_piyasa_analizi.md)

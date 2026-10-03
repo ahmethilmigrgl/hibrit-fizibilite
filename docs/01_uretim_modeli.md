@@ -16,6 +16,20 @@ Optimizasyon (Aşama 4) bu profilleri kapasite değişkenleriyle çarparak kulla
 (duyarlılık), `v100_ham` ve `v_gobek_ham` (kalibrasyonsuz ERA5 hızları, m/s), `hava_yogunlugu` (kg/m³).
 Kapasite faktörleri 0–1 arasında, AC tarafında ve tüm kayıplar düşülmüştür.
 
+> **Aşama 2 güncellemesi (2026-10-03):** Rüzgâr modeli Ezine'deki gerçek santral üretimiyle kalibre
+> edildi: `ruzgar_hiz_kalibrasyon_katsayisi` = **1,065** (bkz. `docs/02_piyasa_analizi.md`, bölüm 6).
+> Bu belgedeki RES ve hibrit sayıları **kalibrasyon öncesi (k = 1)** değerlerdir. Güncel değerler:
+> - RES KF %34,5 → %38,1
+> - RES P50 3.060 → 3.378 MWh/yıl, P90 2.766 → 3.080 MWh/yıl
+> - Hibrit P50 4.620 → 4.880 MWh/yıl, P90 4.316 → 4.582 MWh/yıl
+> - Hibrit kesinti %5,4 → %6,1
+>
+> Güncel tablolar `outputs/01_uretim_modeli/` altında; kalibrasyon öncesi P50/P90 tablosu
+> `p50_p90_ozet_k1.csv`. Ayrıca Aşama 2'de ERA5'in Ezine'deki öğleden sonra rüzgâr pikini
+> yakalayamadığı görüldü. Gözlenen gün içi şekille GES–RES saatlik korelasyonu −0,11 yerine +0,17,
+> hibrit kesinti %6 yerine %13 çıkıyor. Aşağıdaki "saatlik tamamlayıcılık" yorumları bu nedenle
+> iyimserdir; mevsimsel tamamlayıcılık geçerlidir.
+
 ---
 
 ## 1. Veri kaynakları

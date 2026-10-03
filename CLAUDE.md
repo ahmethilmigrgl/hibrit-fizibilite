@@ -49,7 +49,11 @@ başvuru için hazırlanıyor. Sonuçlar, varsayımlar ve formülasyonlar mülak
    Açık iş: Aşama 2'de EPİAŞ santral üretimiyle `ruzgar_hiz_kalibrasyon_katsayisi` kalibrasyonu;
    EPİAŞ (TSİ) verisi `Europe/Istanbul` ile UTC'ye çevrilmeli (2016 öncesi yaz saati var).
 2. **Piyasa analizi:** EPİAŞ Şeffaflık Platformu saatlik PTF, güneş/rüzgâr yakalanan fiyat
-   (capture price/rate), kanibalizasyon trendi, kur etkisi.
+   (capture price/rate), kanibalizasyon trendi, kur etkisi. ✅ Bkz. `docs/02_piyasa_analizi.md`.
+   Rüzgâr kalibre edildi (k = 1,065). EPİAŞ istemcisi: `src/piyasa/epias.py` (TGT otomatik yenileme,
+   önbellek, hata gövdesinde kullanıcı adı/IP yazdırılmaz).
+   **Açık iş (Aşama 4 öncesi):** ERA5 Ezine'de öğleden sonra rüzgâr pikini kaçırıyor → RES profiline
+   gözlenen santralden ay × saat şekil düzeltmesi uygulanması önerildi (kullanıcı kararı bekleniyor).
 3. **Finansal model:** nakit akışı, NPV, IRR, LCOE.
 4. **Optimizasyon:** GES/RES/BESS kapasite boyutlandırma + saatlik batarya dispatch + şebeke kısıtı
    ve curtailment içeren MILP; küçük modelden başlayıp adım adım büyüt, gerekirse temsilî günlerle

@@ -57,7 +57,7 @@ uretim:
     kayma_ussu_sinirlari: {value: [0.0, 0.5], birim: "-", kaynak: "Proje kararı", not: "10 m-100 m'den hesaplanan saatlik kayma üssü bu aralığa kırpılır (çok düşük 10 m hızlarında sayısal patlamayı önlemek için)"}
     kayma_min_hiz_10m: {value: 1.0, birim: "m/s", kaynak: "Proje kararı", not: "10 m hızı bunun altındaysa kayma üssü için sahanın medyan üssü kullanılır"}
     referans_hava_yogunlugu: {value: 1.225, birim: "kg/m³", kaynak: "IEC 61400-12-1", not: "Güç eğrisi bu yoğunluğa göre verilmiştir"}
-    ruzgar_hiz_kalibrasyon_katsayisi: {value: 1.0, birim: "-", kaynak: "Şimdilik kalibrasyonsuz", not: "Göbek yüksekliği hızı güç eğrisine girmeden önce bu katsayıyla çarpılır. Aşama 2'de EPİAŞ'tan Ezine çevresindeki gerçek RES santrallerinin saatlik üretimiyle kalibre edilecek (ERA5 karmaşık arazide hızı düşük tahmin eder). Değiştirince: .venv/bin/python src/01_uretim_profilleri.py"}
+    ruzgar_hiz_kalibrasyon_katsayisi: {value: 1.065, birim: "-", kaynak: "Aşama 2 kalibrasyonu (src/02_ruzgar_kalibrasyonu.py): Enerjisa Çanakkale RES (Ezine, 29.9 MW) 2014-2023 EPİAŞ gerçek zamanlı üretimi", not: "Göbek yüksekliği hızı güç eğrisine girmeden önce bu katsayıyla çarpılır. Referans santral ERA5'ten vekil türbinle (E-92/2350, 80 m) modellenip gözlenen ort. KF (%30.2) tutturuldu. Duyarlılık (vekil türbin/göbek): 0.91-1.12; Çamseki 1.07, İntepe 1.08, Sares 1.24. Değiştirince: .venv/bin/python src/01_uretim_profilleri.py"}
     toplam_kayip:  {value: 0.12, birim: "oran", kaynak: "Proje varsayımı; sektörde tipik %10-15", not: "İz (wake) + kullanılabilirlik + elektriksel kayıplar toplamı; brüt üretime uygulanır"}
 
 finans:
@@ -83,8 +83,29 @@ teknoloji:
     yipranma:    {value: null, birim: "oran/yıl", kaynak: "", not: ""}
 
 piyasa:
-  ptf_kaynak: {value: "EPİAŞ Şeffaflık Platformu", not: "Saatlik PTF, Aşama 2"}
-  fiyat_tavani: {value: null, birim: "TRY/MWh", kaynak: "EPDK", not: "Azami uzlaştırma fiyatı"}
+  ptf_kaynak: {value: "EPİAŞ Şeffaflık Platformu, /v1/markets/dam/data/mcp", kaynak: "seffaflik.epias.com.tr/electricity-service/technical/tr/index.html", not: "Saatlik PTF; TL, USD, EUR (USD/EUR: TCMB gösterge döviz alış kuru, EPİAŞ hesaplar)"}
+  uretim_kaynak: {value: "EPİAŞ /v1/generation/data/realtime-generation", kaynak: "EPİAŞ Şeffaflık Platformu (TEİAŞ gerçek zamanlı üretim)", not: "Kaynak bazında saatlik; API sınırı 3 ay/istek"}
+  veri_baslangic: {value: "2014-01-01", birim: "tarih (TSİ)", kaynak: "Proje kararı", not: "Aşama 1 profilleriyle aynı başlangıç"}
+  veri_bitis:     {value: "2026-09-30", birim: "tarih (TSİ)", kaynak: "Proje kararı (2026-10-03 itibarıyla son tam ay)", not: "Güncellemek için değiştirip src/02_piyasa_verisi.py'yi çalıştırın"}
+  dusuk_fiyat_esikleri: {value: [1, 10], birim: "USD/MWh", kaynak: "Proje kararı", not: "Batarya ön göstergesi: bu eşiklerin altındaki saat sayısı"}
+  fiyat_tavani: {value: null, birim: "TRY/MWh", kaynak: "EPDK", not: "Dönemsel azami fiyat limitleri docs/02_piyasa_analizi.md'de; veriden ampirik olarak tespit edilir"}
+
+  yol_b_gunes_baslangic: {value: 2019, birim: "yıl", kaynak: "Veri kontrolü (Aşama 2)", not: "EPİAŞ gerçek zamanlı güneş üretimi 2016-2018'de yalnızca birkaç MW (şekil bile güvenilir değil); 2019'dan itibaren tepe >140 MW"}
+
+# Türkiye yıl sonu kurulu güç [MW] — yalnızca trend yorumu için (hesaplara girmez)
+kurulu_guc_turkiye:
+  kaynak: "TEİAŞ yıl sonu kurulu güç istatistikleri; 2014-2017 değerleri TEİAŞ yıllık istatistiklerinden (yaklaşık, ikincil kaynaklarla teyit), 2018: solar.ist/TEİAŞ (güneş 5.063, rüzgâr 7.005), 2019-2023: Wikipedia/TEİAŞ, 2024: IRENA 2025 ve TÜREB (rüzgâr 13.792), 2025: GENSED/TEİAŞ (güneş 25.109, rüzgâr 14.774)"
+  not: "Güneşin büyük kısmı lisanssız (EPİAŞ YEKDEM verisi, Ocak 2024: güneşin %86'sı lisanssız) ve EPİAŞ gerçek zamanlı üretim verisinde görünmez"
+  gunes: {2014: 40, 2015: 249, 2016: 819, 2017: 3421, 2018: 5063, 2019: 5995, 2020: 6667, 2021: 7816, 2022: 9425, 2023: 11300, 2024: 19800, 2025: 25109}
+  ruzgar: {2014: 3630, 2015: 4503, 2016: 5751, 2017: 6516, 2018: 7005, 2019: 7591, 2020: 8832, 2021: 10607, 2022: 11396, 2023: 11800, 2024: 13792, 2025: 14774}
+
+# Rüzgâr kalibrasyonu için Ezine çevresindeki lisanslı RES'ler (EPİAŞ santral id'leri)
+kalibrasyon_santralleri:
+  enerjisa_canakkale: {epias_id: 1491, ad: "Enerjisa Çanakkale RES", ilce: "Ezine (Mahmudiye)", kurulu_guc_mw: 29.9, turbin: "13 × Siemens 2.3 MW", kaynak: "enerjiatlasi.com, enerjisauretim.com.tr", not: "2011'den beri sabit kapasite"}
+  camseki:            {epias_id: 1492, ad: "Çamseki RES",            ilce: "Ezine",             kurulu_guc_mw: 63.1, turbin: "29 × Enercon",        kaynak: "enerjiatlasi.com", not: "Kapasite geçmişi veriden kontrol edilecek"}
+  sares:              {epias_id: 1489, ad: "Sares RES",              ilce: "Ezine (Kayacık)",    kurulu_guc_mw: 27.5, turbin: "19 × GE",             kaynak: "enerjiatlasi.com, enerjigunlugu.net", not: "2011'de 22.5 MW, sonra 27.5 MW'a büyütüldü"}
+  intepe:             {epias_id: 1490, ad: "İntepe RES",             ilce: "Çanakkale Merkez",  kurulu_guc_mw: 55.7, turbin: "51 × Enercon (karışık)", kaynak: "enerjiatlasi.com", not: "Eski ve karışık filo, kapasite artırımları var"}
+  kocalar:            {epias_id: 2397, ad: "Kocalar RES",            ilce: "Çanakkale Merkez",  kurulu_guc_mw: 26.0, turbin: "9 × Siemens Gamesa",  kaynak: "enerjiatlasi.com", not: "Daha yeni; başlangıç tarihi veriden"}
 
 monte_carlo:
   senaryo_sayisi: {value: null, not: "Aşama 5"}
