@@ -1,0 +1,7 @@
+﻿,kWh/kWp/yıl veya %
+"PVGIS pvcalculation (%14 kayıp, inverter dahil)",1522.9735899999998
+"Model, PVGIS-eşdeğer tanım",1583.4504124773316
+Fark (eşdeğer / PVGIS − 1) [%],3.970969875934083
+"Model, proje tasarımı (ek kırpma kaybı öncesi)",1516.7998334149913
+"Model, proje tasarımı (%1 kırpma kaybı sonrası)",1501.6318350808415
+Saatlik modelin hesapladığı kırpma [%],0.008904310964432232

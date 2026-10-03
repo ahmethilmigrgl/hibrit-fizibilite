@@ -19,7 +19,9 @@ Türkiye'de seçilen bir saha için güneş (GES), rüzgâr (RES) ve batarya (BE
 uv venv --python 3.11 .venv
 uv pip install -r requirements.txt --python .venv/bin/python
 cp .env.example .env   # CDS ve EPİAŞ bilgilerini doldurun
-.venv/bin/python src/00_kurulum_testi.py
+.venv/bin/python src/00_kurulum_testi.py      # ısınma LP modeli
+.venv/bin/python src/01_saha_taramasi.py      # Aşama 1: 4 saha taraması
+.venv/bin/python src/01_uretim_profilleri.py  # Aşama 1: Ezine 10 yıllık profiller
 ```
 
 ## Klasör yapısı
@@ -33,4 +35,19 @@ cp .env.example .env   # CDS ve EPİAŞ bilgilerini doldurun
 | `config.yaml` | Tüm varsayımlar ve kaynakları |
 
 ## Sonuçlar
-_Henüz yok._
+
+### Aşama 1 — Saha seçimi ve üretim modeli ✅
+Dört aday saha (Çanakkale-Ezine, Balıkesir-Bandırma, İzmir-Aliağa, Konya-Karapınar) PVGIS ve ERA5
+verisiyle tarandı. **Çanakkale-Ezine** seçildi: en yüksek rüzgâr kaynağı ve en güçlü GES–RES
+tamamlayıcılığı.
+
+| Ezine, 2014–2023 | 1 MW GES | 1 MW RES | 1+1 MW / 1 MW bağlantı |
+|---|---|---|---|
+| Ortalama kapasite faktörü | %20,6 | %34,5 | %52,1 (bağlantı kullanımı) |
+| P50 [MWh/yıl] | 1.815 | 3.060 | 4.620 |
+| P90 [MWh/yıl] (normal) | 1.741 | 2.766 | 4.316 |
+| Yıllar arası değişkenlik katsayısı | %2,6 | %6,6 | %4,2 |
+
+![Aylık kapasite faktörü](outputs/01_uretim_modeli/aylik_kapasite_faktoru.png)
+
+Ayrıntılar, doğrulama ve sınırlamalar: [docs/01_uretim_modeli.md](docs/01_uretim_modeli.md)

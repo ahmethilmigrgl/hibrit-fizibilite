@@ -10,10 +10,55 @@ proje:
   omur:           {value: null, birim: "yıl", kaynak: "", not: "Proje ekonomik ömrü"}
 
 saha:
-  ad:        {value: null, kaynak: "", not: "Aşama 1'de seçilecek"}
-  enlem:     {value: null, birim: "derece", kaynak: "", not: ""}
-  boylam:    {value: null, birim: "derece", kaynak: "", not: ""}
+  kod:       {value: "canakkale_ezine", kaynak: "Aşama 1 saha taraması", not: "aday_sahalar içindeki anahtar"}
+  ad:        {value: "Çanakkale-Ezine", kaynak: "Aşama 1 saha taraması (2026-10-03 kullanıcı onayı)", not: "En yüksek RES KF ve en iyi GES-RES tamamlayıcılığı; bkz. docs/01_uretim_modeli.md"}
+  enlem:     {value: 39.79, birim: "derece", kaynak: "Kullanıcı tanımı", not: "Yaklaşık ilçe koordinatı; ERA5 grid noktası 39.75, 26.25"}
+  boylam:    {value: 26.33, birim: "derece", kaynak: "Kullanıcı tanımı", not: ""}
   sebeke_baglanti_kapasitesi: {value: null, birim: "MW", kaynak: "", not: "Bağlantı görüşü / TEİAŞ kapasitesi"}
+
+# Saha taraması için aday sahalar (yaklaşık koordinatlar, WGS84)
+aday_sahalar:
+  canakkale_ezine:    {ad: "Çanakkale-Ezine",    enlem: 39.79, boylam: 26.33, kaynak: "Kullanıcı tanımı", not: "Yaklaşık ilçe koordinatı"}
+  balikesir_bandirma: {ad: "Balıkesir-Bandırma", enlem: 40.35, boylam: 27.97, kaynak: "Kullanıcı tanımı", not: "Yaklaşık ilçe koordinatı"}
+  izmir_aliaga:       {ad: "İzmir-Aliağa",       enlem: 38.80, boylam: 26.97, kaynak: "Kullanıcı tanımı", not: "Yaklaşık ilçe koordinatı"}
+  konya_karapinar:    {ad: "Konya-Karapınar",    enlem: 37.72, boylam: 33.55, kaynak: "Kullanıcı tanımı", not: "Yaklaşık ilçe koordinatı"}
+
+# ---------------------------------------------------------------------
+# Üretim modeli (Aşama 1)
+# Tüm zaman serileri UTC olarak saklanır. (EPİAŞ verisi TSİ = UTC+3, sabit;
+# piyasa verisiyle birleştirirken dönüştürülecek.)
+# Çıktı: MW AC başına saatlik kapasite faktörü (0-1).
+# ---------------------------------------------------------------------
+uretim:
+  zaman_dilimi: {value: "UTC", kaynak: "Proje kuralı", not: "EPİAŞ (TSİ, UTC+3) verisi birleştirmede UTC'ye çevrilecek"}
+  yillar_tam:     {value: [2014, 2023], birim: "yıl aralığı (dahil)", kaynak: "PVGIS 5.3 API", not: "PVGIS-SARAH3 2005-2023 arasını destekliyor (API kontrolü 2026-10-03); en güncel 10 yıl"}
+  yillar_tarama:  {value: [2021, 2023], birim: "yıl aralığı (dahil)", kaynak: "Proje kararı", not: "Saha taramasında indirme süresini kısaltmak için son 3 yıl; GES ve RES aynı yıllar"}
+
+  gunes:
+    veri_kaynagi:  {value: "PVGIS 5.3 seriescalc (PVGIS-SARAH3 ışınım, ERA5 sıcaklık/rüzgâr)", kaynak: "https://re.jrc.ec.europa.eu/api/v5_3/", not: "pvlib.iotools.get_pvgis_hourly ile çekilir"}
+    pvgis_url:     {value: "https://re.jrc.ec.europa.eu/api/v5_3/", kaynak: "JRC PVGIS", not: "Sürüm sabitlendi (tekrarlanabilirlik)"}
+    azimut:        {value: 180, birim: "derece (pvlib: 180 = güney)", kaynak: "Proje kararı", not: "Sabit, güneye bakan"}
+    egim:          {value: "optimum", birim: "derece", kaynak: "PVGIS optimal_surface_tilt", not: "PVGIS her saha için yıllık ışınımı maksimize eden eğimi hesaplar; kullanılan değer çıktılara yazılır"}
+    dc_ac_orani:   {value: 1.2, birim: "MWp DC / MW AC", kaynak: "Proje kararı; sektörde tipik 1.15-1.35", not: "1 MW AC başına 1.2 MWp panel; inverter kırpması (clipping) modellenir"}
+    sistem_kaybi:  {value: 0.14, birim: "oran", kaynak: "NREL PVWatts v5 varsayılanı (%14.08)", not: "PVWatts tanımı: kirlenme, gölge, uyumsuzluk, kablo, bağlantı, LID, nominal değer, kullanılabilirlik. İnverter verimi HARİÇ (ayrıca modellenir)"}
+    sicaklik_katsayisi: {value: -0.0037, birim: "1/°C", kaynak: "NREL PVWatts v5, 'standard' modül", not: "Güç sıcaklık katsayısı gamma_pdc"}
+    inverter_nominal_verim: {value: 0.96, birim: "oran", kaynak: "NREL PVWatts v5 varsayılanı", not: "pvlib.inverter.pvwatts; çıkış AC nominal güçte kırpılır"}
+    sicaklik_modeli: {value: "SAPM open_rack_glass_polymer", kaynak: "pvlib.temperature.sapm_cell", not: "Açık raflı, cam-polimer modül (saha GES'leri için tipik)"}
+    iam_modeli:    {value: "ashrae b0=0.05", kaynak: "PVWatts v5", not: "Geliş açısı kaybı yalnızca direkt ışınıma uygulanır"}
+    kirpma_kaybi:  {value: 0.01, birim: "oran (yıllık AC enerjisi)", kaynak: "DC/AC 1.2 için literatürde tipik %0.5-2 aralığı", not: "Saatlik ortalama veri anlık ışınım tepelerini yumuşattığı için modelin hesapladığı kırpma (~%0.01-0.04) gerçeği yansıtmaz; bu sınırlamayı telafi etmek için AC üretime tek tip uygulanır"}
+    dogrulama_kaybi_pvgis: {value: 0.14, birim: "oran", kaynak: "PVGIS varsayılanı", not: "PVGIS pvcalculation karşılaştırmasında kullanılan toplam kayıp (PVGIS tanımında inverter dahil)"}
+
+  ruzgar:
+    veri_kaynagi:  {value: "reanalysis-era5-single-levels-timeseries", kaynak: "Copernicus CDS", not: "ERA5 nokta zaman serisi; en yakın 0.25° grid noktası. u10,v10,u100,v100,t2m,sp değişkenlerini içerdiği doğrulandı"}
+    degiskenler:   {value: ["10m_u_component_of_wind", "10m_v_component_of_wind", "100m_u_component_of_wind", "100m_v_component_of_wind", "2m_temperature", "surface_pressure"], kaynak: "CDS", not: ""}
+    turbin_modeli: {value: "E-141/4200", kaynak: "windpowerlib türbin kütüphanesi (OEP)", not: "Enercon E-141 EP4, 4.2 MW, 141 m rotor, ~269 W/m² spesifik güç. Güncel büyük rotorlu 4-5 MW türbinleri (V150-4.2, N149-4.5) temsil eder; IEC IIIA olduğu için yüksek rüzgârlı sahada gerçek projede II sınıfı türevi seçilebilir"}
+    turbin_duyarlilik: {value: "E-126/4200", kaynak: "windpowerlib türbin kütüphanesi (OEP)", not: "Enercon E-126 EP4, 4.2 MW, 127 m rotor, ~332 W/m², IEC IIA; yüksek rüzgâr sınıfı alternatifi (duyarlılık)"}
+    gobek_yuksekligi: {value: 120, birim: "m", kaynak: "Proje kararı", not: "Türkiye'deki güncel projelerde tipik 105-125 m"}
+    kayma_ussu_sinirlari: {value: [0.0, 0.5], birim: "-", kaynak: "Proje kararı", not: "10 m-100 m'den hesaplanan saatlik kayma üssü bu aralığa kırpılır (çok düşük 10 m hızlarında sayısal patlamayı önlemek için)"}
+    kayma_min_hiz_10m: {value: 1.0, birim: "m/s", kaynak: "Proje kararı", not: "10 m hızı bunun altındaysa kayma üssü için sahanın medyan üssü kullanılır"}
+    referans_hava_yogunlugu: {value: 1.225, birim: "kg/m³", kaynak: "IEC 61400-12-1", not: "Güç eğrisi bu yoğunluğa göre verilmiştir"}
+    ruzgar_hiz_kalibrasyon_katsayisi: {value: 1.0, birim: "-", kaynak: "Şimdilik kalibrasyonsuz", not: "Göbek yüksekliği hızı güç eğrisine girmeden önce bu katsayıyla çarpılır. Aşama 2'de EPİAŞ'tan Ezine çevresindeki gerçek RES santrallerinin saatlik üretimiyle kalibre edilecek (ERA5 karmaşık arazide hızı düşük tahmin eder). Değiştirince: .venv/bin/python src/01_uretim_profilleri.py"}
+    toplam_kayip:  {value: 0.12, birim: "oran", kaynak: "Proje varsayımı; sektörde tipik %10-15", not: "İz (wake) + kullanılabilirlik + elektriksel kayıplar toplamı; brüt üretime uygulanır"}
 
 finans:
   iskonto_orani:  {value: null, birim: "oran (reel, USD)", kaynak: "", not: "WACC"}
