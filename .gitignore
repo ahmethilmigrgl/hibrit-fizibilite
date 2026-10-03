@@ -1,0 +1,25 @@
+# Sanal ortam
+.venv/
+venv/
+
+# Kimlik bilgileri
+.env
+
+# Veri (klasör yapısı .gitkeep ile korunur)
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+*.nc
+*.grib
+
+# Checkpoint / önbellek dosyaları
+.ipynb_checkpoints/
+__pycache__/
+*.pyc
+*.ckpt
+checkpoints/
+.cache/
+
+# Sistem
+.DS_Store

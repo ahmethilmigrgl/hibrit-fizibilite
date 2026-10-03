@@ -1,0 +1,17 @@
+numpy
+pandas
+matplotlib
+plotly
+jupyter
+pyyaml
+tqdm
+pvlib
+xarray
+netCDF4
+cdsapi
+requests
+python-dotenv
+pyomo
+highspy
+numpy-financial
+streamlit

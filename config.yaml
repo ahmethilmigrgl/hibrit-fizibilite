@@ -1,0 +1,46 @@
+# =====================================================================
+# Model varsayımları — koda gömülmez, buradan okunur.
+# Her değer için: value (değer), birim, kaynak, not.
+# Değerler ilgili aşamada doldurulacak (null = henüz belirlenmedi).
+# =====================================================================
+
+proje:
+  ad: "Hibrit GES+RES+BESS fizibilitesi"
+  baslangic_yili: {value: null, birim: "yıl", kaynak: "", not: ""}
+  omur:           {value: null, birim: "yıl", kaynak: "", not: "Proje ekonomik ömrü"}
+
+saha:
+  ad:        {value: null, kaynak: "", not: "Aşama 1'de seçilecek"}
+  enlem:     {value: null, birim: "derece", kaynak: "", not: ""}
+  boylam:    {value: null, birim: "derece", kaynak: "", not: ""}
+  sebeke_baglanti_kapasitesi: {value: null, birim: "MW", kaynak: "", not: "Bağlantı görüşü / TEİAŞ kapasitesi"}
+
+finans:
+  iskonto_orani:  {value: null, birim: "oran (reel, USD)", kaynak: "", not: "WACC"}
+  kur_usd_try:    {value: null, birim: "TRY/USD", kaynak: "TCMB", not: ""}
+  vergi_orani:    {value: null, birim: "oran", kaynak: "", not: "Kurumlar vergisi"}
+  enflasyon:      {value: null, birim: "oran", kaynak: "", not: ""}
+
+teknoloji:
+  ges:
+    capex:  {value: null, birim: "milyon USD/MW", kaynak: "", not: ""}
+    opex:   {value: null, birim: "USD/MW/yıl", kaynak: "", not: ""}
+    degradasyon: {value: null, birim: "oran/yıl", kaynak: "", not: "Panel verim kaybı"}
+  res:
+    capex:  {value: null, birim: "milyon USD/MW", kaynak: "", not: ""}
+    opex:   {value: null, birim: "USD/MW/yıl", kaynak: "", not: ""}
+    turbin_modeli: {value: null, kaynak: "", not: "Güç eğrisi için"}
+  bess:
+    capex_guc:   {value: null, birim: "milyon USD/MW", kaynak: "", not: ""}
+    capex_enerji: {value: null, birim: "milyon USD/MWh", kaynak: "", not: ""}
+    opex:        {value: null, birim: "USD/MW/yıl", kaynak: "", not: ""}
+    verim_gidis_donus: {value: null, birim: "oran", kaynak: "", not: "Round-trip efficiency"}
+    yipranma:    {value: null, birim: "oran/yıl", kaynak: "", not: ""}
+
+piyasa:
+  ptf_kaynak: {value: "EPİAŞ Şeffaflık Platformu", not: "Saatlik PTF, Aşama 2"}
+  fiyat_tavani: {value: null, birim: "TRY/MWh", kaynak: "EPDK", not: "Azami uzlaştırma fiyatı"}
+
+monte_carlo:
+  senaryo_sayisi: {value: null, not: "Aşama 5"}
+  tohum:          {value: 42, not: "Tekrarlanabilirlik için rastgele sayı tohumu"}
