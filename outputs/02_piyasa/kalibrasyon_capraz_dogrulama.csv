@@ -1,0 +1,7 @@
+﻿Katman,Yöntem,Saatlik korelasyon,Ay×saat RMSE [KF puanı],Gün içi profil RMSE [KF puanı],Yıllık KF ort. mutlak hata [puan],Ortalama KF hatası [puan]
+"Kur 2014–18, test 2019–23",Sabit k,0.7519,11.2440,9.3768,1.8778,1.8776
+"Kur 2014–18, test 2019–23",Ay × saat (ham),0.8408,2.8210,1.9855,1.8723,1.8716
+"Kur 2014–18, test 2019–23",Ay × saat (yumuşatılmış),0.8412,2.7274,2.0535,1.8788,1.8782
+"Kur 2019–23, test 2014–18",Sabit k,0.7751,10.3258,8.5835,1.8118,-1.8127
+"Kur 2019–23, test 2014–18",Ay × saat (ham),0.8462,2.7201,1.8895,1.7867,-1.7876
+"Kur 2019–23, test 2014–18",Ay × saat (yumuşatılmış),0.8473,2.4949,1.8663,1.7884,-1.7894

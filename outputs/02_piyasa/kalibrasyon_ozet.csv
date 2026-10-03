@@ -1,11 +1,11 @@
 ﻿,deger
-Saatlik korelasyon,0.764342099829835
-Günlük korelasyon,0.930886446703475
-Aylık korelasyon,0.9498753369457674
-Yıllık KF korelasyonu,0.7943262603111688
-Saatlik RMSE [KF],0.21132344160439548
-k,1.0645573430128412
-kaydirma_saat,-1.0
-hedef_kf,0.302240907010295
-e141_kf_k1,0.3448793048525183
-e141_kf_k,0.3811300046411752
+k_sabit,1.0652714687306744
+hedef_kf,0.3022390202157847
+zaman_hizasi,aralik
+vekil_turbin,E-92/2350
+vekil_gobek_m,80
+gecikme_-2,0.7668
+gecikme_-1,0.7689
+gecikme_0,0.7644
+gecikme_1,0.7538
+gecikme_2,0.7398

@@ -16,19 +16,12 @@ Optimizasyon (Aşama 4) bu profilleri kapasite değişkenleriyle çarparak kulla
 (duyarlılık), `v100_ham` ve `v_gobek_ham` (kalibrasyonsuz ERA5 hızları, m/s), `hava_yogunlugu` (kg/m³).
 Kapasite faktörleri 0–1 arasında, AC tarafında ve tüm kayıplar düşülmüştür.
 
-> **Aşama 2 güncellemesi (2026-10-03):** Rüzgâr modeli Ezine'deki gerçek santral üretimiyle kalibre
-> edildi: `ruzgar_hiz_kalibrasyon_katsayisi` = **1,065** (bkz. `docs/02_piyasa_analizi.md`, bölüm 6).
-> Bu belgedeki RES ve hibrit sayıları **kalibrasyon öncesi (k = 1)** değerlerdir. Güncel değerler:
-> - RES KF %34,5 → %38,1
-> - RES P50 3.060 → 3.378 MWh/yıl, P90 2.766 → 3.080 MWh/yıl
-> - Hibrit P50 4.620 → 4.880 MWh/yıl, P90 4.316 → 4.582 MWh/yıl
-> - Hibrit kesinti %5,4 → %6,1
+> **Revizyon notu:** Bu belgedeki ana tablolar Aşama 1'in özgün (kalibrasyonsuz, k = 1) sonuçlarıdır
+> ve tarihsel kayıt olarak korunmuştur. Rüzgâr modeli Aşama 2'de iki kez revize edildi:
+> 1. sabit hız katsayısı k = 1,065,
+> 2. zaman hizalaması ve ay × saat hız katsayısı matrisi.
 >
-> Güncel tablolar `outputs/01_uretim_modeli/` altında; kalibrasyon öncesi P50/P90 tablosu
-> `p50_p90_ozet_k1.csv`. Ayrıca Aşama 2'de ERA5'in Ezine'deki öğleden sonra rüzgâr pikini
-> yakalayamadığı görüldü. Gözlenen gün içi şekille GES–RES saatlik korelasyonu −0,11 yerine +0,17,
-> hibrit kesinti %6 yerine %13 çıkıyor. Aşağıdaki "saatlik tamamlayıcılık" yorumları bu nedenle
-> iyimserdir; mevsimsel tamamlayıcılık geçerlidir.
+> Güncel sonuçlar ve neden değiştikleri için en sondaki **"Revizyon (Aşama 2)"** bölümüne bakın.
 
 ---
 
@@ -302,17 +295,55 @@ nedenleri de açıklanabilir durumda.
 
 ---
 
+## Revizyon (Aşama 2)
+
+### Ne bulundu?
+- **Ortalama:** ERA5 rüzgâr modeli Ezine'deki gerçek santral üretimiyle (EPİAŞ, Enerjisa Çanakkale RES) kalibre edildi. ERA5 hızı ortalamada ~%6,5 düşük tahmin ediyordu (sabit k = 1,065).
+- **Daha önemlisi, gün içi şekil:** Gözlenen üretim her gün **14–15 TSİ'de belirgin bir tepe** yapıyor (yaz aylarında en güçlü; kara ısınmasıyla oluşan deniz meltemi). Bu tepe üç bağımsız santralde de var: Enerjisa Çanakkale, Çamseki ve daha zayıf olarak İntepe. ERA5 ise tepeyi akşam 21 TSİ'de gösteriyor ve 13 TSİ'de bir asimilasyon çukuru var.
+- **Zaman damgası kontrolü:** ERA5 (anlık, HH:00), PVGIS (anlık, ~HH:10) ve EPİAŞ (saat başı etiketli saatlik ortalama) aynı [t, t+1) aralığına hizalandı. Hizalama tepeyi değiştirmedi; fark gerçek.
+
+### Neden Aşama 1'deki "saatlik tamamlayıcılık" sonucu iyimserdi?
+Aşama 1'de ERA5 rüzgârı gece ve akşam güçlü, öğleden sonra zayıf görünüyordu. Bu yüzden güneşle
+saatlik korelasyon negatif (−0,11) çıktı ve "rüzgâr güneşin olmadığı saatlerde esiyor" sonucuna
+varıldı. Gerçekte Ezine rüzgârı öğleden sonra, yani güneşin de güçlü olduğu saatlerde tepe yapıyor.
+Bu durumda:
+- iki kaynak aynı saatlerde üst üste biniyor,
+- ortak şebeke bağlantısında kesinti artıyor,
+- saatlik korelasyon pozitife dönüyor.
+
+**Mevsimsel tamamlayıcılık ise geçerli:** Rüzgâr kışın, güneş yazın güçlü.
+
+### Ne değişti? (`outputs/02_piyasa/revizyon_karsilastirma.csv`)
+
+| | Aşama 1 (k = 1) | Aşama 2 (sabit k) | **Revizyon (ay × saat k)** |
+|---|---|---|---|
+| RES KF (E-141, 120 m) | 34,5% | 38,1% | **37,7%** |
+| RES gün içi tepe saati (TSİ) | 21 | 21 | **15** |
+| GES–RES saatlik korelasyon | −0,11 | −0,11 | **+0,12** |
+| 1 MW RES P50 / P90 [MWh/yıl] | 3.060 / 2.766 | 3.378 / 3.080 | **3.328 / 3.057** |
+| Hibrit 1+1/1 P50 / P90 [MWh/yıl] | 4.620 / 4.316 | 4.880 / 4.582 | **4.652 / 4.390** |
+| Hibrit kesinti | 5,4% | 6,1% | **9,6%** |
+| Bağlantı kullanım oranı | 52,1% | 55,1% | **52,6%** |
+| Hibrit değişkenlik katsayısı | 4,2% | 4,0% | **3,7%** |
+
+- Önceki tablolar: `outputs/01_uretim_modeli/p50_p90_ozet_k1.csv` (Aşama 1) ve `outputs/revizyon_oncesi/` (Aşama 2, sabit k). Güncel tablolar: `outputs/01_uretim_modeli/`.
+- **Portföy yorumu (bölüm 6.3) hâlâ geçerli:** Hibrit, yıllar arası değişkenliği esas olarak karışım etkisi ve şebeke sınırının iyi yılları kırpmasıyla azaltıyor.
+- **Değişen kısım saatlik ölçek:** Bağlantıyı paylaşmanın bedeli (kesinti) yaklaşık 1,6 kat büyüdü. Bu, Aşama 4'te bataryanın ve GES/RES oranının boyutlandırılması için kritik.
+
+**Kalan sınırlamalar:**
+- Matris, 80 m'deki eski bir türbinle kurulup 120 m'deki E-141'e taşındı. Meltemin dikey yapısı farklı olabilir.
+- Matris ortalama şekli düzeltiyor, ama saatten saate oynaklığı tam düzeltemiyor. Gözlenen şekille kesinti %12,2, matrisli modelle %9,6. Gerçek kesinti muhtemelen ikisinin arasında, ya da biraz daha yüksek.
+
 ## Mülakat özeti
 
 > Türkiye'de dört aday sahayı hibrit güneş-rüzgâr projesi için taradım. Güneş tarafında AB'nin
 > PVGIS uydu verisini, rüzgâr tarafında ERA5 yeniden analiz verisini kullanıp pvlib ve gerçek bir
-> 4,2 MW türbin güç eğrisiyle 10 yıllık saatlik üretim profilleri çıkardım. Çanakkale-Ezine'yi
-> seçtim, çünkü rüzgâr kapasite faktörü %35 civarında, en iyiydi ve güneşle en güçlü
-> tamamlayıcılığı gösteriyordu: rüzgâr kışın ve gece, güneş yazın ve öğlen üretiyor. Bu sayede
-> 1 MW'lık aynı şebeke bağlantısına 1 MW güneş ve 1 MW rüzgâr bağladığımda üretimin sadece %5'i
-> kesiliyor ve bağlantı tek başına rüzgâra göre çok daha dolu kullanılıyor. Modelimi PVGIS'in kendi
-> hesabıyla %4 içinde doğruladım. ERA5'in karmaşık arazide rüzgârı düşük tahmin ettiğini bildiğim
-> için bir kalibrasyon katsayısı bıraktım; bunu EPİAŞ'taki gerçek santral üretimiyle ayarlayacağım.
-> İlginç bir bulgu da şuydu: saatlik ölçekte iki kaynak birbirini tamamlıyor, ama yıllar arasında
-> birlikte iyi ya da birlikte kötü gidiyorlar. Yani hibritin P90'ı iyileştirmesi çeşitlendirmeden
-> çok, şebeke sınırının iyi yılların fazlasını kırpmasından geliyor.
+> 4,2 MW türbin güç eğrisiyle 10 yıllık saatlik üretim profilleri çıkardım ve rüzgârı en güçlü olan
+> Çanakkale-Ezine'yi seçtim. Güneş modelimi PVGIS'in kendi hesabıyla %4 içinde doğruladım.
+> Rüzgârı ise sahanın yakınındaki gerçek bir rüzgâr santralinin EPİAŞ'taki saatlik üretimiyle
+> kalibre ettim. Bu adım ilk sonucumu değiştirdi: ERA5'e göre rüzgâr güneşin olmadığı saatlerde
+> esiyordu, ama gerçek veride öğleden sonra deniz meltemiyle tepe yapıyor ve güneşle aynı
+> saatlere denk geliyor. Bunu ay ve saat bazında bir hız düzeltmesiyle modele işledim ve dönem
+> bölerek çapraz doğruladım. Sonuçta 1 MW güneş ve 1 MW rüzgârın 1 MW bağlantıyı paylaşmasında
+> kesinti %6'dan yaklaşık %10'a çıktı. Mevsimsel tamamlayıcılık hâlâ güçlü, ama saatlik
+> çakışma, bataryanın ve kapasite oranının optimize edilmesini gerekli kılıyor.

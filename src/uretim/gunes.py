@@ -93,7 +93,8 @@ def gunes_kapasite_faktoru(veri: pd.DataFrame, meta: dict, cfg_gunes: dict,
                            sistem_kaybi: float | None = None,
                            inverter_yok: bool = False,
                            dc_dondur: bool = False,
-                           kirpma_kaybi_uygula: bool = True) -> pd.Series:
+                           kirpma_kaybi_uygula: bool = True,
+                           zaman_hizasi: str | None = None) -> pd.Series:
     """
     PVWatts yaklaşımıyla saatlik AC kapasite faktörü hesaplar (1 MW AC başına, 0-1).
 
@@ -102,6 +103,7 @@ def gunes_kapasite_faktoru(veri: pd.DataFrame, meta: dict, cfg_gunes: dict,
                             o durumda kayıp oranına inverter kaybı dahil edilmelidir)
         dc_dondur=True    → AC yerine kayıplar sonrası DC gücü döndürür (kırpma analizi için)
         kirpma_kaybi_uygula=False → config'teki ek kırpma kaybı (kirpma_kaybi) uygulanmaz
+        zaman_hizasi      → "aralik": [t, t+1) aralık ortalamasına enterpolasyon; "anlik": PVGIS anı
     """
     dc_ac = dc_ac_orani if dc_ac_orani is not None else deger(cfg_gunes["dc_ac_orani"])
     kayip = sistem_kaybi if sistem_kaybi is not None else deger(cfg_gunes["sistem_kaybi"])
@@ -144,6 +146,12 @@ def gunes_kapasite_faktoru(veri: pd.DataFrame, meta: dict, cfg_gunes: dict,
         p_ac = p_ac * (1 - deger(cfg_gunes["kirpma_kaybi"]))
 
     kf = pd.Series(np.asarray(p_ac, dtype=float), index=veri.index.floor("h"), name="ges_kf")
+
+    # --- Zaman hizası: PVGIS değerleri ~HH:10 UTC anındaki ANLIK değerlerdir. [t, t+1) aralığının
+    #     ortası HH:30 olduğu için HH:10 ve (HH+1):10 arasında doğrusal enterpolasyon: ⅔·P(t) + ⅓·P(t+1)
+    hiza = zaman_hizasi or deger(cfg_gunes.get("zaman_hizasi", {"value": "anlik"}))
+    if hiza == "aralik":
+        kf = (2 / 3) * kf + (1 / 3) * kf.shift(-1).fillna(0.0)
     return kf
 
 

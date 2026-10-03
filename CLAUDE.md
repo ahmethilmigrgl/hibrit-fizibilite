@@ -52,8 +52,9 @@ başvuru için hazırlanıyor. Sonuçlar, varsayımlar ve formülasyonlar mülak
    (capture price/rate), kanibalizasyon trendi, kur etkisi. ✅ Bkz. `docs/02_piyasa_analizi.md`.
    Rüzgâr kalibre edildi (k = 1,065). EPİAŞ istemcisi: `src/piyasa/epias.py` (TGT otomatik yenileme,
    önbellek, hata gövdesinde kullanıcı adı/IP yazdırılmaz).
-   **Açık iş (Aşama 4 öncesi):** ERA5 Ezine'de öğleden sonra rüzgâr pikini kaçırıyor → RES profiline
-   gözlenen santralden ay × saat şekil düzeltmesi uygulanması önerildi (kullanıcı kararı bekleniyor).
+   **Revizyon (yapıldı):** zaman hizası (tüm seriler [t, t+1) UTC aralık ortalaması) + ay × saat hız
+   katsayısı matrisi (`data/processed/ruzgar_k_ay_saat.parquet`, yöntem `ruzgar_kalibrasyon_yontemi`).
+   Öncesi/sonrası: `outputs/02_piyasa/revizyon_karsilastirma.csv`, eski çıktılar `outputs/revizyon_oncesi/`.
 3. **Finansal model:** nakit akışı, NPV, IRR, LCOE.
 4. **Optimizasyon:** GES/RES/BESS kapasite boyutlandırma + saatlik batarya dispatch + şebeke kısıtı
    ve curtailment içeren MILP; küçük modelden başlayıp adım adım büyüt, gerekirse temsilî günlerle

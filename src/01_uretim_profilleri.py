@@ -223,7 +223,11 @@ def main():
     CIKTI.mkdir(parents=True, exist_ok=True)
 
     print(f"Saha: {saha['ad']} ({saha['enlem']}, {saha['boylam']}), yıllar {y1}–{y2}")
-    print(f"RES hız kalibrasyon katsayısı: {deger(cfg['uretim']['ruzgar']['ruzgar_hiz_kalibrasyon_katsayisi'])}, "
+    cr = cfg["uretim"]["ruzgar"]
+    yontem = deger(cr["ruzgar_kalibrasyon_yontemi"])
+    kalib = (f"ay × saat matrisi ({deger(cr['k_matris_dosyasi'])})" if yontem == "ay_saat"
+             else f"sabit k = {deger(cr['ruzgar_hiz_kalibrasyon_katsayisi'])}")
+    print(f"RES kalibrasyonu: {kalib} | zaman hizası: {deger(cr['zaman_hizasi'])} | "
           f"GES ek kırpma kaybı: {deger(cfg['uretim']['gunes']['kirpma_kaybi']):.1%}")
 
     # 1) Profiller

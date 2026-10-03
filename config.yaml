@@ -45,6 +45,7 @@ uretim:
     inverter_nominal_verim: {value: 0.96, birim: "oran", kaynak: "NREL PVWatts v5 varsayılanı", not: "pvlib.inverter.pvwatts; çıkış AC nominal güçte kırpılır"}
     sicaklik_modeli: {value: "SAPM open_rack_glass_polymer", kaynak: "pvlib.temperature.sapm_cell", not: "Açık raflı, cam-polimer modül (saha GES'leri için tipik)"}
     iam_modeli:    {value: "ashrae b0=0.05", kaynak: "PVWatts v5", not: "Geliş açısı kaybı yalnızca direkt ışınıma uygulanır"}
+    zaman_hizasi:  {value: "aralik", secenekler: ["aralik", "anlik"], kaynak: "PVGIS kullanım kılavuzu (JRC): ışınım değerleri zaman damgasındaki (~HH:10 UTC) ANLIK değerdir", not: "aralik: [t, t+1) UTC saat aralığına (EPİAŞ tanımı) ⅔·P(t)+⅓·P(t+1) enterpolasyonu. Aşama 2 revizyonu"}
     kirpma_kaybi:  {value: 0.01, birim: "oran (yıllık AC enerjisi)", kaynak: "DC/AC 1.2 için literatürde tipik %0.5-2 aralığı", not: "Saatlik ortalama veri anlık ışınım tepelerini yumuşattığı için modelin hesapladığı kırpma (~%0.01-0.04) gerçeği yansıtmaz; bu sınırlamayı telafi etmek için AC üretime tek tip uygulanır"}
     dogrulama_kaybi_pvgis: {value: 0.14, birim: "oran", kaynak: "PVGIS varsayılanı", not: "PVGIS pvcalculation karşılaştırmasında kullanılan toplam kayıp (PVGIS tanımında inverter dahil)"}
 
@@ -57,6 +58,9 @@ uretim:
     kayma_ussu_sinirlari: {value: [0.0, 0.5], birim: "-", kaynak: "Proje kararı", not: "10 m-100 m'den hesaplanan saatlik kayma üssü bu aralığa kırpılır (çok düşük 10 m hızlarında sayısal patlamayı önlemek için)"}
     kayma_min_hiz_10m: {value: 1.0, birim: "m/s", kaynak: "Proje kararı", not: "10 m hızı bunun altındaysa kayma üssü için sahanın medyan üssü kullanılır"}
     referans_hava_yogunlugu: {value: 1.225, birim: "kg/m³", kaynak: "IEC 61400-12-1", not: "Güç eğrisi bu yoğunluğa göre verilmiştir"}
+    zaman_hizasi:  {value: "aralik", secenekler: ["aralik", "anlik"], kaynak: "ERA5 rüzgâr değişkenleri saat başı anlık değerdir; EPİAŞ üretimi saat başlangıcı etiketli saatlik ortalamadır", not: "aralik: hız ve yoğunluk (x_t + x_t+1)/2 ile [t, t+1) aralık ortalamasına çevrilir, güç eğrisi bu hıza uygulanır. Aşama 2 revizyonu"}
+    ruzgar_kalibrasyon_yontemi: {value: "ay_saat", secenekler: ["sabit", "ay_saat"], kaynak: "Aşama 2 revizyonu (src/02_ruzgar_kalibrasyonu.py)", not: "sabit: tek hız katsayısı (ruzgar_hiz_kalibrasyon_katsayisi); ay_saat: 12×24 hız katsayısı matrisi (k_matris_dosyasi), ERA5'in kaçırdığı öğleden sonra meltem pikini düzeltir. Matris yalnızca seçilen sahaya (Ezine) uygulanır"}
+    k_matris_dosyasi: {value: "data/processed/ruzgar_k_ay_saat.parquet", kaynak: "src/02_ruzgar_kalibrasyonu.py üretir", not: "Satır: ay (1-12), sütun: TSİ saati (0-23). Git'e girmez; kopyası outputs/02_piyasa/ruzgar_k_ay_saat.csv"}
     ruzgar_hiz_kalibrasyon_katsayisi: {value: 1.065, birim: "-", kaynak: "Aşama 2 kalibrasyonu (src/02_ruzgar_kalibrasyonu.py): Enerjisa Çanakkale RES (Ezine, 29.9 MW) 2014-2023 EPİAŞ gerçek zamanlı üretimi", not: "Göbek yüksekliği hızı güç eğrisine girmeden önce bu katsayıyla çarpılır. Referans santral ERA5'ten vekil türbinle (E-92/2350, 80 m) modellenip gözlenen ort. KF (%30.2) tutturuldu. Duyarlılık (vekil türbin/göbek): 0.91-1.12; Çamseki 1.07, İntepe 1.08, Sares 1.24. Değiştirince: .venv/bin/python src/01_uretim_profilleri.py"}
     toplam_kayip:  {value: 0.12, birim: "oran", kaynak: "Proje varsayımı; sektörde tipik %10-15", not: "İz (wake) + kullanılabilirlik + elektriksel kayıplar toplamı; brüt üretime uygulanır"}
 

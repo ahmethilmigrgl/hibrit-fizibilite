@@ -113,7 +113,9 @@ Yıllık ve aylık toplamlar bundan etkilenmez.
 
 ### 5.1 Yol A — Ezine'nin kendi profilleriyle (2014–2023, aynı yılın fiyatıyla)
 
-Profiller kalibre edilmiş (k = 1,065) Aşama 1 profilleri; hibrit = 1 MW GES + 1 MW RES, 1 MW
+> Bu bölümdeki tablolar **Aşama 2 (sabit k = 1,065)** değerleridir ve tarihsel kayıt olarak korunmuştur. GES değerleri revizyondan etkilenmedi. RES ve hibrit için revizyon sonrası değerler bölüm 6.5'te, tam tablolar `outputs/02_piyasa/yol_a_*.csv` dosyalarında (önceki sürüm `outputs/revizyon_oncesi/`).
+
+Profiller kalibre edilmiş Aşama 1 profilleri; hibrit = 1 MW GES + 1 MW RES, 1 MW
 bağlantı, satılan üretim (min(GES + RES, 1)).
 
 | Yıl | Ort. PTF [USD/MWh] | GES oranı | RES oranı | Hibrit oranı |
@@ -355,12 +357,71 @@ kullanıldı (`gun_ici_sekil_duyarliligi.csv`):
 - **Hibrit kesinti iki katına çıkıyor.** Gerçek rüzgâr öğleden sonra güneşle çakıştığı için saatlik tamamlayıcılık kayboluyor.
 - **Bu, Aşama 1'deki "saatlik tamamlayıcılık" sonucunu zayıflatıyor.** Mevsimsel tamamlayıcılık (kış rüzgârı, yaz güneşi) ise geçerli kalıyor.
 - **Yakalanma oranına etkisi küçük.**
-- **Öneri:** Aşama 4'ten önce RES profiline gözlenen santralden türetilen ay × saat şekil düzeltmesi uygulanmalı. Bu, hibrit kesinti ve batarya boyutu için kritik.
+- **Öneri:** Aşama 4'ten önce RES profiline gözlenen santralden türetilen ay × saat şekil düzeltmesi uygulanmalı. Bu, hibrit kesinti ve batarya boyutu için kritik. → **Uygulandı, bkz. 6.5.**
+
+## 6.5 Revizyon: zaman hizalaması ve ay × saat şekil düzeltmesi
+
+**Neden?** Bölüm 6.4'teki bulgu (ERA5 öğleden sonraki meltem pikini kaçırıyor) Aşama 4'teki batarya
+ve kapasite kararlarını doğrudan etkileyeceği için düzeltildi.
+
+**1) Zaman damgası uyumu** (`config.yaml → uretim.*.zaman_hizasi = "aralik"`)
+
+| Kaynak | Değerin anlamı | Hedef tanıma ([t, t+1) UTC ortalaması) dönüşüm |
+|---|---|---|
+| EPİAŞ üretim/fiyat | Saat başı etiketli saatlik ortalama/dönem | Değişiklik yok (referans tanım) |
+| ERA5 rüzgâr | HH:00 UTC anlık değer | Hız ve yoğunluk: (x_t + x_{t+1}) / 2, sonra güç eğrisi |
+| PVGIS ışınım | ~HH:10 UTC anlık değer ([JRC kılavuzu](https://joint-research-centre.ec.europa.eu/photovoltaic-geographical-information-system-pvgis/getting-started-pvgis/pvgis-user-manual_en)) | ⅔ · P(t) + ⅓ · P(t+1) (HH:30'a doğrusal enterpolasyon) |
+
+- **Doğrulama:** Hizalamadan sonra gözlenen ile model arasındaki saatlik korelasyon 0,764 → 0,769'a çıktı. Bir saatlik ek kaymada korelasyon hâlâ marjinal olarak daha yüksek (0,769 vs 0,764); bu, ERA5'in meltem zamanlamasından gelen bir fark, etiketleme hatası değil.
+- **14–15 TSİ tepesi hizalamadan sonra da duruyor.** Gözlenen tepe EPİAŞ verisinin kendisinde: Enerjisa 15 TSİ (KF %45 vs gece %22), Çamseki 14 TSİ (%42), İntepe 14–15 TSİ (%35, daha zayıf).
+
+**2) Ay × saat hız katsayısı matrisi** (`ruzgar_kalibrasyon_yontemi = "ay_saat"`)
+- Tek k yerine 12 × 24'lük bir k_ay,saat matrisi kuruldu. Her (ay, TSİ saati) hücresinde referans santral modelinin (E-92/2350, 80 m) ortalama KF'si gözlenene eşitlendi (kök bulma).
+- Düzeltme yine KF'ye değil **hıza** uygulanıyor; bu yüzden matris proje türbinine taşınabiliyor.
+- **Yumuşatma:** Komşu ay ve saatler arasında dairesel 3 × 3 ağırlıklı ortalama (Aralık↔Ocak, 23↔00), ardından toplam ortalama tek bir ölçekle yeniden eşlendi.
+- **Matris değerleri:** 0,82 (yaz geceleri) – 1,73 (Haziran–Eylül, 13–15 TSİ).
+- **Kayıt yeri:** Matris `data/processed/ruzgar_k_ay_saat.parquet` dosyasında, incelemek için kopyası `outputs/02_piyasa/ruzgar_k_ay_saat.csv`. Config yalnızca yöntemi seçiyor (`sabit` / `ay_saat`).
+
+**3) Çapraz doğrulama** (`kalibrasyon_capraz_dogrulama.csv`): Matris bir dönemde kuruldu, diğer dönemde test edildi.
+
+| Test dönemi | Yöntem | Saatlik korelasyon | Ay × saat RMSE [KF puanı] | Gün içi profil RMSE | Yıllık KF mutlak hata |
+|---|---|---|---|---|---|
+| 2019–23 (kurulum 2014–18) | Sabit k | 0,752 | 11,2 | 9,4 | 1,88 |
+| | **Ay × saat (yumuşak)** | **0,841** | **2,7** | **2,1** | 1,88 |
+| 2014–18 (kurulum 2019–23) | Sabit k | 0,775 | 10,3 | 8,6 | 1,81 |
+| | **Ay × saat (yumuşak)** | **0,847** | **2,5** | **1,9** | 1,79 |
+
+- **Matris örneklem dışında da çok daha iyi.** Hücre hatası ~4 kat azaldı, saatlik korelasyon +0,08 arttı.
+- **Yıllık hata değişmiyor.** Bu hata iki 5 yıllık dönemin rüzgâr seviyesi farkından geliyor, şekilden değil.
+- **Yumuşatma işe yarıyor:** Ham matristen biraz daha iyi sonuç veriyor, yani gürültüyü azaltıyor.
+
+**4) Sonuçlara etkisi** (`revizyon_karsilastirma.csv`; üç durum aynı kodla üretildi)
+
+| | Aşama 2: sabit k, anlık | Sabit k, aralık hizası | **Revizyon: ay × saat k** |
+|---|---|---|---|
+| RES KF | 38,1% | 38,1% | **37,7%** |
+| RES tepe saati (TSİ) | 21 | 21 | **15** |
+| GES–RES saatlik korelasyon | −0,11 | −0,11 | **+0,12** |
+| Hibrit kesinti (1+1 MW / 1 MW) | 6,1% | 5,9% | **9,6%** |
+| Hibrit P50 / P90 [MWh/yıl] | 4.880 / 4.582 | 4.889 / 4.591 | **4.652 / 4.390** |
+| RES yakalanma oranı 2014–23 ort. | 0,974 | 0,975 | 0,988 |
+| RES yakalanma oranı 2023 | 0,960 | 0,960 | 0,956 |
+| RES yakalanma oranı 2025 (uzantı) | 0,966 | 0,966 | **0,940** |
+| RES yakalanma oranı 2026 Oca–Eyl (uzantı) | 1,040 | 1,042 | **0,995** |
+| Hibrit yakalanma oranı 2025 (uzantı) | 0,929 | 0,928 | **0,916** |
+
+**Yorum:**
+- **Zaman hizalaması tek başına önemsiz.** Etkinin tamamı gün içi şekilden geliyor.
+- **RES'in yakalanma oranı dönemle birlikte yön değiştiriyor:**
+  - 2014–2018'de öğleden sonra saatleri talebin tepesi olduğu için pahalıydı; meltem piki rüzgârı ortalamanın biraz üstüne çıkarıyor.
+  - 2023'ten sonra güneş öğleden sonrayı ucuzlattıkça aynı pik **aleyhe** dönüyor: 2025'te 0,966 → 0,940, 2026'da 1,04 → 0,995.
+  - Yani Ezine rüzgârı da güneş kanibalizasyonundan **kısmen etkileniyor**. Bu, ileriye dönük fiyat varsayımlarında (Aşama 3) önemli.
+- **Kesinti belirgin büyüdü.** Matrisli model ortalama şekli düzeltse de saatlik oynaklığı tam yakalayamıyor; gözlenen şekille kesinti %12,2. Gerçek kesinti %10–12 aralığında olmalı.
 
 ## 7. Sınırlamalar
 
 1. **Ulusal güneş verisi yalnızca lisanslı GES'leri kapsıyor.** Kurulu güneşin %86'sı lisanssız. Bu yüzden ulusal güneş yalnızca şekil olarak kullanıldı ve Yol B 2019'dan başlıyor.
-2. **Gün içi rüzgâr şekli** (bkz. 6.4) şu an kalibre edilmemiş durumda; hibrit kesintisi muhtemelen olduğundan düşük gösteriliyor.
+2. **Gün içi rüzgâr şekli** ay × saat matrisiyle düzeltildi (bkz. 6.5). Ancak matris 80 m'de eski bir türbinle kuruldu ve 120 m'ye taşındı; saatten saate oynaklık tam yakalanamıyor (kesinti %9,6 model vs %12,2 gözlenen şekil).
 3. **Gözlenen santral verisi saf rüzgâr kaynağı değil.** Şebeke talimatları (YAL/YAT), kısıntılar ve kısa arızalar da içinde. Yalnızca ≥ 48 saatlik duruşlar ayıklandı; santral bazında YAT verisi kamuya açık değil.
 4. **Kalibrasyonda vekil türbin ve göbek yüksekliği varsayıldı.** Bunlardan kaynaklanan k belirsizliği 0,91–1,12.
 5. **Mikro yer seçimi etkisi büyük.** Aynı hücrede santral KF'leri %30–40 arasında değişiyor; tek bir k bu çeşitliliği temsil etmez.
@@ -389,14 +450,14 @@ kullanıldı (`gun_ici_sekil_duyarliligi.csv`):
 ## Mülakat özeti
 
 > EPİAŞ Şeffaflık Platformu'nun API'siyle 2014'ten bugüne saatlik elektrik fiyatlarını ve üretim
-> verilerini çektim; yaz saati geçişlerindeki çift ve eksik saatleri düzgün ele alıp her şeyi UTC'ye
-> çevirdim. Sonra seçtiğim sahada güneş, rüzgâr ve hibrit santralin piyasada ortalamaya göre hangi
-> fiyatı yakaladığını hesapladım. En çarpıcı bulgu güneşin kanibalizasyonu oldu: 2016'da güneş
-> ortalama fiyatın %20 üstünde satarken, kurulu güç 25 GW'a çıkınca 2025'te ortalamanın %18 altına,
-> 2026'da %29 altına indi. Aynı dönemde öğle ile akşam arasındaki fiyat farkı büyüdü, çok ucuz
-> saatlerin sayısı patladı; bu da bataryanın değerinin arttığını gösteriyor. Rüzgâr modelimi
-> Ezine'deki gerçek bir rüzgâr santralinin üretimiyle kalibre ettim: ERA5 hızı yaklaşık %6,5 düşük
-> tahmin ediyordu ve aynı katsayıyı bağımsız iki santral daha doğruladı. Kalibrasyon sırasında
-> ERA5'in öğleden sonraki deniz meltemi pikini kaçırdığını fark ettim; bunu düzeltince hibrit
-> kesinti oranı iki katına çıkıyor. Bu yüzden bataryayı boyutlandırmadan önce rüzgârın gün içi
-> şeklini de düzeltmeyi planlıyorum.
+> verilerini çektim; yaz saati geçişlerindeki çift ve eksik saatleri ele alıp her şeyi UTC'ye
+> çevirdim. Sonra sahamda güneş, rüzgâr ve hibrit santralin piyasada ortalamaya göre hangi fiyatı
+> yakaladığını hesapladım. En çarpıcı bulgu güneşin kanibalizasyonu oldu: 2016'da güneş ortalama
+> fiyatın %20 üstünde satarken, kurulu güç 25 GW'a çıkınca 2025'te ortalamanın %18 altına,
+> 2026'da %30 altına indi. Öğle ile akşam arasındaki fiyat farkı büyüdü, çok ucuz saatler patladı;
+> bu da bataryanın değerinin arttığını gösteriyor. Rüzgâr modelimi Ezine'deki gerçek santral
+> üretimiyle kalibre ederken ERA5'in öğleden sonraki deniz meltemi pikini kaçırdığını fark ettim.
+> Bunu ay ve saat bazında bir hız düzeltmesiyle giderdim ve dönem bölerek çapraz doğruladım; hata
+> dört kat azaldı. Bu düzeltmenin iki sonucu oldu: hibrit kesinti %6'dan %10'a çıktı ve rüzgârın
+> son yıllardaki yakalanma oranı da düştü, çünkü rüzgâr da artık ucuzlayan öğleden sonra saatlerinde
+> üretiyor.

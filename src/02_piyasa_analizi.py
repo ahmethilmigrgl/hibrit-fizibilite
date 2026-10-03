@@ -294,7 +294,7 @@ def main():
     olcekli = (d["gozlenen"] * d["res_kf"].mean() / d["gozlenen"].mean()).clip(upper=ust)
     d["gozlenen_sekil"] = olcekli * d["res_kf"].mean() / olcekli.mean()
     sekil = []
-    for ad, sutun in [("ERA5 modeli (k kalibreli)", "res_kf"), ("Gözlenen gün içi şekil (aynı ortalama)", "gozlenen_sekil")]:
+    for ad, sutun in [("ERA5 modeli (güncel kalibrasyon)", "res_kf"), ("Gözlenen gün içi şekil (aynı ortalama)", "gozlenen_sekil")]:
         top = d["ges_kf"] + d[sutun]; sat = top.clip(upper=1.0)
         yk = a.yakalanan_fiyat(ptf["ptf_usd"], pd.DataFrame({"res": d[sutun], "hibrit": sat}), "Y")
         yk = yk[yk["saat"] > 8000]

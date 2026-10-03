@@ -46,12 +46,15 @@ tamamlayıcılığı.
 
 | Ezine, 2014–2023 | 1 MW GES | 1 MW RES | 1+1 MW / 1 MW bağlantı |
 |---|---|---|---|
-| Ortalama kapasite faktörü | %20,6 | %38,1 | %55,1 (bağlantı kullanımı) |
-| P50 [MWh/yıl] | 1.815 | 3.378 | 4.880 |
-| P90 [MWh/yıl] (normal) | 1.741 | 3.080 | 4.582 |
-| Yıllar arası değişkenlik katsayısı | %2,6 | %6,1 | %4,0 |
+| Ortalama kapasite faktörü | %20,6 | %37,7 | %52,6 (bağlantı kullanımı) |
+| P50 [MWh/yıl] | 1.815 | 3.328 | 4.652 |
+| P90 [MWh/yıl] (normal) | 1.741 | 3.057 | 4.390 |
+| Yıllar arası değişkenlik katsayısı | %2,6 | %5,7 | %3,7 |
+| Hibrit kesinti | — | — | %9,6 |
 
-RES değerleri Aşama 2'de Ezine'deki gerçek santral üretimiyle kalibre edildi (ERA5 hız katsayısı 1,065).
+RES değerleri Aşama 2'de Ezine'deki gerçek santral üretimiyle kalibre edildi: ERA5'in kaçırdığı
+öğleden sonraki deniz meltemi pikini düzelten ay × saat hız katsayısı matrisi, dönem bölmeli
+çapraz doğrulamayla seçildi. Revizyonun etkisi: [docs/01, Revizyon](docs/01_uretim_modeli.md).
 
 ![Aylık kapasite faktörü](outputs/01_uretim_modeli/aylik_kapasite_faktoru.png)
 
@@ -64,8 +67,8 @@ ele alınarak UTC'ye çevrildi).
 | Yakalanma oranı (yakalanan / ortalama PTF, USD) | 2016 | 2023 | 2025 | 2026 (Oca–Eyl) |
 |---|---|---|---|---|
 | Ezine GES | 1,21 | 0,92 | 0,82* | 0,71* |
-| Ezine RES | 0,98 | 0,96 | 0,97* | 1,04* |
-| Ezine hibrit (1+1 MW / 1 MW) | 1,05 | 0,96 | 0,93* | 0,94* |
+| Ezine RES | 1,01 | 0,96 | 0,94* | 1,00* |
+| Ezine hibrit (1+1 MW / 1 MW) | 1,07 | 0,96 | 0,92* | 0,91* |
 | Türkiye güneş şekli | — | 0,90 | 0,83 | 0,75 |
 
 \* 2024 sonrası: 10 hava yılı × gerçek fiyat, eşzamanlılık düzeltmeli.

@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import pandas as pd
 
-from src.ayarlar import deger
+from src.ayarlar import KOK, deger
 from src.uretim import gunes, ruzgar
 
 
@@ -21,6 +21,7 @@ def saha_profilleri(kod: str, enlem: float, boylam: float, y1: int, y2: int,
         df   — indeks zaman_utc (saat başı, UTC); sütunlar:
                ges_kf, res_kf (ana türbin), res_kf_e126 (duyarlılık türbini),
                v100_ham, v_gobek_ham [m/s] (kalibrasyonsuz), hava_yogunlugu [kg/m³]
+               Zaman tanımı config'e bağlı (zaman_hizasi = "aralik" → her satır [t, t+1) UTC aralık ortalaması)
         bilgi — PVGIS meta verisi, ERA5 grid noktası, eksik saat sayısı
     """
     cg, cr = cfg["uretim"]["gunes"], cfg["uretim"]["ruzgar"]
@@ -28,9 +29,16 @@ def saha_profilleri(kod: str, enlem: float, boylam: float, y1: int, y2: int,
     isinim, meta = gunes.pvgis_isinim_indir(kod, enlem, boylam, y1, y2, cg)
     era5 = ruzgar.era5_coklu_yil(kod, enlem, boylam, y1, y2, cr)
 
+    # Kalibrasyon yöntemi: sabit k ya da ay × saat k matrisi (yalnızca seçilen saha için kurulmuştur)
+    k_matris = None
+    if deger(cr["ruzgar_kalibrasyon_yontemi"]) == "ay_saat":
+        if kod != deger(cfg["saha"]["kod"]):
+            raise ValueError("Ay × saat k matrisi yalnızca seçilen saha için kalibre edildi.")
+        k_matris = pd.read_parquet(KOK / deger(cr["k_matris_dosyasi"]))
+
     ges_kf = gunes.gunes_kapasite_faktoru(isinim, meta, cg)
-    res_kf, ara = ruzgar.ruzgar_kapasite_faktoru(era5, cr)
-    res_alt, _ = ruzgar.ruzgar_kapasite_faktoru(era5, cr, deger(cr["turbin_duyarlilik"]))
+    res_kf, ara = ruzgar.ruzgar_kapasite_faktoru(era5, cr, k_matris=k_matris)
+    res_alt, _ = ruzgar.ruzgar_kapasite_faktoru(era5, cr, deger(cr["turbin_duyarlilik"]), k_matris=k_matris)
 
     df = pd.concat([
         ges_kf.rename("ges_kf"),

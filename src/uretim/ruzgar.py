@@ -116,16 +116,37 @@ def turbin(model: str, cfg_ruzgar: dict, gobek: float | None = None) -> WindTurb
     return WindTurbine(turbine_type=model, hub_height=gobek or deger(cfg_ruzgar["gobek_yuksekligi"]))
 
 
+def aralik_ortalamasi(seri: pd.Series) -> pd.Series:
+    """
+    Anlık (saat başı) değerleri [t, t+1) saat aralığının ortalamasına çevirir: (x_t + x_{t+1}) / 2.
+    EPİAŞ verisi saat başlangıcı etiketli saatlik ortalama olduğu için ERA5 anlık değerleri bu
+    tanıma getirilir. Serinin son saati için sonraki değer olmadığından kendi değeri kullanılır.
+    """
+    return (seri + seri.shift(-1).fillna(seri)) / 2
+
+
+def tsi_ay_saat(indeks: pd.DatetimeIndex) -> tuple[np.ndarray, np.ndarray]:
+    """UTC indeksinden Türkiye saati (UTC+3, sabit) ay ve saat dizileri."""
+    tsi = indeks + pd.Timedelta(hours=3)
+    return np.asarray(tsi.month), np.asarray(tsi.hour)
+
+
 def ruzgar_kapasite_faktoru(df: pd.DataFrame, cfg_ruzgar: dict,
                             turbin_modeli: str | None = None, gobek: float | None = None,
-                            katsayi: float | None = None) -> tuple[pd.Series, pd.DataFrame]:
+                            katsayi: float | None = None, k_matris: pd.DataFrame | None = None,
+                            zaman_hizasi: str | None = None) -> tuple[pd.Series, pd.DataFrame]:
     """
     Saatlik RES kapasite faktörü (MW başına, 0-1, kayıplar düşülmüş).
 
     Opsiyonel argümanlar config'i geçersiz kılar (kalibrasyonda referans santrali kendi
-    türbini ve göbek yüksekliğiyle modellemek, katsayıyı taramak için).
+    türbini ve göbek yüksekliğiyle modellemek, katsayıyı taramak için):
+        katsayi      — sabit hız kalibrasyon katsayısı (verilmezse config)
+        k_matris     — 12 × 24 hız katsayısı matrisi (satır: ay 1-12, sütun: TSİ saati 0-23).
+                       Verilirse sabit katsayının yerine geçer. Yalnızca açıkça verildiğinde kullanılır.
+        zaman_hizasi — "aralik": hız ve yoğunluk [t, t+1) aralık ortalamasına çevrilir (EPİAŞ ile aynı
+                       tanım); "anlik": ERA5 saat başı anlık değerleri. Verilmezse config.
 
-    Döndürür: (kf serisi, ara hesaplar tablosu: hızlar, α, yoğunluk, brüt kf)
+    Döndürür: (kf serisi, ara hesaplar tablosu: hızlar, α, yoğunluk, katsayı, brüt kf)
     """
     model = turbin_modeli or deger(cfg_ruzgar["turbin_modeli"])
     t = turbin(model, cfg_ruzgar, gobek)
@@ -134,11 +155,21 @@ def ruzgar_kapasite_faktoru(df: pd.DataFrame, cfg_ruzgar: dict,
     ara = gobek_hizi(df, cfg_ruzgar, gobek)
     ara["yogunluk"] = hava_yogunlugu(df, cfg_ruzgar, gobek)
 
+    hiza = zaman_hizasi or deger(cfg_ruzgar.get("zaman_hizasi", {"value": "anlik"}))
+    if hiza == "aralik":
+        for s in ["v10", "v100", "v_gobek", "yogunluk"]:
+            ara[s] = aralik_ortalamasi(ara[s])
+
     # Kalibrasyon: ERA5'in hız sapmasını düzeltmek için hız güç eğrisinden önce ölçeklenir.
     # v_gobek ham (kalibrasyonsuz) hız olarak saklanır; v_kalibre güç eğrisine giren hızdır.
-    if katsayi is None:
-        katsayi = deger(cfg_ruzgar["ruzgar_hiz_kalibrasyon_katsayisi"])
-    ara["v_kalibre"] = ara["v_gobek"] * katsayi
+    if k_matris is not None:
+        ay, saat = tsi_ay_saat(ara.index)
+        ara["katsayi"] = k_matris.to_numpy()[ay - 1, saat]
+    else:
+        if katsayi is None:
+            katsayi = deger(cfg_ruzgar["ruzgar_hiz_kalibrasyon_katsayisi"])
+        ara["katsayi"] = katsayi
+    ara["v_kalibre"] = ara["v_gobek"] * ara["katsayi"]
 
     # IEC 61400-12 yoğunluk düzeltmesi: güç eğrisinin hız ekseni her saat için
     # o saatin yoğunluğuna göre kaydırılır (windpowerlib uygulaması)
