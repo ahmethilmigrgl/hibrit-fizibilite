@@ -102,7 +102,9 @@ teknoloji:
     verim_gidis_donus: {value: 0.87, birim: "oran", kaynak: "Lazard/NREL ATB: Li-ion (LFP) %85-88 AC-AC", not: "Aşama 4 dispatch modelinde kullanılacak"}
     yipranma:     {value: 0.02, birim: "kapasite oranı/yıl", kaynak: "LFP, ~1 döngü/gün: ilk yıllarda %2-3/yıl", not: "Augmentation ile telafi edilir"}
     augmentation: {value: {yillar: [8, 16], oran: 0.20, maliyet_dususu_yillik: 0.03}, birim: "işletme yılı; ilk enerji CAPEX'ine oran", kaynak: "Sektör pratiği (augmentation planları); maliyet düşüşü IRENA/BNEF trendinden muhafazakâr", not: "Her yenilemede ilk enerji CAPEX'inin %20'si × (1 − %3)^yıl"}
-    omur:         {value: 20, birim: "yıl", kaynak: "LFP 6.000+ döngü; augmentation ile 20 yıl", not: "Ömür sonunda yenileme yapılmaz (proje 30 yıl → BESS 20. yılda kapanır)"}
+    omur:         {value: 20, birim: "yıl", kaynak: "LFP 6.000+ döngü; augmentation ile 20 yıl", not: "Ömür sonunda yenileme (aşağıda) aktifse batarya proje sonuna kadar çalışır"}
+    yenileme:     {value: {aktif: true, maliyet_dususu_yillik: 0.03}, birim: "-", kaynak: "Aşama 4 kararı: optimizasyon ile ayrıntılı modelin 30 yıl boyunca tutarlı olması için", not: "Ömür sonunda (20. yıl) tam BESS CAPEX'i × (1 − %3)^20 ≈ %54 ile yenilenir"}
+    yipranma_maliyeti: {value: 6.0, birim: "USD/MWh deşarj", kaynak: "Hücre payı ~%55 × 110.000 USD/MWh ≈ 60.000 USD/MWh; LFP ~7.000 tam döngü → ~8,6 USD/MWh; takvimsel kısmı augmentation planıyla karşılandığı için ~%70'i → ~6 USD/MWh", not: "Dispatch'te döngü cezası ve finansal modelde değişken gider olarak kullanılır"}
   sebeke:
     capex:      {value: 120000, birim: "USD/MW bağlantı", kaynak: "Türkiye'de enerji iletim ve trafo merkezi maliyeti 100-300 bin USD/MW (sektör kaynakları, maliyeti.com.tr 2025); TEİAŞ bağlantı hattı mesafeye bağlı", not: "Trafo merkezi, şalt, iletim hattı. TEİAŞ kapasite tahsis yarışması katkı payı DAHİL DEĞİL (bkz. sınırlamalar)"}
     teias_kapasite_bedeli: {value: 3470, birim: "USD/MW bağlantı/yıl", kaynak: "EPDK 30/12/2025 tarih ve 14204 sayılı karar, 2026 iletim tarifeleri: Çanakkale = 2. bölge, üretim sistem kullanım 156.234,30 TL/MW-yıl ÷ ~45 TL/USD", not: "Reel USD'de sabit varsayıldı"}
@@ -117,6 +119,22 @@ fiyat_senaryolari:
   kanibalizasyon: {value: {varyant: "devam", taban_oran: 0.60, taban_yili: 2033}, birim: "güneş (Ezine GES) yakalanma oranı", kaynak: "Aşama 2 Yol B: Türkiye güneş yakalanma oranı 2023 0,90 → 2025 0,83 → 2026 0,75 (~-0,04/yıl); Avrupa'da yüksek güneş paylı pazarlarda (İspanya, Almanya) 0,6-0,7", not: "durur: şekil dönemindeki oran sabit kalır; devam: oran taban_yili'na kadar doğrusal olarak taban_oran'a iner, sonra sabit"}
   eszamanlilik_duzeltmesi: {value: {res: 0.048, hibrit: 0.027, ges: 0.0}, birim: "yakalanma oranı farkı", kaynak: "Aşama 2: hava yılları farklı fiyat yıllarıyla eşleştirildiğinde RES yakalanma oranı ~0,048 fazla çıkıyor (2021-23 aynı yıl karşılaştırması)", not: "Finansal modelde RES'e düşen satılan enerji gelirinden düşülür"}
   duzenleyici_tavan: {value: {aktif: false, isletme_yillari: [6, 7], tavan_carpani: 0.70}, birim: "yıllık ort. fiyatın katı", kaynak: "2022-23 AUF dönemi: yenilenebilir AUF / ort. PTF ≈ 0,55 (2022) - 0,85 (2023)", not: "Aktifse belirtilen işletme yıllarında satış fiyatı min(PTF, tavan_carpani × yıllık ort.) olur"}
+
+duzenleme:
+  sebekeden_sarj: {value: false, kaynak: "Elektrik Piyasasında Depolama Faaliyetleri Yönetmeliği (19.11.2022 değişikliği): üretim tesisine entegre depolama 'tesiste üretilen veya sistemden çekilen' enerjiyi depolayabilir; ancak sistemden çekilip geri verilen enerji teşvik/alım garantisi kapsamı dışında", not: "Uygulamada uzlaştırma ve lisans koşulları belirsiz → muhafazakâr varsayılan: kapalı (bkz. docs/04)"}
+  depolamali_tesis_modu: {value: false, kaynak: "Lisans Yönetmeliği (19.11.2022): depolamalı elektrik üretim tesisinde RES/GES elektriksel kurulu gücü / depolama kurulu gücü ≤ 1 ve üretim sisteme depolama ünitesi üzerinden verilir", not: "Aktifse BESS gücü ≥ (RES + GES) elektriksel kurulu güç kısıtı eklenir. Yeni başvurular Ekim 2023'te askıya alındı (durum belirsiz)"}
+  yardimci_kaynak_siniri: {value: {aktif: false, oran: 1.0}, kaynak: "Santral sahası belirleme usul ve esasları; EPDK 2 Kasım 2022 kararıyla RES ana kaynaklı tesislerde yardımcı kaynak kurulu güç sınırı kaldırıldı", not: "Diğer ana kaynaklarda 50 MW'a kadar yardımcı kaynak ≤ ana kaynak. Aktifse GES MWac ≤ oran × RES MW"}
+  cikis_siniri: {value: "baglanti", kaynak: "Depolama yönetmeliği: sisteme verilen enerji, lisanstaki elektriksel kurulu güçle yapılabilecek üretimi geçemez", not: "Modelde şebekeye verilen ≤ bağlantı kapasitesi (= elektriksel kurulu güç) olarak uygulanır"}
+
+optimizasyon:
+  turbin_gucu:      {value: 4.2, birim: "MW", kaynak: "E-141/4200 (Aşama 1)", not: "RES = türbin sayısı × 4,2 MW (tamsayı)"}
+  turbin_azami:     {value: 24, birim: "adet", kaynak: "Proje kararı (arazi/izin üst sınırı tahmini)", not: "≈ 100 MW"}
+  ges_azami_mw:     {value: 100, birim: "MWac", kaynak: "Tahmin: ~200 ha uygun arazi (Ezine tarım arazisi kısıtları)", not: "Arazi kısıtı"}
+  bess_sure_aralik: {value: [1, 6], birim: "saat", kaynak: "Kullanıcı tanımı; ticari LFP sistemleri 1-8 saat", not: "1·P ≤ E ≤ 6·P"}
+  temsili_gun_sayisi: {value: 24, birim: "küme", kaynak: "Proje kararı; tam yılla karşılaştırılarak doğrulanır", not: "k-means + medoid (gerçek gün)"}
+  basamak1_batarya: {value: {mw: 10, mwh: 40}, birim: "MW / MWh", kaynak: "Kullanıcı tanımı", not: "Basamak 1 arbitraj örneği"}
+  basamak2_batarya: {value: {mw: 20, mwh: 80}, birim: "MW / MWh", kaynak: "Proje kararı (4 saat, bağlantının %40'ı)", not: "Basamak 2 sabit hibrit + batarya örneği"}
+  mip_bosluk:       {value: 0.001, birim: "oran", kaynak: "HiGHS mip_rel_gap", not: "%0,1"}
 
 piyasa:
   ptf_kaynak: {value: "EPİAŞ Şeffaflık Platformu, /v1/markets/dam/data/mcp", kaynak: "seffaflik.epias.com.tr/electricity-service/technical/tr/index.html", not: "Saatlik PTF; TL, USD, EUR (USD/EUR: TCMB gösterge döviz alış kuru, EPİAŞ hesaplar)"}

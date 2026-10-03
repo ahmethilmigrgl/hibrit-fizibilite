@@ -1,0 +1,7 @@
+﻿Fiyat,Kanibalizasyon,Optimal karar,Optimal NPV [M USD],Kurulursa: türbin,RES [MW],GES [MWac],BESS [MW],BESS [MWh],Kurulursa NPV [M USD],Kesinti [%],BESS döngü/yıl
+Düşük (45),durur,Yatırım yapma,0.000,0,0.000,0.000,0.000,0.000,-6.048,0.000,0.000
+Düşük (45),devam,Yatırım yapma,0.000,0,0.000,0.000,0.000,0.000,-6.048,0.000,0.000
+Baz (58),durur,"RES 58.8 (14×4,2) + GES 0",0.366,14,58.800,0.000,-0.000,-0.000,0.366,4.202,0.000
+Baz (58),devam,Yatırım yapma,0.000,14,58.800,0.000,0.000,-0.000,-1.040,5.763,0.000
+Yüksek (72),durur,"RES 58.8 (14×4,2) + GES 5 + BESS 3/6",20.346,14,58.800,4.703,2.856,6.124,20.346,4.190,519.236
+Yüksek (72),devam,"RES 63.0 (15×4,2) + GES 0 + BESS 7/18",18.894,15,63.000,0.000,6.516,18.233,18.894,4.934,419.644

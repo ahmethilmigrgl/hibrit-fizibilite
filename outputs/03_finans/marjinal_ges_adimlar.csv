@@ -1,5 +1,5 @@
 ﻿Kanibalizasyon,Adım,ΔNPV / MW GES [M USD/MW],Eklenen GES enerjisinin kesilen payı [%],Bağımsız GES NPV / MW [M USD/MW]
-durur,(a) → (b),-0.1118,14.4792,-0.1820
-durur,(b) → (c),-0.2637,40.0804,-0.1820
-devam,(a) → (b),-0.2168,14.4792,-0.3126
-devam,(b) → (c),-0.3314,40.0804,-0.3126
+durur,(a) → (b),-0.1072,24.1232,-0.1766
+durur,(b) → (c),-0.2607,47.1271,-0.1766
+devam,(a) → (b),-0.2117,24.4219,-0.3059
+devam,(b) → (c),-0.3284,47.3168,-0.3059

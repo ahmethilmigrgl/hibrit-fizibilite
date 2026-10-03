@@ -1,0 +1,20 @@
+﻿,deger
+Bataryasız gelir [USD],12994625.31784546
+Bataryalı gelir [USD],14165391.431104586
+Ek gelir [USD],1170766.1132591255
+Yıpranma [USD],165640.6307930653
+Ek gelir − yıpranma [USD],1005125.4824660602
+Bataryasız kesinti [MWh],6142.681266824772
+Bataryalı kesinti [MWh],1112.0485359663749
+Kurtarılan kesinti [MWh],5030.632730858397
+Zamanda kaydırılan enerji (deşarj) [MWh],27606.771798844216
+Şarjın kesintiden gelen payı [%],15.853539514641975
+Yakalanan fiyat bataryasız [USD/MWh],63.74012683310232
+Yakalanan fiyat bataryalı [USD/MWh],69.1756254605487
+Eşdeğer tam döngü,345.0846474855527
+Şebeke dolu saat (bataryalı),1340.0
+Gölge fiyatı > 0 saat,1263.0
+Çözüm süresi [s],2.281463861465454
+Temsilî hava yılı,2015.0
+Gölge fiyat ort. (bağlayıcı saatler) [USD/MWh],14.609670249633691
+Gölge fiyat toplamı = 1 MW ek bağlantının yıllık değeri [USD/MW-yıl],18452.013525287355

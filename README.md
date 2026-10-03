@@ -26,6 +26,7 @@ cp .env.example .env   # CDS ve EPİAŞ bilgilerini doldurun
 .venv/bin/python src/02_ruzgar_kalibrasyonu.py # Aşama 2: rüzgâr kalibrasyonu (öneri k)
 .venv/bin/python src/02_piyasa_analizi.py     # Aşama 2: yakalanan fiyat, batarya göstergeleri
 .venv/bin/python src/03_finansal_model.py     # Aşama 3: NPV/IRR/LCOE, borç, duyarlılık
+.venv/bin/python src/04_optimizasyon.py       # Aşama 4: LP/MILP optimizasyon, senaryolar (~20 dk)
 ```
 
 ## Klasör yapısı
@@ -88,11 +89,11 @@ senaryosu), Türkiye'ye özgü TEİAŞ bedelleri, dengesizlik ve vergi; P90'a g�
 
 | 50 MW bağlantı, baz fiyat 58 $/MWh, kanibalizasyon devam | (a) RES 50 | (b) RES 50 + GES 25 | (c) RES 50 + GES 50 | (d) GES 50 |
 |---|---|---|---|---|
-| NPV [M$, %7 reel WACC] | −2,5 | −8,0 | −16,3 | −15,6 |
-| Proje IRR (reel) | 6,5% | 5,8% | 4,8% | 1,0% |
-| LCOE satılan enerji [$/MWh] | 50,5 | 50,1 | 52,1 | 51,3 |
-| Yakalanan fiyat [$/MWh] | 54,5 | 51,0 | 49,5 | 35,5 |
-| Kesinti | 0% | 2,2% | 8,1% | 0% |
+| NPV [M$, %7 reel WACC] | −2,1 | −7,4 | −15,6 | −15,3 |
+| Proje IRR (reel) | 6,6% | 5,9% | 4,9% | 1,1% |
+| Başabaş fiyat [$/MWh, reel] | 59,6 | 62,8 | 67,1 | 89,4 |
+| Yakalanan fiyat [$/MWh] | 57,8 | 55,2 | 54,1 | 41,9 |
+| Kesinti (ekonomik kesinti dahil) | 5,6% | 9,6% | 15,9% | 15,6% |
 
 - **En etkili değişkenler:** fiyat seviyesi, CAPEX ve WACC.
 - **Ek GES'in değeri azalıyor:** İkinci 25 MW'ın enerjisinin %40'ı kesiliyor. Bu da batarya ve kapasite optimizasyonunu (Aşama 4) gerekli kılıyor.
@@ -100,3 +101,22 @@ senaryosu), Türkiye'ye özgü TEİAŞ bedelleri, dengesizlik ve vergi; P90'a g�
 ![Konfigürasyon karşılaştırması](outputs/03_finans/konfigurasyon_karsilastirma.png)
 
 Ayrıntılar: [docs/03_finansal_model.md](docs/03_finansal_model.md) · Excel: `outputs/03_finans/nakit_akisi_b.xlsx`
+
+### Aşama 4 — Optimizasyon (Pyomo + HiGHS) ✅
+Batarya arbitrajı (LP) → hibrit + batarya dispatch ve şebeke gölge fiyatı (LP) → türbin sayısı
+tamsayı, yatırım kararı ikili kapasite MILP'i (tam yıl, 2 × 8.760 saat; temsilî günlerle karşılaştırıldı).
+
+| Senaryo (fiyat / kanibalizasyon) | Optimal karar | Kurulursa en iyi tasarım (50 MW bağlantı) | NPV [M$] |
+|---|---|---|---|
+| Düşük 45 | Yatırım yapma | — | — |
+| Baz 58 / devam | Yatırım yapma (sınırda) | RES 58,8 MW (14 türbin) | −1,0 |
+| Baz 58 / durur | Kur | RES 58,8 MW | +0,4 |
+| Yüksek 72 / devam | Kur | RES 63,0 + BESS 7 MW / 18 MWh | +18,9 |
+
+- **Asıl karar "kurmalı mı":** Tasarımlar arası pişmanlık ≤ 0,6 M$, yanlış yatırım kararının bedeli ~20 M$.
+- **Optimal tasarımın başabaş fiyatı 59,0 $/MWh** (b: 62,8).
+- **Bağlantının marjinal değeri** yüksek senaryoda MW başına ~0,38 M$; bu, TEİAŞ katkı payı için teklif tavanı.
+
+![Senaryolar](outputs/04_optimizasyon/b4_senaryo_tasarimlari.png)
+
+Ayrıntılar ve formülasyonlar: [docs/04_optimizasyon.md](docs/04_optimizasyon.md)

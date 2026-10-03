@@ -11,6 +11,21 @@ bataryasız konfigürasyonu üç fiyat seviyesi ve iki kanibalizasyon varyantı 
 | Çıktılar | `outputs/03_finans/*.png`, `*.csv`, `nakit_akisi_b.xlsx` |
 | Varsayımlar | `config.yaml` → `proje`, `finans`, `borc`, `teknoloji`, `fiyat_senaryolari` |
 
+> **Aşama 4 güncellemesi:** Optimizasyon modeliyle tutarlılık için finansal modele iki değişiklik eklendi.
+> Bu belgedeki tablolar özgün Aşama 3 değerleridir; güncel değerler `outputs/03_finans/` altında ve aşağıdaki tabloda.
+>
+> 1. **Ekonomik kesinti:** PTF, TEİAŞ enerji bedelinin (3,8 $/MWh) altındaysa santral satmaz.
+> 2. **Batarya kalemleri:** batarya geliri (kancadaki hata düzeltildi), 20. yılda yenileme ve 6 $/MWh kullanıma bağlı yıpranma maliyeti.
+>
+> | Baz / devam | (a) | (b) | (c) | (d) |
+> |---|---|---|---|---|
+> | NPV [M$] (önce → sonra) | −2,55 → **−2,14** | −7,97 → **−7,43** | −16,25 → **−15,64** | −15,63 → **−15,30** |
+> | Proje IRR | 6,5% → **6,6%** | 5,8% → **5,9%** | 4,8% → **4,9%** | 1,0% → **1,1%** |
+> | Kesinti (ekonomik kesinti dahil) | 0% → 5,6% | 2,2% → 9,6% | 8,1% → 15,9% | 0% → 15,6% |
+>
+> Sıralama ve sonuçlar değişmedi. Aşama 3 borç modelinin reel/nominal dönüşümü Aşama 4'te
+> bağımsız testlerle doğrulandı (bkz. `docs/04_optimizasyon.md`, Ön adımlar).
+
 ---
 
 ## 1. Çerçeve: neden reel USD?

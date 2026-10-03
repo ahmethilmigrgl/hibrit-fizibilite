@@ -1,0 +1,5 @@
+﻿Zaman temsili,Yatırım,N,RES [MW],GES [MWac],BESS [MW],BESS [MWh],BESS süresi [h],Amaç (yıllık eşdeğer) [M USD],NPV tahmini [M USD],Kesinti [%],BESS döngü/yıl,Çözüm süresi [s],MIP boşluğu,Çözücü durumu,Değişken sayısı,Kısıt sayısı
+12 temsilî gün,1,13,54.6000,0.0000,0.0000,0.0000,0.0000,-0.2081,-1.6919,4.6166,0.0000,0.2348,0.0000,TerminationCondition.optimal,1444,1730
+24 temsilî gün,1,13,54.6000,0.0000,-0.0000,0.0000,0.0000,-0.2083,-1.6935,5.0461,0.0000,0.4320,0.0000,TerminationCondition.optimal,2884,3458
+48 temsilî gün,1,13,54.6000,0.0000,-0.0000,0.0000,0.0000,-0.2462,-2.0014,4.0848,0.0000,0.9450,0.0000,TerminationCondition.optimal,5764,6914
+Tam yıl (2 × 8760 saat),1,14,58.8000,0.0000,0.0000,-0.0000,0.0000,-0.1279,-1.0397,5.7634,0.0000,34.1674,0.0000,TerminationCondition.optimal,87604,105122

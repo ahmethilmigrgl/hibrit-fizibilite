@@ -61,7 +61,11 @@ başvuru için hazırlanıyor. Sonuçlar, varsayımlar ve formülasyonlar mülak
    (net enjeksiyon dizisi, şekil (yıl, hava, şekil, 8760)) Aşama 4'te doldurulacak. Borç: `src/finans/borc.py`.
 4. **Optimizasyon:** GES/RES/BESS kapasite boyutlandırma + saatlik batarya dispatch + şebeke kısıtı
    ve curtailment içeren MILP; küçük modelden başlayıp adım adım büyüt, gerekirse temsilî günlerle
-   boyutu küçült.
+   boyutu küçült. ✅ Bkz. `docs/04_optimizasyon.md`. Modüller `src/optimizasyon/`
+   (batarya, hibrit + `dispatch_kancasi`, temsili_gunler, kapasite). Kapasite MILP'i: türbin sayısı tamsayı,
+   yatırım kararı ikili (`yatirim="serbest"|"zorunlu"`), seviyelendirilmiş fiyat + vergi düzeltmeli yıllıklandırma.
+   Ana sonuçlar tam yılla (≈36 s), ızgaralar 24 temsilî günle. Finansal modele ekonomik kesinti, batarya
+   yenilemesi ve yıpranma eklendi; başabaş fiyat `src/finans/metrikler.py`. Düzenleyici anahtarlar: `duzenleme.*`.
 5. **Risk simülasyonu:** Monte Carlo (hava yılı, fiyat, kur, CAPEX, batarya yıpranması), P50/P90,
    NPV/IRR dağılımları, tornado grafiği.
 6. **Streamlit dashboard, README, kısa rapor.**

@@ -81,6 +81,9 @@ class Varsayimlar:
     omur_bess: int
     augmentation: dict
     eszamanlilik_res: float
+    bess_yenileme: dict
+    bess_yipranma: float
+    ekonomik_kesinti: bool = True
     capex_carpani: float = 1.0
     res_uretim_carpani: float = 1.0
     ges_uretim_carpani: float = 1.0
@@ -104,6 +107,7 @@ class Varsayimlar:
             omur_ges=deger(t["ges"]["omur"]), omur_res=deger(t["res"]["omur"]), omur_bess=deger(t["bess"]["omur"]),
             augmentation=deger(t["bess"]["augmentation"]),
             eszamanlilik_res=deger(cfg["fiyat_senaryolari"]["eszamanlilik_duzeltmesi"])["res"],
+            bess_yenileme=deger(t["bess"]["yenileme"]), bess_yipranma=deger(t["bess"]["yipranma_maliyeti"]),
         )
 
 
@@ -116,8 +120,9 @@ class Sonuc:
     ozet: dict = field(default_factory=dict)
 
 
-# Batarya kancası: f(G, R, fiyat, konfig, varsayimlar) → net enjeksiyon B (aynı şekil: yıl × hava × şekil × saat)
-BessDispatch = Callable[[np.ndarray, np.ndarray, np.ndarray, Konfig, Varsayimlar], np.ndarray]
+# Batarya kancası: f(G, R, fiyat, konfig, varsayimlar) → (şebekeye verilen x, deşarj d, santralden şarj c),
+# her biri (yıl, hava, şekil, saat) şeklinde [MW]
+BessDispatch = Callable[[np.ndarray, np.ndarray, np.ndarray, Konfig, Varsayimlar], tuple]
 
 
 def _vergi_hesapla(matrah_oncesi: np.ndarray, oran: float, mahsup: int) -> np.ndarray:
@@ -152,32 +157,41 @@ def proje_degerle(konfig: Konfig | dict, v: Varsayimlar, fiyat: FiyatSenaryosu, 
     R = k.res_mw * v.res_uretim_carpani * deg_r[:, None, None] * uretim.res[None]
     P = fiyat.fiyatlar[:N]                                                                 # (N, S, 8760)
 
-    # Satış ve kesinti (fiyattan bağımsız → hava boyutunda); batarya kancası fiyata bağlı olabilir
+    # Satış ve kesinti. Ekonomik kesinti: fiyat < TEİAŞ enerji bedeli olan saatlerde satılmaz
+    # (santral bu saatlerde değişken maliyetinin altında satmak yerine üretimini keser).
     if bess_dispatch is not None and k.bess_mw > 0:
         Gx, Rx = G[:, :, None, :], R[:, :, None, :]
-        B = bess_dispatch(Gx, Rx, P[:, None, :, :], k, v)                                 # (N, W, S, 8760)
-        uretim_top = Gx + Rx + B
-        satilan = np.clip(uretim_top, 0, k.sebeke_mw)
-        pay_g = np.divide(Gx, Gx + Rx, out=np.zeros_like(uretim_top), where=(Gx + Rx) > 0)
-        gelir_brut = (satilan * P[:, None]).sum(-1).mean(axis=(1, 2))
-        sat_ges = (np.minimum(satilan, Gx + Rx) * pay_g).sum(-1).mean(axis=(1, 2))
-        sat_res = (np.minimum(satilan, Gx + Rx) * (1 - pay_g)).sum(-1).mean(axis=(1, 2))
-        gelir_ges = (np.minimum(satilan, Gx + Rx) * pay_g * P[:, None]).sum(-1).mean(axis=(1, 2))
-        gelir_res = (np.minimum(satilan, Gx + Rx) * (1 - pay_g) * P[:, None]).sum(-1).mean(axis=(1, 2))
-        enerji_sat = satilan.sum(-1).mean(axis=(1, 2))
-        kesilen = (np.clip(Gx + Rx + B, 0, None) - satilan).sum(-1).mean(axis=(1, 2))
+        # Kanca: (şebekeye verilen x, deşarj d, santralden şarj c), şekil (N, W, S, 8760)
+        x, d, c = bess_dispatch(Gx, Rx, P[:, None, :, :], k, v)
+        dogrudan = np.clip(x - d, 0, None)                            # santralden doğrudan satılan
+        pay_g = np.divide(Gx, Gx + Rx, out=np.zeros_like(x), where=(Gx + Rx) > 0)
+        Pb = P[:, None]
+        sat_ges = (dogrudan * pay_g).sum(-1).mean(axis=(1, 2))
+        sat_res = (dogrudan * (1 - pay_g)).sum(-1).mean(axis=(1, 2))
+        gelir_ges = (dogrudan * pay_g * Pb).sum(-1).mean(axis=(1, 2))
+        gelir_res = (dogrudan * (1 - pay_g) * Pb).sum(-1).mean(axis=(1, 2))
+        gelir_bess = (d * Pb).sum(-1).mean(axis=(1, 2))
+        desarj = d.sum(-1).mean(axis=(1, 2))
+        enerji_sat = x.sum(-1).mean(axis=(1, 2))
+        kesilen = np.clip(Gx + Rx - dogrudan - c, 0, None).sum(-1).mean(axis=(1, 2))
+        bess_sat = desarj
     else:
         top = G + R
-        satilan = np.minimum(top, k.sebeke_mw)                                             # (N, W, 8760)
+        tavan = np.minimum(top, k.sebeke_mw)                                               # (N, W, 8760)
         pay_g = np.divide(G, top, out=np.zeros_like(top), where=top > 0)
-        sg, sr = satilan * pay_g, satilan * (1 - pay_g)
-        # Gelir: hava × şekil ortalaması = einsum ile (N, W, 8760) × (N, S, 8760)
-        gelir_ges = np.einsum("nwt,nst->n", sg, P) / (sg.shape[1] * P.shape[1])
-        gelir_res = np.einsum("nwt,nst->n", sr, P) / (sr.shape[1] * P.shape[1])
-        gelir_brut = gelir_ges + gelir_res
-        sat_ges, sat_res = sg.sum(-1).mean(1), sr.sum(-1).mean(1)
-        enerji_sat = satilan.sum(-1).mean(1)
-        kesilen = (top - satilan).sum(-1).mean(1)
+        S = P.shape[1]
+        gelir_ges = gelir_res = sat_ges = sat_res = enerji_sat = kesilen = 0.0
+        for s_ in range(S):
+            satis_var = (P[:, s_] > v.teias_enerji)[:, None, :] if v.ekonomik_kesinti else True
+            satilan = tavan * satis_var
+            sg, sr = satilan * pay_g, satilan * (1 - pay_g)
+            gelir_ges = gelir_ges + (sg * P[:, s_][:, None]).sum(-1).mean(1) / S
+            gelir_res = gelir_res + (sr * P[:, s_][:, None]).sum(-1).mean(1) / S
+            sat_ges = sat_ges + sg.sum(-1).mean(1) / S
+            sat_res = sat_res + sr.sum(-1).mean(1) / S
+            enerji_sat = enerji_sat + satilan.sum(-1).mean(1) / S
+            kesilen = kesilen + (top - satilan).sum(-1).mean(1) / S
+        gelir_bess = desarj = bess_sat = np.zeros(N)
     uretim_ges = G.sum(-1).mean(1)
     uretim_res = R.sum(-1).mean(1)
     ort_fiyat = P.mean(axis=(1, 2))
@@ -187,8 +201,9 @@ def proje_degerle(konfig: Konfig | dict, v: Varsayimlar, fiyat: FiyatSenaryosu, 
     esz = v.eszamanlilik_res * ort_fiyat * sat_res
     gelir_ges = gelir_ges * gelir_carpani
     gelir_res = (gelir_res - esz) * gelir_carpani
+    gelir_bess = gelir_bess * gelir_carpani
     sat_ges, sat_res, enerji_sat = sat_ges * gelir_carpani, sat_res * gelir_carpani, enerji_sat * gelir_carpani
-    gelir = gelir_ges + gelir_res
+    gelir = gelir_ges + gelir_res + gelir_bess
     dengesizlik = v.dengesizlik["ges"] * gelir_ges + v.dengesizlik["res"] * gelir_res
 
     # ------------------------------------------------------------- maliyetler
@@ -202,24 +217,29 @@ def proje_degerle(konfig: Konfig | dict, v: Varsayimlar, fiyat: FiyatSenaryosu, 
     capex_top = sum(capex.values())
     aktif_g = yil_isl <= v.omur_ges
     aktif_r = yil_isl <= v.omur_res
-    aktif_b = yil_isl <= v.omur_bess
+    yenile = v.bess_yenileme["aktif"] and k.bess_mwh > 0 and v.omur_bess < N
+    aktif_b = np.ones(N, bool) if yenile else (yil_isl <= v.omur_bess)
     opex_ges = (v.opex_ges + v.arazi_ges) * k.ges_mw * aktif_g
     opex_res = (v.opex_res + v.arazi_res) * k.res_mw * aktif_r
     opex_bess = v.opex_bess_oran * capex["bess"] * aktif_b
     sigorta = v.sigorta_oran * capex_top * np.ones(N)
     teias = v.teias_kapasite * k.sebeke_mw * np.ones(N) + v.teias_enerji * enerji_sat
-    opex = opex_ges + opex_res + opex_bess + sigorta + teias
+    yipranma = v.bess_yipranma * desarj                                   # kullanıma bağlı batarya yıpranması
+    opex = opex_ges + opex_res + opex_bess + sigorta + teias + yipranma
 
     aug = np.zeros(N)
     if k.bess_mwh > 0:
         a = v.augmentation
-        for y in a["yillar"]:
-            if y <= min(N, v.omur_bess):
-                aug[y - 1] = a["oran"] * k.bess_mwh * v.capex_bess_enerji * cc * (1 - a["maliyet_dususu_yillik"]) ** y
+        yillar = list(a["yillar"]) + ([y + v.omur_bess for y in a["yillar"]] if yenile else [])
+        for y in yillar:
+            if y <= N and (yenile or y <= v.omur_bess) and y != v.omur_bess:
+                aug[y - 1] += a["oran"] * k.bess_mwh * v.capex_bess_enerji * cc * (1 - a["maliyet_dususu_yillik"]) ** y
+        if yenile:   # ömür sonunda tam yenileme (maliyet düşüşüyle)
+            aug[v.omur_bess - 1] += capex["bess"] * (1 - v.bess_yenileme["maliyet_dususu_yillik"]) ** v.omur_bess
     sokum = np.zeros(N)
     sokum[min(N, v.omur_ges) - 1] += v.sokum["ges"] * k.ges_mw
     sokum[min(N, v.omur_res) - 1] += v.sokum["res"] * k.res_mw
-    sokum[min(N, v.omur_bess) - 1] += v.sokum["bess"] * k.bess_mwh
+    sokum[(N if yenile else min(N, v.omur_bess)) - 1] += v.sokum["bess"] * k.bess_mwh
 
     favok = gelir - dengesizlik - opex
 
@@ -265,11 +285,13 @@ def proje_degerle(konfig: Konfig | dict, v: Varsayimlar, fiyat: FiyatSenaryosu, 
         "GES üretim [MWh]": uretim_ges, "RES üretim [MWh]": uretim_res,
         "Kesilen [MWh]": kesilen, "Satılan [MWh]": enerji_sat,
         "Ort. PTF [USD/MWh]": ort_fiyat,
-        "GES geliri [USD]": gelir_ges, "RES geliri [USD]": gelir_res,
+        "GES geliri [USD]": gelir_ges, "RES geliri [USD]": gelir_res, "BESS geliri [USD]": gelir_bess,
+        "BESS deşarj [MWh]": desarj, "BESS'ten satılan [MWh]": bess_sat,
         "Eşzamanlılık düzeltmesi [USD]": -esz * gelir_carpani, "Toplam gelir [USD]": gelir,
         "Dengesizlik [USD]": -dengesizlik, "İşletme-bakım + arazi [USD]": -(opex_ges + opex_res + opex_bess),
+        "BESS yıpranma [USD]": -yipranma,
         "Sigorta [USD]": -sigorta, "TEİAŞ bedelleri [USD]": -teias, "FAVÖK [USD]": favok,
-        "Amortisman [USD]": -amort, "Augmentation [USD]": -aug, "Söküm [USD]": -sokum,
+        "Amortisman [USD]": -amort, "BESS augmentation + yenileme [USD]": -aug, "Söküm [USD]": -sokum,
         "Vergi [USD]": -vergi, "Serbest nakit akışı [USD]": favok - vergi - aug - sokum,
     })
     sat_top = enerji_sat.sum()

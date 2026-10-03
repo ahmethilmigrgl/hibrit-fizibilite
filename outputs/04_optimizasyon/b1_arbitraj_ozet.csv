@@ -1,0 +1,17 @@
+﻿,deger
+Amaç (gelir − yıpranma) [USD],408143.3784167279
+Net arbitraj geliri [USD],505967.41094932094
+Yıpranma maliyeti [USD],97824.03253259079
+Deşarj [MWh],16304.005422098464
+Şarj [MWh],18740.236117354558
+Eşdeğer tam döngü,407.6001355524616
+Ort. şarj fiyatı [USD/MWh],43.908000681829
+Ort. deşarj fiyatı [USD/MWh],81.50228589636544
+Aynı saatte şarj ve deşarj (saat),0
+Çözüm süresi [s],0.6053481101989746
+Değişken / kısıt sayısı,26280 / 8761
+"Üst sınır: günde 1 döngü, kayıpsız [USD]",589283.2999999999
+"Günde 1 döngü, verim + yıpranma [USD]",358357.988
+>1 döngü yapılan gün,229
+Hiç çalışmayan gün,6
+Gelir / kW-yıl [USD],40.81433784167279
