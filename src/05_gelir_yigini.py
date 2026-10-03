@@ -88,7 +88,7 @@ class Ortam:
         r.pop("model", None)
         return r
 
-    def tablo(self, t: Tasarim):
+    def tablo(self, t: Tasarim, A_ozel=None):
         """
         İşletme tablosu (diskte önbellekli: data/processed/isletme_tablolari/). Bataryasız tasarım kapalı formla
         ince ızgarada; bataryalı tasarım LP ile daha seyrek ızgarada hesaplanır (hata Bölüm B'de ölçülür).
@@ -98,7 +98,7 @@ class Ortam:
         if pil:
             H = [0.55, 0.62, 0.70, round(self.oran0, 4)]
             M = [0.80, 0.94, 1.08]
-            A = [0.25, 0.6, 1.0] if t.yan_hizmet else [1.0]
+            A = (A_ozel or [0.25, 0.6, 1.0]) if t.yan_hizmet else [1.0]
         else:
             H, M, A = self.H, [0.78, 0.82, 0.86, 0.90, 0.94, 0.98, 1.02, 1.06, 1.10], [1.0]
         pp = [0.0, self.c.ppa_pay] if t.ppa else [0.0]
@@ -116,7 +116,7 @@ class Ortam:
     def beklenen_girdi(self, L=58.0, taban=None, n=1, w=None):
         N = self.v.omur
         h = h_yolu(self.cfg, self.yillar, self.kan_taban if taban is None else taban, self.oran0)
-        a = a_yolu(self.yillar, self.yh_azalma, self.yh_taban)
+        a = a_yolu(self.yillar, self.yh_azalma, self.yh_taban) if getattr(self, "a_ozel", None) is None else self.a_ozel
         girdi = {"h": np.tile(h, (n, 1)), "m": np.ones((n, N)), "a": np.tile(a, (n, 1)), "L": np.full((n, N), L),
                  "tavan": np.zeros((n, N), bool), **{k: np.ones(n) for k in ["capex_res", "capex_ges", "capex_bess", "opex", "bozunma"]}}
         if w is None:

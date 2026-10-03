@@ -4,6 +4,11 @@ Kod: `src/05_gelir_yigini.py` (Bölüm A), `src/05_monte_carlo.py` (Bölüm B), 
 `src/risk/` (`isletme.py`, `degerleme.py`, `senaryo.py`, `monte_carlo.py`). Tüm çıktılar `outputs/05_risk/`.
 Tüm parasal değerler **reel 2026 USD**, iskonto %7 reel WACC.
 
+> **Revizyon (Aşama 6, stres testi):** §5 ve §7'deki Monte Carlo sonuçları ve öneri, SFK fiyatının zamanla sabit bir
+> hızda düştüğü varsayımına dayanıyordu. §9'daki doyum stres testi bu varsayımı piyasa yapısına bağladı ve **öneriyi
+> değiştirdi**. §5–§7 "revizyon öncesi" olarak saklandı (dosyalar: `outputs/05_risk/revizyon_oncesi/`). Güncel sonuç ve
+> öneri: **§9**.
+
 ---
 
 ## 1. Araştırma bulguları (A1)
@@ -174,7 +179,7 @@ ortalama NPV'nin standart hatası ≈ 0,15 M$.
 
 ---
 
-## 5. Sonuçlar (B3)
+## 5. Sonuçlar (B3) — revizyon öncesi (SFK doyumu modellenmeden)
 
 `outputs/05_risk/b_metrikler.csv`
 
@@ -280,7 +285,7 @@ ailesi **yan hizmet fiyatının geleceği** (D'de toplam %25).
 
 ---
 
-## 7. Mülakat özeti
+## 7. Mülakat özeti (revizyon öncesi; güncel hâli §9.8)
 - **Problem:** Ezine'de 50 MW bağlantıya ne kurulmalı? Aşama 4'te yalnız RES 58,8 MW çıktı ama NPV ≈ 0 ve başabaş
   fiyat 59 $/MWh — "kurmalı mı" sorusu açıktı.
 - **Bölüm A:** EPİAŞ'tan 2023–26 SFK/PFK kapasite fiyatlarını çektim, TEİAŞ'ın depolama katılım kurallarını
@@ -301,6 +306,233 @@ ailesi **yan hizmet fiyatının geleceği** (D'de toplam %25).
 
 ---
 
+## 9. Stres testi: SFK piyasasının doyumu (Aşama 6)
+
+Kod: `src/05_stres_testi.py`, `src/risk/doyum.py`; parametreler `config.yaml → stres_testi`; çıktılar `outputs/05_risk/s_*`.
+
+**Neden?** Aşama 5'te NPV artışının ~%87'si SFK gelirinden geliyordu ve SFK fiyatının düşüş hızı bir tahmindi
+(yılda %15, tabanı 2026'nın %25'i). SFK ihtiyacı ~950 MW iken 28–33 GW depolamalı ön lisans var; bunların küçük bir
+kısmı bile kurulsa piyasa doyar. %97'lik başarı olasılığı büyük ölçüde bizim varsaydığımız dağılımı yansıtıyordu.
+
+### 9.1 Başka ülkelerde ne oldu? (kalibrasyon)
+
+| Piyasa | Ne oldu | Hız | Kaynak |
+|---|---|---|---|
+| **İngiltere — Dynamic Containment** | Eyl 2020–Eki 2021 £17/MW/h tavanında; batarya filosu ihtiyacı aşınca Haz→Eyl 2022 DC-Low −%50; Mayıs 2023'te DC-Low £1,37, DC-High £3,95 (−%77 ile −%92). Uygun batarya 2.229 MW, ihtiyaç 1.099 MW (~2 kat). Doyum sonrası fiyatı hizmetin maliyeti (£0,5–1,5) değil, diğer piyasalardaki **fırsat maliyeti** belirliyor (~£5). | Düşüşün başlangıcından tabana ~1,5–2 yıl | [Modo Energy](https://modoenergy.com/research/en/battery-energy-storage-revenue-benchmark-may-2023), [Modo: post-saturation](https://modoenergy.com/research/en/dynamic-containment-low-prices-post-saturation), [Timera](https://timera-energy.com/blog/gb-batteries-confront-ancillary-saturation/) |
+| **Almanya — FCR** | Ocak 2023'te ön yeterlilikli batarya 630 MW, Alman FCR ihtiyacı 570 MW (~1,1 kat); 1 MW'ın yıllık FCR geliri 2022 ~€180 bin → 2023 ~yarısı. Bugün ~1,5 GW batarya / 500–600 MW ihtiyaç (~3 kat): "esasen doymuş". | ~1 yılda −%45 | [GEM Energy Analytics](https://gemenergyanalytics.substack.com/p/focus-on-european-power-reserves), [Capstone DC](https://capstonedc.com/insights/europes-battery-storage-edge/) |
+| **Avustralya — FCAS** | Kontenjan FCAS gelirleri 2020'den beri düşüyor; 2023 sonu–2024'te çöktü. FCAS'ın batarya gelirindeki payı Q2 2023 %50 → Q2 2026 %7. | ~2–3 yıl | [WattClarity](https://wattclarity.com.au/articles/2026/02/who-killed-fcas/), [Energy Insights](https://blog.energy-insights.com.au/fcas-revenues-are-drying-up.-what-happens-now) |
+
+**Ortak desen:** Uygun batarya kapasitesi ihtiyaca yaklaşınca fiyat düşmeye başlıyor, ihtiyacın ~2–3 katında
+fırsat maliyetine iniyor; bu geçiş 1–3 yıl sürüyor.
+
+**Türkiye'de durum:** EPDK verisine göre işletmedeki depolama ~208 MW, lisanslı 1.070 MW (2025). EDEDER 2026'da
+1.500 MWh (~750 MW) devreye alma bekliyor; sektör beklentisi 2–3 GW. ETKB hedefi 2030'da 2,1 GW, 2035'te 9,3 GW.
+Depolamalı ön lisans 33 GW (Haziran 2025) → 28 GW (Temmuz 2026). ETKB 2026'nın ilk yarısında 122 projede 5.023 MW
+depolama onayladı. Ön lisansların ortalama depolama süresi ~1,1 saat. Kaynaklar: [Dünya](https://www.dunya.com/ekonomi/2026da-1500-megavatsaat-elektrik-depolama-kapasitesi-devreye-alinacak-haberi-805196),
+[Enerji Bülteni](https://www.enerjibulteni.com/2026/09/21/enerji-depolama-da-28-bin-mwi-asan-kapasite-yeni-yatirim-gundemini-sekillendiriyor/),
+[Forbes Türkiye](https://www.forbes.com.tr/dergi/gundem-2025-depolama-kapasitesi), [Yeşil Haber](https://yesilhaber.net/turkiye-uzun-sureli-enerji-depolama-acigi/),
+[Elektrikport](https://www.elektrikport.com/haber-roportaj/turkiye-enerji-depolama-analiz-raporu-2025/24661).
+
+### 9.2 Doyum modeli (arz-talep)
+
+$$D_t = 950\cdot1{,}03^{\,t-2026},\qquad x_t = \frac{\theta\cdot \text{Kurulu}_t}{D_t}$$
+
+$$p_t = \begin{cases} p_0 & x_t \le 0{,}8 \\ c_b + (p_0 - c_b)\,\dfrac{2 - x_t}{2 - 0{,}8} & 0{,}8 < x_t < 2 \\ c_b & x_t \ge 2 \end{cases}$$
+
+- **Talep:** SFK ihtiyacı $D_t$ (EPİAŞ ortalaması, yılda %3 büyüme — TAHMİN).
+- **Arz:** Bataryalar fırsat maliyetiyle ($c_b$) teklif verir, kalan ihtiyacı geleneksel santraller karşılar ve bugünkü
+  fiyatı ($p_0$ = 2026 seviyesi 47,7 $/MW-saat) onlar belirler. Batarya payı arttıkça marjinal geleneksel teklif
+  aşağı kayar (doğrusal arz eğrisi). $\theta$: kurulu bataryanın SFK'ya teklif veren payı (iletime bağlı ≥30 MW + AGC
+  şartı; 0,35–0,65).
+- **Eşikler** İngiltere ve Almanya'dan: düşüş ~0,8 katında başlar (Almanya 1,1 katında −%45), 2 katında tabana iner
+  (İngiltere ~2 kat).
+- **Fırsat maliyeti ($c_b$):** Doymuş piyasada fiyatı marjinal batarya belirler. Tipik Türk bataryası (~1,1 saat,
+  şebekeden şarj) SFK'ya rezerv ayırınca arbitraj kârından vazgeçer. Aşama 4'ün arbitraj LP'si iki fiyat şekli yılıyla
+  çözüldü: 1 saatlik **2,16**, 2 saatlik **3,66 $/MW-saat** → $c_b$ = **2,31 $/MW-saat = 2026 seviyesinin %4,8'i**
+  (Monte Carlo'da ×0,7–1,5). İngiltere'de doyum sonrası DC-Low ~%8 seviyesinde kaldı; bizimki biraz muhafazakâr.
+- **Projenin kendi bataryası** santralden şarj olduğu için çok az arbitraj değeri var: fırsat maliyeti yalnızca
+  0,10 $/MW-saat. Yani fiyat tabana inse de SFK'da kalmak onun için doğru ("inframarjinal" sağlayıcı).
+
+**Senaryolar** (kurulu batarya yol haritası, `s_sfk_carpan_yollari.csv`):
+
+| Senaryo | Olasılık | Kurulu batarya | SFK fiyatı tabana iniyor | Gerekçe |
+|---|---|---|---|---|
+| Yavaş doyum | %25 | 2026: 0,6 GW → 2030: 2,1 GW → 2035: 9,3 GW | ~2033 | Resmî ETKB hedef hızı; lisans, şebeke ve finansman gecikmeleri |
+| Baz doyum | %40 | 2026: 1 GW → 2028: 3 GW → 2030: 6 GW | **2029** | Ön lisansların ~%20'si 2030'a kadar; 2026'da 5 GW onay ve EDEDER beklentisi |
+| Hızlı doyum | %20 | 2026: 2,5 GW → 2027: 5 GW | 2028 (devreye almadan önce) | Sektörün 2026 beklentisinin üst ucu; İngiltere hızı |
+| SFK'ya katılamama | %15 | — | Hiç gelir yok | TEİAŞ hibrit tesisteki bataryayı 50 MW bağlantı içinde kabul etmez |
+
+Olasılıklar TAHMİN. Baz senaryoya en yüksek ağırlık, çünkü 2026'daki onay ve devreye alma verileri bu hızla uyumlu.
+"Katılamama" için %15: usul ve esaslar depolamaya izin veriyor ama tek bağlantı içinde hibrit tesis için emsal yok.
+Senaryo içinde takvim ±1 yıl, $\theta$ ve $c_b$ belirsiz.
+
+![Doyum senaryoları](../outputs/05_risk/s_doyum_senaryolari.png)
+
+### 9.3 Fırsat penceresi (A2)
+
+SFK geliri ilk N işletme yılı 2026 seviyesinde sürer, sonra tabana iner. Deterministik, baz fiyat 58 $/MWh
+(`s_pencere.csv`, `s_minimum_pencere.csv`).
+
+| Tasarım | N=0 | N=2 | N=3 | N=5 | N=7 | N=10 | Min. N: NPV ≥ 0 | Min. N, taban 0 olsa |
+|---|---|---|---|---|---|---|---|---|
+| C: RES + BESS 40/70 | −1,0 | 12,7 | 18,8 | 29,9 | 39,4 | 51,6 | 0,1 yıl | 0,5 yıl |
+| D: C + PPA | −1,3 | 12,3 | 18,3 | 29,3 | 38,7 | 50,7 | 0,2 yıl | 0,6 yıl |
+| F1: RES + BESS 40/160 (4 saat) | −7,2 | 6,7 | 12,9 | 24,1 | 33,7 | 45,8 | 1,0 yıl | 1,5 yıl |
+| F2a: RES + BESS 30/52,5 | 0,0 | 11,7 | 16,9 | 26,4 | 34,5 | 44,9 | 0 yıl | 0,4 yıl |
+
+Karşılaştırma: A (yalnız RES) −1,6; E (RES + PPA) −3,9 M$.
+
+![Fırsat penceresi](../outputs/05_risk/s_firsat_penceresi.png)
+
+**Yorum:**
+1. **Bataryanın kendini ödemesi için çok kısa bir pencere yetiyor:** 2026 seviyesinde ~6 aylık SFK geliri, taban
+   sıfır olsa bile bataryanın yatırımını karşılıyor. Her ek pencere yılı ~5–6 M$ NPV ekliyor.
+2. **Tersi de doğru:** Pencere hiç açılmazsa (katılamama) bataryalı tasarımlar yalnız RES'ten kötü: C −3,9, F2a −2,2
+   (A −1,6).
+3. **Uzun süreli batarya (F1) en kötüsü.** 4 saatlik batarya SFK düşünce arbitraja kayabiliyor, ama santralden şarj
+   olan bir bataryanın arbitraj değeri ek 90 MWh'nin maliyetini karşılamıyor.
+
+### 9.4 Monte Carlo (doyum senaryoları olasılıklarla ağırlıklı)
+
+10.000 simülasyon, Aşama 5 ile aynı tohum ve belirsizlikler; SFK yolu artık doyum modelinden (`s_metrikler.csv`).
+
+| Tasarım | E[NPV] | P(NPV>0) | CVaR %5 | Proje IRR P50 | P(DSCR<1)¹ | P(DSCR<1)² | EVPI | EVPPI doyum |
+|---|---|---|---|---|---|---|---|---|
+| A: RES 58,8 | −1,9 | %42 | −30,0 | %6,6 | %80 | %46 | 5,2 | 0,0 |
+| C: RES + BESS 40/70 | 6,2 | %59 | −30,1 | %7,7 | %81 | %41 | 5,2 | 0,9 |
+| D: C + PPA | 4,9 | %58 | −25,0 | %7,5 | %84 | %38 | 4,5 | 1,3 |
+| E: RES + PPA | −4,9 | %28 | −21,5 | %6,1 | %69 | %35 | 1,8 | 0,0 |
+| F1: BESS 40/160 | −0,4 | %47 | −39,2 | %6,8 | %84 | %45 | 8,4 | 4,4 |
+| F2: aşamalı 30 → 40 MW | **6,3** | **%60** | −28,4 | %7,7 | %80 | %40 | 4,8 | 0,4 |
+| **F2P: aşamalı + PPA** | 4,5 | %58 | **−23,2** | %7,4 | %82 | **%37** | 4,2 | 1,1 |
+| *C (Aşama 5, doyumsuz)* | *28,4* | *%97* | *−2,5* | *%10,8* | *%35* | — | *0,2* | — |
+
+¹ Borç, baz doyum yolu + baz fiyat + P90 üretimle (Aşama 5 yöntemi). ² **Muhafazakâr borç:** SFK geliri yok, fiyat
+45 $/MWh, P90 üretim. Borç A'da 44 → 30, F2P'de 60 → 43 M$ olur; öz kaynak IRR P50 F2P'de %11,1 → %9,4.
+
+![Risk-getiri](../outputs/05_risk/s_risk_getiri.png)
+
+**Senaryoya göre E[NPV]** (`s_senaryo_npv.csv`):
+
+| | Yavaş | Baz | Hızlı | Katılamama |
+|---|---|---|---|---|
+| A: RES 58,8 | −1,5 | −2,2 | −2,0 | −1,5 |
+| C: BESS 40/70 | 23,9 | 2,9 | −1,4 | −3,9 |
+| F2: aşamalı | 22,2 | 3,1 | −0,4 | −2,2 |
+| F2P: aşamalı + PPA | 20,2 | 1,5 | −2,1 | −4,2 |
+| E: RES + PPA | −4,7 | −5,2 | −4,9 | −4,7 |
+
+![Senaryoya göre NPV](../outputs/05_risk/s_senaryo_npv.png)
+
+**Bulgular:**
+1. **Bataryanın avantajının çoğu kayboluyor.** C'de E[NPV] 28,4 → 6,2 M$, P(NPV>0) %97 → %59, CVaR −2,5 → −30 M$.
+   Değer artık neredeyse tümüyle **yavaş doyum** senaryosundan (%25 olasılık, +24 M$) geliyor. Baz senaryoda batarya
+   yalnız RES'e göre ~+5 M$, hızlıda ~+0,6 M$, katılamamada −2,5 M$.
+2. **Küçük batarya asimetrik bir opsiyon:** 30 MW (SFK'ya giriş eşiği) ile 30 MW rezerv tavanının tamamı korunuyor,
+   CAPEX ~2,8 M$ azalıyor. Kötü senaryoda kayıp yalnız RES'e göre −0,8 M$, yavaş senaryoda kazanç +23 M$. Aşamalı
+   tasarım (F2) 3. yıl sonunda SFK fiyatı 2026'nın yarısının üstündeyse 40 MW'a büyüyor (simülasyonların %23'ünde).
+   E[NPV]'si en yüksek ve kuyruğu C'den iyi.
+3. **Esneklik türü önemli.** "Uzun süreli batarya, SFK düşünce arbitraja kayar" (F1) en kötü sonucu verdi: E[NPV]
+   −0,4, CVaR −39. Değerli esneklik, SFK fiyatına göre **ölçeği ertelemek** (F2); süreyi önden almak değil.
+4. **PPA kuyruk riskini azaltıyor** (F2 → F2P: CVaR −28,4 → −23,2) ama beklenen değerden 1,8 M$ vazgeçiyor.
+5. **DSCR:** Borç SFK'ya dayanarak boyutlanırsa tüm tasarımlarda en az bir yıl DSCR < 1 olasılığı ~%80. Muhafazakâr
+   borçla ~%37–46'ya iniyor. Kalan ihlallerin kaynağı yıllık fiyat oynaklığı; bir borç servisi yedek hesabı (DSRA)
+   bunların çoğunu karşılar.
+6. **Varyans katkısı** (`s_varyans_katkisi.csv`): F2P'de fiyat yolu %45, doyum senaryosu %34, RES model çarpanı %5.
+   Doyum, fiyattan sonra ikinci büyük risk; Aşama 5'te bu ~%25'ti (yan hizmet azalma + taban).
+
+### 9.5 Erteleme ve bilginin değeri
+
+Devreye alma 1–3 yıl ertelenirse (fiyat ve doyum yolları takvime göre kayar, batarya CAPEX'i yılda %4 ucuzlar;
+2026 değeri, `s_erteleme.csv`):
+
+| Erteleme | A | C | F2 | F2P | Bekle-gör (senaryo bilinerek en iyi seçim) |
+|---|---|---|---|---|---|
+| 0 | −1,9 | 6,2 | **6,3** | 4,5 | 7,1 (bugün bilinseydi) |
+| 1 yıl | −1,6 | 4,0 | 4,2 | 2,5 | **4,8** |
+| 2 yıl | −1,5 | 2,7 | 3,0 | 1,4 | 3,3 |
+| 3 yıl | −1,3 | 1,9 | 2,2 | 0,7 | 2,4 |
+
+![Erteleme](../outputs/05_risk/s_erteleme.png)
+
+**Aşama 5'teki EVPI bulgusu tersine dönüyor mu?** Kısmen:
+- Aşama 5'te bataryalı tasarımın EVPI'ı ~0'dı ("karar zaten doğru, bilgiye para harcama"). Doyumla **EVPI 4–5 M$'a
+  çıkıyor**: artık bilginin değeri var.
+- Ama bu bilgi **beklenerek alınamıyor.** 1 yıl bekleyip doyum senaryosunu kesin öğrensek bile beklenen değer 4,8 M$;
+  bugün F2'yi kurmanın değeri 6,3 M$. Beklemenin maliyeti (kaybedilen SFK penceresi, ~2,1 M$/yıl) bilginin değerinden
+  büyük. Bataryalı tasarımlarda erteleme her yıl değer kaybettiriyor.
+- Yalnız RES'te (A, E) erteleme beklenen değeri hafifçe "iyileştiriyor". Bunun tek nedeni negatif NPV'nin daha uzağa
+  iskontolanması. Doğru okuma: yalnız RES bugün kurulmamalı.
+- **Sonuç:** Bilgi beklenerek değil, **sözleşme ve ön yeterlilikle** alınmalı. TEİAŞ'tan yazılı SFK kabulü
+  "katılamama" senaryosunu ortadan kaldırıyor (F2P E[NPV] 4,5 → 6,1). Bataryanın siparişini RES'in kesin yatırım
+  kararından ~12 ay sonra, 2027 SFK fiyatlarını ve kurulu depolamayı görerek vermek ise bekleme maliyeti olmadan bilgi
+  kazandırır (batarya kurulumu RES'ten kısa sürer; modellenmedi).
+
+### 9.6 Sınırlamalar (stres testi)
+- Kurulu batarya yol haritaları ve olasılıklar TAHMİN; Türkiye'de SFK'ya fiilen katılan batarya verisi henüz yok.
+- Doğrusal arz eğrisi basit. Gerçek teklif davranışı (stratejik teklif, 4 saatlik bloklar, PFK/SFK arası ikame) fiyatı
+  daha erken ya da daha geç düşürebilir.
+- SFK ihtiyacının yenilenebilir payıyla büyümesi (%3/yıl) tahmin. Daha hızlı büyüme doyumu geciktirir.
+- Aşamalı tasarımın büyütme kararı basit bir eşik kuralı (optimal durma problemi olarak çözülmedi). Büyütme CAPEX'i
+  vergide giderleştirildi (amortisman yerine) ve ek kısmın augmentation'ı ihmal edildi; ikisi de küçük etkiler.
+- Bataryanın siparişini RES'ten ayrı zamanlama esnekliği modellenmedi.
+
+### 9.7 Nihai öneri (güncellendi)
+
+**Öneri değişti.** Aşama 5'te D tasarımını (RES 58,8 + BESS ~40 MW / 63 MWh + PPA), %99 başarı olasılığıyla
+öneriyordum. Doyum stres testi bu güvenin büyük ölçüde benim varsaydığım yavaş fiyat düşüşünden geldiğini gösterdi.
+Yeni öneri:
+
+**Karar:** Koşullu onay. **RES 58,8 MW (14 × 4,2 MW) + 30 MW / 52,5 MWh batarya (40 MW'a büyütme opsiyonuyla) +
+P90 üretimin %70'ine 12 yıllık PPA (F2P)**. Beklenen NPV 4,5 M$, P(NPV>0) %58, CVaR %5 −23 M$; TEİAŞ teyidiyle
+6,1 M$ / %62.
+
+Neden bu tasarım:
+- Yalnız RES bugünkü fiyat beklentisiyle yatırım yapılabilir değil (E[NPV] −1,9, P %42). Projeyi pozitife çeviren SFK.
+- 30 MW, SFK'nın tamamını yakalayan en küçük batarya. Kötü senaryoda kaybı küçük, yavaş doyumda kazancı büyük:
+  ucuz bir opsiyon.
+- PPA, beklenen değerden ~1,8 M$ vazgeçip kuyruk riskini ~5 M$ iyileştiriyor. Borç kullanan bir yatırımcı için doğru
+  takas.
+
+**Koşullar (FID öncesi):**
+1. **TEİAŞ'tan yazılı SFK ön yeterliliği:** hibrit tesisteki bataryanın 50 MW bağlantı içinde rezerv sağlayabileceği
+   teyit edilmeli. Sağlanamazsa batarya yok; yalnız RES de yatırım yapılabilir olmadığı için proje FID'e gitmez,
+   geliştirme aşamasında tutulur.
+2. **PPA fiyatı ≥ ~52 $/MWh (reel)**, 12 yıl, P90'ın %70'i. Tasarımın baz doyumdaki deterministik başabaş fiyatı
+   ~57 $/MWh.
+3. **Borç SFK geliri olmadan ve düşük fiyat senaryosuyla boyutlanır** (~43 M$, CAPEX'in ~%52'si) ve 6 aylık DSRA
+   eklenir. SFK'ya dayalı ~60 M$'lık borç, ihlal olasılığını iki katına çıkarıyor.
+4. **Batarya sözleşmesi RES'ten ayrı ve geç verilir** (RES FID'inden ~12 ay sonra), 2027'deki SFK fiyatı ve kurulu
+   depolama görülerek.
+
+**İzlenecek tetikleyiciler (hangi gösterge değişirse karar değişir):**
+
+| Gösterge | Eşik | Karar değişikliği |
+|---|---|---|
+| Türkiye'de işletmedeki depolama (EPDK/TEİAŞ) | Batarya siparişinden önce ~1,5 GW'ı aşarsa (SFK'ya uygun ≈ ihtiyacın 0,8 katı: doyum başlıyor) | Hızlı doyum: batarya 30 MW'ta kalır, büyütme yok. İptal edilmez: hızlı doyumda bile 30 MW'lık batarya bataryasız tasarımdan ~1,5–3 M$ iyi (taban SFK + dengesizlik azaltımı). |
+| Aylık SFK kapasite fiyatı (EPİAŞ) | İki çeyrek üst üste < ~24 $/MW-saat (2026'nın yarısı) | Büyütme opsiyonu kullanılmaz. |
+| SFK fiyatı 3. işletme yılında | ≥ 2026'nın %50'si | 40 MW'a büyüt (F2 kuralı). |
+| TEİAŞ'ın hibrit SFK kabulü | Red | Batarya yok, proje FID'e gitmez. |
+| Uzun vadeli fiyat beklentisi / PPA teklifleri | < ~52 $/MWh (reel) | FID ertelenir. Yalnız RES de, bataryalı tasarım da başabaşın altında. |
+| Batarya CAPEX | > +%20 | 30 MW yeniden değerlendirilir. Kötü senaryodaki kayıp büyür. |
+| SFK ihtiyacı (TEİAŞ) | Yenilenebilir payıyla hızlı büyürse (> %10/yıl) | Doyum gecikir: 40 MW'a büyütme erkene çekilebilir. |
+
+### 9.8 Mülakat özeti (güncel)
+- Aşama 5'te bataryalı tasarım %97 olasılıkla kârlı görünüyordu, ama gelirin %87'si SFK'dan geliyordu ve SFK
+  fiyatının düşüş hızını ben varsaymıştım. Bu varsayımı stres testine soktum.
+- İngiltere, Almanya ve Avustralya'da bataryalar frekans piyasalarını 1–3 yılda doyurmuş; fiyat, batarya ihtiyacın
+  ~2 katına çıkınca fırsat maliyetine inmiş. Türkiye'de ~1 GW'lık SFK ihtiyacına karşı 28–33 GW depolamalı ön lisans
+  var. SFK fiyatını kurulu batarya / ihtiyaç oranına bağlayan basit bir arz-talep modeli kurdum, tabanı tipik bir
+  1 saatlik bataryanın arbitraj fırsat maliyetinden (2,3 $/MW-saat) hesapladım ve dört senaryo tanımladım.
+- Sonuç: başarı olasılığı %97'den ~%60'a, en kötü %5'in ortalaması −2,5'ten −30 M$'a indi. Bataryanın değeri artık
+  büyük ölçüde "yavaş doyum" senaryosuna bağlı bir opsiyon.
+- Bu yüzden bataryayı SFK'ya giriş eşiğine (30 MW) küçülttüm ve büyütmeyi SFK fiyatına bağladım. Bu tasarım
+  beklenen değerde en iyisi ve kuyruğu daha ince. Beklemek bilgi kazandırıyor ama SFK penceresini kaçırdığı için
+  değer kaybettiriyor; bilgiyi TEİAŞ teyidi ve geç batarya siparişiyle almayı öneriyorum.
+- **Ders:** Modelin en güvendiğim sonucu, en az sorguladığım varsayımına dayanıyordu.
+
+---
+
 ## 8. Çıktılar
 | Dosya | İçerik |
 |---|---|
@@ -317,3 +549,11 @@ ailesi **yan hizmet fiyatının geleceği** (D'de toplam %25).
 | `b_varyans_katkisi.png`, `b_varyans_katkisi.csv` | Birinci derece varyans katkısı |
 | `b_yakinsama.png` | Yakınsama |
 | `b_yaklasim_hatasi.csv` | Ara değerleme ile tam LP karşılaştırması |
+| `s_doyum_senaryolari.png`, `s_sfk_carpan_yollari.csv` | Doyum senaryoları ve SFK fiyat çarpanı yolları |
+| `s_firsat_maliyeti.csv` | SFK fırsat maliyeti (taban) hesabı |
+| `s_pencere.csv`, `s_minimum_pencere.csv`, `s_firsat_penceresi.png` | Fırsat penceresi |
+| `s_deterministik_baz_doyum.csv`, `s_senaryo_npv_deterministik.csv` | Deterministik özet ve senaryo NPV'leri |
+| `s_metrikler.csv`, `s_senaryo_npv.csv`, `s_risk_getiri.png`, `s_senaryo_npv.png`, `s_npv_cdf.png` | Doyumlu Monte Carlo |
+| `s_erteleme.csv`, `s_erteleme.png` | Erteleme ve bekle-gör |
+| `s_varyans_katkisi.csv`, `s_npv_ornekleri.npz` | Varyans katkısı, NPV örnekleri (dashboard) |
+| `revizyon_oncesi/` | Aşama 5 Monte Carlo sonuçları (doyumsuz) |

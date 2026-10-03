@@ -1,0 +1,5 @@
+﻿Tasarım,NPV (N=0) [M USD],NPV (N=2) [M USD],NPV (N=3) [M USD],NPV (N=5) [M USD],NPV (N=7) [M USD],NPV (N=10) [M USD],Minimum pencere: NPV ≥ 0 [yıl],Minimum pencere: bataryasız alternatiften iyi [yıl],Minimum pencere (taban 0): NPV ≥ 0 [yıl],Minimum pencere (taban 0): bataryasız alternatiften iyi [yıl],Bataryasız alternatif
+C: gelir yığınlı optimal,-0.981,12.674,18.821,29.896,39.440,51.550,0.139,0.000,0.525,0.304,A: -1.62 M USD
+D: gelir yığınlı + PPA,-1.282,12.249,18.335,29.290,38.721,50.691,0.183,0.000,0.563,0.031,E: -3.87 M USD
+F1: uzun süreli batarya (40 MW / 160 MWh),-7.229,6.656,12.896,24.122,33.680,45.819,1.007,0.780,1.472,1.241,A: -1.62 M USD
+"F2a: küçük batarya (30 MW / 52,5 MWh)",0.009,11.663,16.910,26.368,34.521,44.865,0.000,0.000,0.351,0.091,A: -1.62 M USD

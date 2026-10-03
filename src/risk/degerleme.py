@@ -28,7 +28,7 @@ import numpy as np
 
 from src.ayarlar import deger
 from src.finans.model import Varsayimlar
-from src.risk.isletme import ALANLAR, Tasarim
+from src.risk.tasarim import ALANLAR, Tasarim
 
 AI = {a: i for i, a in enumerate(ALANLAR)}
 
@@ -112,6 +112,10 @@ def nakit_akislari(t: Tasarim, tablo: dict, c: Sabitler, girdi: dict) -> dict:
                                ip[None, :].repeat(n, 0)) for w_ in range(W) for s_ in range(S)], axis=0)
     else:
         X = tablo_ara(tablo, girdi["w"], girdi["s"], girdi["h"], m_eff, girdi["a"], ip[None, :].repeat(n, 0))
+    if "tablo2" in girdi:
+        # Aşamalı yatırım: maske True olan yıllarda işletme büyüklükleri ikinci (büyütülmüş) tasarımın tablosundan
+        X2 = tablo_ara(girdi["tablo2"], girdi["w"], girdi["s"], girdi["h"], m_eff, girdi["a"], ip[None, :].repeat(n, 0))
+        X = np.where(girdi["maske2"][..., None], X2, X)
     g = lambda ad: X[..., AI[ad]]
     L, tav = girdi["L"], girdi["tavan"]
     q_ges = np.where(tav, g("gelir_ges_qt"), g("gelir_ges_q")) * deg_g
@@ -152,6 +156,8 @@ def nakit_akislari(t: Tasarim, tablo: dict, c: Sabitler, girdi: dict) -> dict:
                     * girdi["bozunma"] * (1 - a_["maliyet_dususu_yillik"]) ** y
         if v.bess_yenileme["aktif"] and v.omur_bess < N:
             aug[:, v.omur_bess - 1] += capex["bess"] * girdi["capex_bess"] * (1 - v.bess_yenileme["maliyet_dususu_yillik"]) ** v.omur_bess
+    if "ek_gider" in girdi:        # aşamalı yatırımın ek CAPEX'i ve ek O&M'si (augmentation gibi giderleştirilir)
+        aug = aug + girdi["ek_gider"]
     sokum = np.zeros(N)
     sokum[-1] = v.sokum["ges"] * t.ges_mw + v.sokum["res"] * t.res_mw + v.sokum["bess"] * t.bess_mwh
     # Vergi: amortisman 10 yıl, zarar 5 yıl ileri (kova kaydırmalı)

@@ -202,3 +202,31 @@ monte_carlo:
   batarya_bozunma: {value: [0.8, 1.0, 1.6], birim: "üçgen çarpan (yıpranma maliyeti ve augmentation)", kaynak: "Tahmin: yan hizmet ve sık döngüde LFP yaşlanması belirsiz", not: ""}
   yan_hizmet_azalma: {value: {azalma: [0.05, 0.15, 0.30], taban: [0.15, 0.40]}, birim: "üçgen yıllık azalma; düzgün taban", kaynak: "Bkz. gelir_yigini.yan_hizmet (tahmin)", not: "Depolama girişinin hızı belirsiz"}
   korelasyon:     {value: {fiyat_capex: 0.4}, kaynak: "Tahmin: emtia/enerji fiyat döngüleri hem elektrik fiyatını hem ekipman ve inşaat maliyetini artırır (2021-22)", not: "Gauss kopula: korelasyonlu standart normallerden marjinal dağılımlara ters dönüşüm"}
+# Aşama 6 — Bölüm A: yan hizmet (SFK) doyum stres testi (src/05_stres_testi.py, src/risk/doyum.py)
+stres_testi:
+  sfk_ihtiyaci:   {value: 950, birim: "MW (2026)", kaynak: "EPİAŞ SFK miktarı 2023-26 ortalaması (~953 MW)", not: "Talep tarafı; yenilenebilir payıyla büyür"}
+  ihtiyac_buyume: {value: 0.03, birim: "oran/yıl", kaynak: "TAHMİN — değişken yenilenebilir payı arttıkça rezerv ihtiyacı yavaş artar", not: ""}
+  sfk_uygun_pay:  {value: [0.35, 0.65], birim: "kurulu bataryanın SFK'ya teklif veren payı (düzgün)", kaynak: "TAHMİN — SFK için iletime bağlı ≥30 MW + AGC şartı; depolamalı tesislerin bir kısmı dağıtıma bağlı veya kendi üretimini kaydırmaya odaklı", not: ""}
+  doyum_baslangic: {value: 0.8, birim: "uygun batarya / SFK ihtiyacı", kaynak: "Kalibrasyon: Almanya FCR'de batarya ≈ ihtiyaç (630 MW / 570 MW, Ocak 2023) olduğunda yıllık gelir ~%45 düştü (2022 → 2023)", not: "Bu orana kadar fiyat değişmez"}
+  doyum_tam:      {value: 2.0, birim: "uygun batarya / SFK ihtiyacı", kaynak: "Kalibrasyon: İngiltere DC'de uygun batarya ihtiyacın ~2 katına çıkınca (Mayıs 2023: 2.229 / 1.099 MW) fiyat £17 → £1,4-4,0/MW/h; Almanya FCR ~3 kat → 'doymuş'", not: "Bu oranda fiyat bataryanın fırsat maliyetine iner; arada doğrusal (doğrusal arz eğrisi)"}
+  marjinal_batarya_suresi: {value: 1.1, birim: "saat", kaynak: "Yeşil Haber, '33 GW batarya, 1,1 saat: Türkiye'nin depolama açığı' (depolamalı ön lisansların ortalama süresi)", not: "Doymuş piyasada SFK fiyatını bu tipik bataryanın fırsat maliyeti belirler"}
+  firsat_maliyeti_carpani: {value: [0.7, 1.5], birim: "hesaplanan fırsat maliyetine çarpan (düzgün)", kaynak: "İngiltere DC: doyum sonrası fiyat ~£1,4-5/MW/h (öncesi £17), hizmetin doğrudan maliyeti £0,5-1,5 — fiyatı diğer piyasalardaki fırsat maliyeti ve teklif davranışı belirliyor", not: "Fırsat maliyeti = tipik bağımsız bataryanın SFK'ya rezerv ayırınca vazgeçtiği arbitraj kârı (yıpranma sonrası), MW-saat başına; mükemmel öngörü ile üst sınır"}
+  zaman_kaymasi:  {value: [-1, 1], birim: "yıl (düzgün)", kaynak: "TAHMİN — senaryo içi takvim belirsizliği", not: ""}
+  senaryolar:
+    value:
+      yavas:  {olasilik: 0.25, kurulu_mw: {2025: 210, 2026: 600, 2028: 1200, 2030: 2100, 2035: 9300}}
+      baz:    {olasilik: 0.40, kurulu_mw: {2025: 210, 2026: 1000, 2028: 3000, 2030: 6000, 2035: 12000}}
+      hizli:  {olasilik: 0.20, kurulu_mw: {2025: 210, 2026: 2500, 2027: 5000, 2030: 10000, 2035: 15000}}
+      katilamama: {olasilik: 0.15}
+    birim: "Türkiye kurulu batarya depolama [MW], yıl sonu (aradaki yıllar log-doğrusal)"
+    kaynak: "2025: EPDK işletmedeki depolama ~208 MW, lisanslı 1.070 MW; 2026: EDEDER 1.500 MWh (~750 MW) devreye alma, sektör beklentisi 2-3 GW; ETKB hedefi 2030 2,1 GW / 2035 9,3 GW; ön lisans 33 GW (Haziran 2025) → 28 GW (Temmuz 2026); ETKB 2026 ilk yarı 122 projede 5.023 MW depolama onayı"
+    not: "yavas = resmî hedef hızı; baz = ön lisansların ~%20'si 2030'a kadar; hizli = sektörün 2026 beklentisi + 2027'de ön lisansların ~%15'i; katilamama = TEİAŞ hibrit tesisteki bataryayı SFK'ya kabul etmez (olasılık TAHMİN: usul ve esaslar depolamaya izin veriyor ama tek bağlantı içinde hibrit belirsiz)"
+  bess_capex_dususu: {value: 0.04, birim: "oran/yıl (reel)", kaynak: "NREL ATB 2024 orta senaryo ve BNEF 2024 paket fiyatı trendi: 2025-2030 yıllık ~%3-6 reel düşüş", not: "Yalnızca erteleme analizinde (geç kurulan batarya daha ucuz)"}
+  pencere_yillari: {value: [0, 2, 3, 5, 7, 10], birim: "yıl", kaynak: "Kullanıcı tanımı", not: "SFK geliri ilk N işletme yılı 2026 seviyesinde, sonra fırsat maliyeti tabanında"}
+  erteleme_yillari: {value: [0, 1, 2, 3], birim: "yıl", kaynak: "Kullanıcı tanımı", not: ""}
+  esnek_tasarimlar:
+    value:
+      uzun_sureli: {bess_mw: 40, bess_mwh: 160}
+      asamali: {ilk_mw: 30, ilk_mwh: 52.5, karar_yili: 3, esik: 0.5}
+    kaynak: "Kullanıcı tanımı"
+    not: "uzun_sureli: 4 saat, SFK düşünce arbitraja kayar. asamali: SFK'ya giriş için asgari 30 MW ile başla; 3. işletme yılı sonunda SFK çarpanı ≥ esik ise 4. yıldan itibaren 40 MW / 70 MWh'e büyüt (ek CAPEX o yılın batarya maliyetiyle)"

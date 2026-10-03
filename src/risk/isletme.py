@@ -21,25 +21,12 @@ from __future__ import annotations
 
 import itertools
 import time
-from dataclasses import dataclass
 
 import numpy as np
 import pyomo.environ as pyo
 from pyomo.contrib import appsi
 
-
-@dataclass
-class Tasarim:
-    ad: str
-    res_mw: float
-    ges_mw: float
-    bess_mw: float = 0.0
-    bess_mwh: float = 0.0
-    sebeke_mw: float = 50.0
-    yan_hizmet: bool = False
-    dengesizlik_azaltim: bool = False
-    yekg: bool = False
-    ppa: bool = False
+from src.risk.tasarim import ALANLAR, Tasarim  # noqa: F401 (geriye uyumluluk)
 
 
 class IsletmeLP:
@@ -98,10 +85,6 @@ def birim_toplamlar(y, k, c, d, r, A, G, q, a_norm, tavan_q: float) -> np.ndarra
         (yg * np.minimum(q, tavan_q)).sum(), (yr * np.minimum(q, tavan_q)).sum(),
         (d * np.minimum(q, tavan_q)).sum(),                                 # 11-13: düzenleyici tavanlı spot gelir
     ])
-
-
-ALANLAR = ["gelir_ges_q", "gelir_res_q", "gelir_d_q", "E_ges", "E_res", "E_d", "E_c", "E_k", "E_A",
-           "yh_a", "rezerv", "gelir_ges_qt", "gelir_res_qt", "gelir_d_qt"]
 
 
 def tablo_uret(t: Tasarim, ges: np.ndarray, res: np.ndarray, sekiller: dict, yan_sekil: np.ndarray,
