@@ -6,8 +6,12 @@
 
 proje:
   ad: "Hibrit GES+RES+BESS fizibilitesi"
-  baslangic_yili: {value: null, birim: "yıl", kaynak: "", not: ""}
-  omur:           {value: null, birim: "yıl", kaynak: "", not: "Proje ekonomik ömrü"}
+  para_birimi: {value: "USD, reel (2026 fiyatlarıyla)", kaynak: "Proje kararı (Aşama 3)", not: "TL yüksek ve oynak enflasyon nedeniyle kullanılmaz; gelirler PTF'nin USD karşılığından türetilir. Gerekçe: docs/03_finansal_model.md"}
+  fid_yili:       {value: 2026, birim: "yıl", kaynak: "Proje kararı", not: "Yatırım kararı ve inşaat başlangıcı; değerleme bu yılın başına (t=0) indirgenir"}
+  insaat_suresi:  {value: 2, birim: "yıl", kaynak: "Sektör pratiği: RES 12-24 ay, GES 9-12 ay", not: "CAPEX takvimi bu süreye yayılır; ilk işletme yılı = fid_yili + insaat_suresi"}
+  capex_takvimi:  {value: [0.4, 0.6], birim: "oran (inşaat yılı başına)", kaynak: "Sektör pratiği (avans + türbin/panel teslimatı ağırlıklı ikinci yıl)", not: "Toplamı 1"}
+  omur:           {value: 30, birim: "yıl", kaynak: "Proje kararı; RES/GES ekonomik ömrü 25-35 yıl (IRENA, Lazard)", not: "İşletme süresi; lisans süresi daha uzun olabilir"}
+  baslangic_yili: {value: 2028, birim: "yıl", kaynak: "fid_yili + insaat_suresi", not: "İlk tam işletme yılı (COD)"}
 
 saha:
   kod:       {value: "canakkale_ezine", kaynak: "Aşama 1 saha taraması", not: "aday_sahalar içindeki anahtar"}
@@ -65,26 +69,54 @@ uretim:
     toplam_kayip:  {value: 0.12, birim: "oran", kaynak: "Proje varsayımı; sektörde tipik %10-15", not: "İz (wake) + kullanılabilirlik + elektriksel kayıplar toplamı; brüt üretime uygulanır"}
 
 finans:
-  iskonto_orani:  {value: null, birim: "oran (reel, USD)", kaynak: "", not: "WACC"}
-  kur_usd_try:    {value: null, birim: "TRY/USD", kaynak: "TCMB", not: ""}
-  vergi_orani:    {value: null, birim: "oran", kaynak: "", not: "Kurumlar vergisi"}
-  enflasyon:      {value: null, birim: "oran", kaynak: "", not: ""}
+  wacc_reel:      {value: 0.070, birim: "oran/yıl (reel, USD, vergi sonrası)", kaynak: "Aşağıdan yukarı: reel risksiz ~%2,0 (ABD 10y TIPS) + β 1,0 × olgun piyasa ERP %4,23 + Türkiye ülke risk primi %4,66 (Damodaran, Ocak 2026) → reel özkaynak maliyeti ~%10,9; reel borç maliyeti ~%5,4 × (1−0,25) ≈ %4,1; %60 borç / %40 özkaynak → ~%6,8 → %7,0", not: "Merchant (YEKDEM/PPA'sız) proje riski için β = 1. Duyarlılık: %5,5-9,0"}
+  abd_enflasyonu: {value: 0.025, birim: "oran/yıl", kaynak: "Fed hedefi %2 + piyasa beklentisi; uzun dönem ABD TÜFE ~%2-3", not: "Yalnızca nominal USD borcun reel nakit akışına çevrilmesinde kullanılır"}
+  kurumlar_vergisi: {value: 0.25, birim: "oran", kaynak: "GİB, 2026 kurumlar vergisi oranları (genel oran %25)", not: "Yatırım teşvik belgesi indirimleri dahil edilmedi (muhafazakâr)"}
+  zarar_mahsup_suresi: {value: 5, birim: "yıl", kaynak: "Kurumlar Vergisi Kanunu md. 9", not: "Geçmiş yıl zararları 5 yıl taşınabilir"}
+  amortisman_suresi: {value: {ges: 10, res: 10, bess: 10, sebeke: 10}, birim: "yıl (doğrusal)", kaynak: "VUK amortisman listesi (333 Sıra No.lu Tebliğ ve değişiklikleri): GES 45.1.9 ve RES 45.1.7 → 10 yıl, %10", not: "BESS ve şebeke tesisleri için de 10 yıl varsayıldı. Vergi amortismanı reel USD bazında (enflasyon düzeltmesi ile değerinin korunduğu) varsayılır"}
+  sokum_net:      {value: {ges: 15000, res: 0, bess: 10000}, birim: "USD/MW (BESS: USD/MWh), ömür sonu", kaynak: "Sektör tahmini; RES'te hurda çelik/bakır geliri söküm maliyetini büyük ölçüde karşılar", not: "Net söküm maliyeti (söküm − hurda değeri); son işletme yılında"}
+
+borc:
+  hedef_dscr:     {value: 1.30, birim: "-", kaynak: "Merchant yenilenebilir projelerde bankacılık pratiği 1,30-1,40; sözleşmeli (YEKDEM/PPA) 1,15-1,25", not: "P90 üretim + baz fiyat nakit akışına uygulanır"}
+  vade:           {value: 15, birim: "yıl", kaynak: "DFI/ticari banka yenilenebilir kredileri tipik 12-15 yıl (EBRD'nin Türkiye RES kredileri; vade kamuya açık değil)", not: "Heykelsi (sculpted) geri ödeme, işletmenin ilk yılından başlar"}
+  faiz_nominal:   {value: 0.080, birim: "oran/yıl (nominal USD)", kaynak: "Tahmin: SOFR ~%3,5-4 + Türkiye proje finansmanı marjı ~%4-4,5", not: "Duyarlılık: %6,5-10. Reel karşılığı ≈ (1,08/1,025) − 1 ≈ %5,4"}
+  azami_borc_orani: {value: 0.75, birim: "borç / CAPEX", kaynak: "Proje finansmanı pratiği (%70-80)", not: "Borç kapasitesi bu tavanla sınırlanır"}
 
 teknoloji:
   ges:
-    capex:  {value: null, birim: "milyon USD/MW", kaynak: "", not: ""}
-    opex:   {value: null, birim: "USD/MW/yıl", kaynak: "", not: ""}
-    degradasyon: {value: null, birim: "oran/yıl", kaynak: "", not: "Panel verim kaybı"}
+    capex:      {value: 620000, birim: "USD/MWac (DC/AC 1,2 dahil, şebeke bağlantısı hariç)", kaynak: "IRENA 2025 küresel ort. 667 USD/kW (RPGC 2025); Türkiye anahtar teslim GES ~500-600 bin USD/MWp (enerjiajansi.com.tr 2025) × 1,2", not: "Aralık 0,52-0,75 M USD/MWac"}
+    opex_sabit: {value: 12000, birim: "USD/MWac/yıl", kaynak: "Lazard LCOE+ 2025: 11-14 USD/kW-yıl (ABD); Türkiye işçiliği daha ucuz", not: "İşletme-bakım, güvenlik, temizlik, izleme"}
+    arazi:      {value: 2000, birim: "USD/MWac/yıl", kaynak: "Tahmin: ~1,6-2 ha/MWac × ~1.000-1.200 USD/ha/yıl", not: "Hazine/özel arazi kira bedeli; sahaya göre geniş aralık"}
+    degradasyon: {value: 0.005, birim: "oran/yıl", kaynak: "NREL (Jordan vd. 2016) medyan ~%0,5/yıl; yeni nesil modüllerde %0,4", not: "Üretime yıllık bileşik olarak uygulanır"}
+    omur:       {value: 30, birim: "yıl", kaynak: "Modül garantileri 25-30 yıl; IRENA/Lazard 30-35 yıl", not: ""}
   res:
-    capex:  {value: null, birim: "milyon USD/MW", kaynak: "", not: ""}
-    opex:   {value: null, birim: "USD/MW/yıl", kaynak: "", not: ""}
-    turbin_modeli: {value: null, kaynak: "", not: "Güç eğrisi için"}
+    capex:      {value: 1150000, birim: "USD/MW (şebeke bağlantısı hariç)", kaynak: "Türkiye 2025 Q1: 300 MW için 300-350 M USD (Dünya, TÜREB) → 1,0-1,17 M USD/MW; IRENA 2025 küresel 976 USD/kW (Çin ağırlıklı); Avrupa 1,3-1,6", not: "Aralık 1,0-1,4 M USD/MW"}
+    opex_sabit: {value: 35000, birim: "USD/MW/yıl", kaynak: "Lazard LCOE+ 2025: 24,5-40 USD/kW-yıl; tam kapsamlı servis sözleşmeleri üst bantta", not: ""}
+    arazi:      {value: 1500, birim: "USD/MW/yıl", kaynak: "Tahmin: türbin parselleri, yol ve irtifak bedelleri", not: ""}
+    degradasyon: {value: 0.003, birim: "oran/yıl", kaynak: "Staffell & Green (2014) eski İngiltere filosunda ~%1,6/yıl; modern türbinlerde çok daha düşük (Almanya ~%0,3-0,6)", not: "Muhafazakâr-orta değer"}
+    omur:       {value: 30, birim: "yıl", kaynak: "Modern türbin tasarım ömrü 25-30 yıl, ömür uzatma yaygın", not: ""}
   bess:
-    capex_guc:   {value: null, birim: "milyon USD/MW", kaynak: "", not: ""}
-    capex_enerji: {value: null, birim: "milyon USD/MWh", kaynak: "", not: ""}
-    opex:        {value: null, birim: "USD/MW/yıl", kaynak: "", not: ""}
-    verim_gidis_donus: {value: null, birim: "oran", kaynak: "", not: "Round-trip efficiency"}
-    yipranma:    {value: null, birim: "oran/yıl", kaynak: "", not: ""}
+    capex_enerji: {value: 110000, birim: "USD/MWh", kaynak: "IRENA 2025: 4 saatlik sistem ~140 USD/kWh kurulu; BNEF 2025: ABD/Çin dışı pazarlarda 4 saatlik ~125 USD/kWh (75 ekipman + 50 kurulum/bağlantı)", not: "Hücre, modül, kabin, BMS, kurulumun enerjiyle ölçeklenen kısmı"}
+    capex_guc:    {value: 90000, birim: "USD/MW", kaynak: "Aynı kaynakların güç bileşeni (PCS, trafo, şalt) payı", not: "4 saatlikte toplam ≈ 132 USD/kWh"}
+    opex_oran:    {value: 0.025, birim: "CAPEX oranı/yıl", kaynak: "Lazard LCOS/LCOE+ 2025: 3-8 USD/kWh-yıl (~%2-5)", not: ""}
+    verim_gidis_donus: {value: 0.87, birim: "oran", kaynak: "Lazard/NREL ATB: Li-ion (LFP) %85-88 AC-AC", not: "Aşama 4 dispatch modelinde kullanılacak"}
+    yipranma:     {value: 0.02, birim: "kapasite oranı/yıl", kaynak: "LFP, ~1 döngü/gün: ilk yıllarda %2-3/yıl", not: "Augmentation ile telafi edilir"}
+    augmentation: {value: {yillar: [8, 16], oran: 0.20, maliyet_dususu_yillik: 0.03}, birim: "işletme yılı; ilk enerji CAPEX'ine oran", kaynak: "Sektör pratiği (augmentation planları); maliyet düşüşü IRENA/BNEF trendinden muhafazakâr", not: "Her yenilemede ilk enerji CAPEX'inin %20'si × (1 − %3)^yıl"}
+    omur:         {value: 20, birim: "yıl", kaynak: "LFP 6.000+ döngü; augmentation ile 20 yıl", not: "Ömür sonunda yenileme yapılmaz (proje 30 yıl → BESS 20. yılda kapanır)"}
+  sebeke:
+    capex:      {value: 120000, birim: "USD/MW bağlantı", kaynak: "Türkiye'de enerji iletim ve trafo merkezi maliyeti 100-300 bin USD/MW (sektör kaynakları, maliyeti.com.tr 2025); TEİAŞ bağlantı hattı mesafeye bağlı", not: "Trafo merkezi, şalt, iletim hattı. TEİAŞ kapasite tahsis yarışması katkı payı DAHİL DEĞİL (bkz. sınırlamalar)"}
+    teias_kapasite_bedeli: {value: 3470, birim: "USD/MW bağlantı/yıl", kaynak: "EPDK 30/12/2025 tarih ve 14204 sayılı karar, 2026 iletim tarifeleri: Çanakkale = 2. bölge, üretim sistem kullanım 156.234,30 TL/MW-yıl ÷ ~45 TL/USD", not: "Reel USD'de sabit varsayıldı"}
+    teias_enerji_bedeli: {value: 3.8, birim: "USD/MWh (satılan)", kaynak: "Aynı karar: sistem kullanım 109,68 + sistem işletim 60,71 TL/MWh ÷ ~45 TL/USD", not: ""}
+  ortak:
+    sigorta:    {value: 0.0035, birim: "CAPEX oranı/yıl", kaynak: "Yenilenebilir işletme sigortası tipik %0,3-0,5 (sektör pratiği)", not: ""}
+    dengesizlik: {value: {ges: 0.02, res: 0.04}, birim: "gelir oranı", kaynak: "Algopoly RES Maliyet Raporu: RES medyan birim dengesizlik maliyeti 57 TL/MWh (Tem 2024) - 107 TL/MWh (Eki 2024) ≈ PTF'nin %2-5'i; GES tahmin edilebilirliği daha yüksek", not: "Duyarlılık: RES %2-8"}
+
+fiyat_senaryolari:
+  sekil_donemi:   {value: ["2025-01", "2026-09"], birim: "ay aralığı (TSİ)", kaynak: "Aşama 2 PTF verisi", not: "Saatlik fiyat ŞEKLİ (yıllık ortalamaya bölünmüş) iki takvim yılı olarak kullanılır: 2025 ve [2026 Oca-Eyl + 2025 Eki-Ara]"}
+  seviye:         {value: {dusuk: 45, baz: 58, yuksek: 72}, birim: "USD/MWh, reel 2026, yıllık baz yük ort. PTF", kaynak: "EPİAŞ PTF: 2017-21 ort. 46,8; son 12 ay (Eki 2025-Eyl 2026) 49,2; 2024-25 ort. 67,3. Gaz santrali yakıt maliyeti: BOTAŞ elektrik üretim tarifesi 18 TL/Sm³ (4 Nisan 2026) ≈ 11,5 USD/MMBtu → ~75-80 USD/MWh", not: "Düşük: kanibalizasyon + bol hidroloji (2026'ya benzer); baz: son 12 ay ile 2024-25 ortası; yüksek: 2024-25 seviyesi + gaz/karbon baskısı (Türkiye ETS)"}
+  kanibalizasyon: {value: {varyant: "devam", taban_oran: 0.60, taban_yili: 2033}, birim: "güneş (Ezine GES) yakalanma oranı", kaynak: "Aşama 2 Yol B: Türkiye güneş yakalanma oranı 2023 0,90 → 2025 0,83 → 2026 0,75 (~-0,04/yıl); Avrupa'da yüksek güneş paylı pazarlarda (İspanya, Almanya) 0,6-0,7", not: "durur: şekil dönemindeki oran sabit kalır; devam: oran taban_yili'na kadar doğrusal olarak taban_oran'a iner, sonra sabit"}
+  eszamanlilik_duzeltmesi: {value: {res: 0.048, hibrit: 0.027, ges: 0.0}, birim: "yakalanma oranı farkı", kaynak: "Aşama 2: hava yılları farklı fiyat yıllarıyla eşleştirildiğinde RES yakalanma oranı ~0,048 fazla çıkıyor (2021-23 aynı yıl karşılaştırması)", not: "Finansal modelde RES'e düşen satılan enerji gelirinden düşülür"}
+  duzenleyici_tavan: {value: {aktif: false, isletme_yillari: [6, 7], tavan_carpani: 0.70}, birim: "yıllık ort. fiyatın katı", kaynak: "2022-23 AUF dönemi: yenilenebilir AUF / ort. PTF ≈ 0,55 (2022) - 0,85 (2023)", not: "Aktifse belirtilen işletme yıllarında satış fiyatı min(PTF, tavan_carpani × yıllık ort.) olur"}
 
 piyasa:
   ptf_kaynak: {value: "EPİAŞ Şeffaflık Platformu, /v1/markets/dam/data/mcp", kaynak: "seffaflik.epias.com.tr/electricity-service/technical/tr/index.html", not: "Saatlik PTF; TL, USD, EUR (USD/EUR: TCMB gösterge döviz alış kuru, EPİAŞ hesaplar)"}

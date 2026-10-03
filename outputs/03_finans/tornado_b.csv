@@ -1,0 +1,7 @@
+﻿Değişken,Düşük durum,Yüksek durum,NPV düşük,NPV yüksek,Aralık
+Fiyat seviyesi (45 / 72 USD/MWh),45,72,-28.300,12.418,40.718
+CAPEX (±%20),+%20,−%20,-21.918,5.434,27.352
+"WACC (%8,5 / %5,5)","%8,5","%5,5",-15.456,1.941,17.398
+RES kapasite faktörü (±%10),−%10,+%10,-14.529,-1.747,12.781
+"Kanibalizasyon (taban 0,50 / durur)","taban 0,50",durur,-10.428,-3.813,6.615
+Dengesizlik maliyeti (RES %8 / %2),"RES %8, GES %4","RES %2, GES %1",-11.435,-6.235,5.200

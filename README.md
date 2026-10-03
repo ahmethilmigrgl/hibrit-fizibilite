@@ -25,6 +25,7 @@ cp .env.example .env   # CDS ve EPİAŞ bilgilerini doldurun
 .venv/bin/python src/02_piyasa_verisi.py      # Aşama 2: EPİAŞ verisi (önbellekli)
 .venv/bin/python src/02_ruzgar_kalibrasyonu.py # Aşama 2: rüzgâr kalibrasyonu (öneri k)
 .venv/bin/python src/02_piyasa_analizi.py     # Aşama 2: yakalanan fiyat, batarya göstergeleri
+.venv/bin/python src/03_finansal_model.py     # Aşama 3: NPV/IRR/LCOE, borç, duyarlılık
 ```
 
 ## Klasör yapısı
@@ -80,3 +81,22 @@ ele alınarak UTC'ye çevrildi).
 ![Yakalanma oranı trendi](outputs/02_piyasa/yakalanma_orani_trendi.png)
 
 Ayrıntılar: [docs/02_piyasa_analizi.md](docs/02_piyasa_analizi.md)
+
+### Aşama 3 — Finansal model ✅
+Reel USD bazlı proje finansmanı modeli. Saatlik üretim × saatlik fiyat (3 seviye × 2 kanibalizasyon
+senaryosu), Türkiye'ye özgü TEİAŞ bedelleri, dengesizlik ve vergi; P90'a göre borç boyutlandırma.
+
+| 50 MW bağlantı, baz fiyat 58 $/MWh, kanibalizasyon devam | (a) RES 50 | (b) RES 50 + GES 25 | (c) RES 50 + GES 50 | (d) GES 50 |
+|---|---|---|---|---|
+| NPV [M$, %7 reel WACC] | −2,5 | −8,0 | −16,3 | −15,6 |
+| Proje IRR (reel) | 6,5% | 5,8% | 4,8% | 1,0% |
+| LCOE satılan enerji [$/MWh] | 50,5 | 50,1 | 52,1 | 51,3 |
+| Yakalanan fiyat [$/MWh] | 54,5 | 51,0 | 49,5 | 35,5 |
+| Kesinti | 0% | 2,2% | 8,1% | 0% |
+
+- **En etkili değişkenler:** fiyat seviyesi, CAPEX ve WACC.
+- **Ek GES'in değeri azalıyor:** İkinci 25 MW'ın enerjisinin %40'ı kesiliyor. Bu da batarya ve kapasite optimizasyonunu (Aşama 4) gerekli kılıyor.
+
+![Konfigürasyon karşılaştırması](outputs/03_finans/konfigurasyon_karsilastirma.png)
+
+Ayrıntılar: [docs/03_finansal_model.md](docs/03_finansal_model.md) · Excel: `outputs/03_finans/nakit_akisi_b.xlsx`
