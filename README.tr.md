@@ -28,16 +28,18 @@ formülasyonları `docs/` altında.
 | 3 | **Bataryanın değeri neredeyse tamamen SFK kapasite ödemesinden geliyor**, arbitrajdan değil. | Batarya gelirinin %87'si; doyumsuz durumda NPV −1,6 → +26 M$ |
 | 4 | **Doyum stres testi öneriyi değiştirdi.** SFK ihtiyacı ~1 GW, depolamalı ön lisans 28–33 GW. İngiltere, Almanya ve Avustralya ile kalibre edilen arz-talep modeli bataryayı bir *opsiyona* dönüştürüyor. | 40 MW bataryalı tasarımın P(NPV>0) değeri %97 → %59; CVaR %5: −2,5 → −30 M$ |
 | 5 | **Değerli esneklik, süre eklemek değil ölçeği ertelemek.** 30 MW (SFK eşiği) + koşullu büyütme, hem 40 MW'lık hem 4 saatlik bataryadan iyi. Beklemenin maliyeti, kazandırdığı bilgiden büyük. | E[NPV] +6,3 M$ (aşamalı) vs −0,4 M$ (4 saatlik); 1 yıl erteleme −2,1 M$ |
-| 6 | **Gerçek dünya sürtünmeleri ve üç tutarlılık düzeltmesi nihai cevabı belirliyor.** 2026'da RES kesintisi başladı; CPM + Monte Carlo takvimi inşaata hazır projede COD'u Kasım 2029'a (ön lisanstan Mayıs 2032) koyuyor. YEKDEM'de batarya arbitraj yapamıyor. YEKDEM 10 yıllık bir kilit değil, her 30 Kasım'da seçilen **yıllık bir opsiyon**. | Baz vaka E[NPV] +1,5 M$, P(NPV>0) %50; 10 yıl sabit YEKDEM −10,9 M$ |
+| 6 | **Gerçek dünya sürtünmeleri ve üç tutarlılık düzeltmesi nihai cevabı belirliyor.** 2026'da RES kesintisi başladı; CPM + Monte Carlo takvimi inşaata hazır projede COD'u Kasım 2029'a (ön lisanstan Mayıs 2032) koyuyor. YEKDEM'de batarya arbitraj yapamıyor. YEKDEM 10 yıllık bir kilit değil, her 30 Kasım'da seçilen **yıllık bir opsiyon**. Opsiyonun tüccara göre değeri +0,5 M$; 10 yıl sabit YEKDEM −12,3 M$ |
+| 7 | **Deterministik ile Monte Carlo sonucunu uzlaştırmak işareti değiştirdi.** Deterministik baz −2,4 M$ iken Monte Carlo ortalaması (saf tüccarda bile) +1,5 M$ idi. Log-fiyat süreci 58'i *medyan* olarak alıyordu; lognormal çarpıklık simüle ortalama fiyatı 61,8 $/MWh'e çıkarıyordu. Beklenen fiyat 58'e ayarlanınca fark bileşen bileşen açıklanıyor. | Baz vaka +1,5 → **−1,7 M$**, P(NPV>0) %50 → %42 |
 
-**Öneri: inşaata hazır bir proje için dar kapsamlı durum tespiti ve bağlayıcı olmayan teklif. Henüz yatırım kararı yok.**
+**Öneri: edinimi rafa kaldır, tetikleyicileri izle. Şimdilik durum tespiti bütçesi ve teklif yok.**
 
-- **Durum tespiti bütçesi:** ~0,5 M$; bilgi değeriyle belirlenen tavanı ~1,0 M$.
-- **Teklif sınırı:** azami edinim primi ~1,5 M$.
 - **Nihai baz vaka** (`config.yaml → nihai_baz_vaka`): COD Kasım 2029; RES 58,8 MW + 30 MW / 60 MWh batarya; YEKDEM yıllık
   opsiyonu (nominal koridor) + tüccar.
-- **Sonuç:** beklenen NPV **+1,5 M$**, kâr olasılığı **%50**, CVaR %5 −25,8 M$.
-- **Duyarlılık:** Değer ince. Endeksli YEKDEM koridorunda +3,1 M$, saf tüccarda +1,2 M$, PPA'da −4,0 M$.
+- **Sonuç:** beklenen NPV **−1,7 M$**, kâr olasılığı **%42**, CVaR %5 −28,0 M$, azami edinim primi 0.
+- **Duyarlılık:** Değer ince (başabaş beklenen fiyat ≈ 59 $/MWh). Endeksli YEKDEM koridorunda +0,4 M$, saf tüccarda
+  −2,1 M$, PPA'da −6,1 M$. Durum tespiti kalemlerinin bilgi değeri sıfır: olumlu sonuç bile E[NPV]'yi pozitife çevirmiyor.
+- **Yeniden değerlendirme tetikleyicileri:** YEKDEM koridorunun endeksli olduğunun teyidi; uzun vadeli fiyat beklentisi
+  ≳ 60 $/MWh; türbin + EPC maliyeti baz CAPEX'in ≳ %2 altında; yavaş depolama yayılımı (2027'de SFK fiyatı korunuyor).
   Bkz. [rapor §10](docs/RAPOR.md#10-öneri).
 
 <p align="center">

@@ -9,7 +9,87 @@ sonunda o adımın nihai öneriye etkisi ayrıca raporlandı.
 
 ---
 
-## Güncelleme 2: üç tutarlılık düzeltmesi ve düzeltilmiş nihai baz vaka (güncel)
+## Güncelleme 3: deterministik ile Monte Carlo arasındaki fark — fiyat ortalaması düzeltmesi (güncel)
+
+**Soru.** Sabit 58 $/MWh'te deterministik NPV −2,37 M$ (Excel), Monte Carlo ortalaması +1,49 M$ idi. Fiyat tabanı
+olmayan saf tüccar da +1,15 M$ çıktığı için fark YEKDEM tabanıyla açıklanamıyordu.
+
+### A1. Fiyat ortalaması
+- **Süreç:** her simülasyonda uzun dönem seviye μ ~ LogNormal(m; 0,15); log-fiyat AR(1): x_k = ln μ + φ(x_{k−1} − ln μ) + σε
+  (φ = 0,55, σ = 0,20); kriz yıllarında fiyat ×1,6 (yıllık %3 başlama, 1–2 yıl), %80 olasılıkla yenilenebilir gelirine tavan.
+- **Eski ayar:** m = ln 58, yani 58 fiyatın *medyanı*. Lognormal dağılımda beklenen değer medyandan büyüktür:
+  E[P] = medyan × exp(s²/2). Durağan dağılımın log varyansı s_μ² + σ²/(1−φ²) = 0,0225 + 0,0573 → E[L] = 58 × 1,041 = 60,4.
+- **Simülasyon (COD 2030, 10.000 yol):** ömür boyu ortalama **61,9**, iskonto ağırlıklı **61,8 $/MWh** (medyan 58,7).
+  Fark: lognormal çarpıklık (+2,4) ve kriz yılları (+1,5); 2026'daki 49 $/MWh başlangıcı COD'a kadar sönüyor.
+- **Tanım:** config'te 58, "yıllık baz yük ortalama PTF" (`fiyat_senaryolari.seviye`) ve deterministik modelde beklenen
+  fiyat olarak kullanılıyor. 45/58/72'nin "dağılımın %5/%50/%92 yüzdelikleri" olduğu notu, medyanı ortalama yerine
+  koymuştu.
+- **Düzeltme:** `monte_carlo.fiyat_uzun_ortalama.tanim = "ortalama"` → m = ln 58 − s_μ²/2 − σ²/(2(1−φ²)) = ln 55,7
+  (`src/risk/monte_carlo.log_merkez`). Kriz hariç durağan ortalama tam 58; kriz yıllarıyla simüle ortalama iskonto
+  ağırlıklı **59,4 $/MWh**. Kriz, tavanla birlikte ayrı bir olay olarak bırakıldı (net etkisi ~0, aşağıda).
+- **Tutarlılık:** YEKDEM karar kuralındaki fiyat tahmini koşullu medyandan koşullu beklenen değere çevrildi
+  (`fiyat_tahmini`: + σ²(1−φ^{2h})/(2(1−φ²)) + (1−φ^h)² s_μ²/2).
+- Çıktılar: `outputs/07/fiyat_ortalamasi_{once,sonra}.csv`, `fiyat_ortalamasi_ozet_{once,sonra}.csv`.
+
+### A2. Farkın ayrıştırılması (`src/07_fark_ayristirma.py`)
+Deterministik girdiler (Excel ile aynı: L = 58, P50, ortalama hava, baz SFK yolu, beklenen kesinti, CAPEX = 1) sırayla
+stokastik karşılıklarıyla değiştirildi. Aynı rastgele sayılar kullanıldı. S0 Excel sonucunu (−2,369), son adım baz vakayı
+birebir veriyor.
+
+| Adım | Bileşen | Önce | **Sonra** |
+|---|---|---|---|
+| Deterministik baz (58 sabit, COD 2030) | — | −2,37 | **−2,37** |
+| L = simülasyonların ortalama fiyat yolu | (i) fiyat ortalaması | +5,47 | **+2,04** |
+| Fiyat yolları stokastik (YEKDEM kapalı, tavan yok): batarya gelir satırları | (iii) | 0,00 | **0,00** |
+| aynı adım: vergi, zarar mahsubu ve diğer satırlar | (iv) | −0,92 | **−0,86** |
+| Kriz yıllarında düzenleyici tavan | (iv) | −2,11 | **−2,04** |
+| YEKDEM yıllık opsiyonu + YEKDEM fiyat belirsizliği | (ii) dışbükeylik | +0,31 | **+0,42** |
+| SFK doyum senaryoları (karışım yerine baz yol) | (iii) | +2,67 | **+2,71** |
+| Hava, RES model hatası, kanibalizasyon tabanı, sistem kesintisi | (v) | −0,90 | **−0,87** |
+| CAPEX / OPEX / batarya bozunma | (iv) | −0,90 | **−0,90** |
+| Takvim: COD 2030 → Kasım 2029 (P50) | — | +0,24 | **+0,22** |
+| **Monte Carlo beklenen NPV** | | **+1,49** | **−1,66** |
+
+**Yorum.**
+- Önceki farkın (+3,9 M$) en büyük kaynağı fiyat ortalamasıydı (+5,5 M$). Bu bir varsayım değil, ayar hatasıydı.
+- Kalan (i) +2,04 yalnız kriz yıllarından geliyor ve tavan bileşeni (−2,04) bunu tamamen geri alıyor: kriz fiyatı
+  yenilenebilir gelirine yansımıyor.
+- (iii) Batarya gelirinin fiyat oynaklığına duyarlılığı sıfır, çünkü dispatch tabloları fiyat seviyesine göre ölçekleniyor
+  (gün içi oynaklık ayrıca simüle edilmiyor). SFK tarafında ise senaryo karışımı deterministik "baz doyum" yolundan
+  +2,7 M$ yüksek. Yavaş doyumun yukarı potansiyeli büyük, hızlı doyumun kaybı fırsat maliyeti tabanıyla sınırlı. Bu
+  gerçek bir asimetri: deterministik baz SFK yolu bir "beklenen değer" değil, ortanca senaryo.
+- (iv) Vergi ve zarar mahsubu düşük fiyat yollarında kalkanı geç kullanıyor (−0,9). CAPEX dağılımı yukarı çarpık
+  (RES üçgen 0,90/1,0/1,20; ortalama 1,03) (−0,9).
+- (ii) YEKDEM opsiyonunun dışbükeyliği küçük (+0,4), çünkü nominal koridor reel olarak hızla aşınıyor.
+
+### A3. Sonuç ve karar
+
+| Baz vaka (COD Kas 2029) | E[NPV] | P(NPV>0) | CVaR %5 | NPV P10 / P90 | Azami edinim primi |
+|---|---|---|---|---|---|
+| Önce (58 = medyan) | +1,49 | %50 | −25,8 | −17,8 / 22,3 | 1,49 |
+| **Sonra (58 = beklenen değer)** | **−1,66** | **%42** | **−28,0** | −20,3 / 18,5 | **0** |
+
+| Karşılaştırma (sonra) | E[NPV] | P(NPV>0) | CVaR %5 |
+|---|---|---|---|
+| YEKDEM yıllık opsiyonu (endeksli) + tüccar | +0,43 | %46 | −22,2 |
+| Saf tüccar | −2,11 | %42 | −30,4 |
+| PPA (%70 P90, 12 yıl) | −6,05 | %28 | −26,0 |
+| YEKDEM 10 yıl sabit (nominal) | −12,25 | %12 | −29,7 |
+
+- **Karar kuralı:** baz vakada E[NPV] > 0 ve azami prim > 0 ise (a), aksi halde (b). E[NPV] −1,66 < 0 → **(b) rafa kaldır,
+  tetikleyicileri izle.**
+- **Durum tespiti bilgi değeri:** İkili bilgi formülü genelleştirildi. Olumlu durumda E = x̄ + p·kayıp, olumsuzda
+  E = x̄ + p·kayıp − kayıp; değer = (1−p)·max(E_olumlu, 0) + p·max(E_olumsuz, 0) − max(x̄, 0). Eski formül p·(kayıp − x̄)
+  yalnız x̄ > 0 için geçerliydi. Teşvik, ornitoloji ve TEİAŞ kalemleri artık **0**: olumlu sonuçlansalar bile E[NPV] < 0
+  (ör. teşvik −1,66 → −1,09). YEKDEM endekslemesi kararı değiştirebilen tek kalem (endeksliyse +0,43). EVPI 5,3 M$;
+  doyum senaryosunun bilgi değeri 2,0 M$ (durum tespitiyle çözülemez).
+- **Başabaş:** deterministik eğim ~1,35 M$ / ($/MWh) ile başabaş beklenen fiyat ≈ 59 $/MWh.
+- **Tarihsel sayılar:** Aşama 5–6 (docs/05) sonuçları medyan tanımıyla hesaplandı ve karar yolculuğunun parçası olarak
+  değiştirilmedi.
+
+---
+
+## Güncelleme 2: üç tutarlılık düzeltmesi ve düzeltilmiş nihai baz vaka (sonucu Güncelleme 3 ile değişti)
 
 Bu adım yalnız üç somut iç tutarsızlıkla sınırlı tutuldu; başka hiçbir varsayım değiştirilmedi. Sonuçlar:
 `outputs/07/baz_vaka.csv`, `baz_vaka_duzeltmeler.csv`, `yekdem_opsiyon_degeri.csv`, `yekdem_opsiyon_katilim.csv`.
@@ -99,7 +179,7 @@ süresinin uzamasından büyük. Geliştirme senaryosu: P50 Mayıs 2032. **Tek b
 | PPA (%70 P90, 12 yıl) | −3,98 | %34 | −24,4 |
 | YEKDEM 10 yıl sabit (nominal) | −10,92 | %14 | −28,6 |
 
-**Öneri:** Beklenen NPV pozitif (+1,5 M$) ama ince. Kâr olasılığı yarı yarıya, sol kuyruk kalın. Bu, bir **edinim primi
+**Öneri (Güncelleme 3 ile değişti: fiyat ortalaması düzeltmesiyle E[NPV] −1,7 M$ → rafa kaldır):** Beklenen NPV pozitif (+1,5 M$) ama ince. Kâr olasılığı yarı yarıya, sol kuyruk kalın. Bu, bir **edinim primi
 sınırı** (~1,5 M$) ve dar kapsamlı bir durum tespiti (due diligence) ile **bağlayıcı olmayan teklif** yetkisini haklı
 çıkarıyor; kesin bir yatırım kararını değil. Aşağıdaki Ö1–Ö2 bölümündeki "yatırım önerilmez" sonucu bu düzeltmelerle
 geçersiz kaldı.

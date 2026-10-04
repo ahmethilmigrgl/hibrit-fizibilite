@@ -99,36 +99,38 @@ def main():
     baz = b[b["Baz vaka"]].iloc[0]
     end = b[b["Senaryo"].str.contains("endeksli")].iloc[0]
     sabit = b[b["Senaryo"].str.contains("sabit")].iloc[0]
-    dd = pd.read_csv(CIKTILAR / "07" / "durum_tespiti_bilgi_degeri.csv", index_col=0)["değer"]
-    tavan = dd.filter(like="tavanı").iloc[0]
     e, prim = baz["Beklenen NPV [M USD]"], baz["Azami edinim primi [M USD]"]
+    if e > 0 and prim > 0:      # memo karar kuralı: (a) durum tespiti + sınırlı teklif; metinler (b) için yazıldı
+        raise SystemExit("Baz vaka E[NPV] > 0: karar (a). Sunum metinleri (b) 'rafa kaldır' için yazıldı; önce güncelleyin.")
+    tuc = b[b["Senaryo"] == "Tüccar"].iloc[0]
     KAYNAK = "Kaynak: kendi modelim (Pyomo + HiGHS, Monte Carlo 10.000 simülasyon). Reel 2026 USD, %7 reel WACC."
     S = Sunum()
 
     # 1 — Başlık
-    s = S.slayt("Ezine RES + batarya: inşaata hazır bir proje için durum tespiti ve sınırlı teklif öneriyoruz")
+    s = S.slayt("Ezine RES + batarya: edinimi şimdilik rafa kaldırmayı ve tetikleyicileri izlemeyi öneriyoruz")
     S.yazi(s, KENAR, 2.3, 11, 0.5, "Hibrit güneş–rüzgâr–batarya fizibilitesi · Çanakkale-Ezine · 50 MW şebeke bağlantısı",
            boyut=16, renk=IKINCIL)
     S.yazi(s, KENAR, 2.85, 11, 0.5, "Yatırım komitesi sunumu · Ekim 2026 · Ahmet Hilmi Görgülü", boyut=14, renk=IKINCIL)
-    S.kutu(s, KENAR, 4.3, 3.8, 1.6, "Talep edilen karar 1", "0,5 M$", "dar kapsamlı durum tespiti bütçesi")
-    S.kutu(s, KENAR + 4.05, 4.3, 3.8, 1.6, "Talep edilen karar 2", f"≤ {tr(prim)} M$", "edinim primiyle sınırlı bağlayıcı olmayan teklif")
-    S.kutu(s, KENAR + 8.1, 4.3, 3.8, 1.6, "Bu bir FID değil", "6 koşul", "FID, durum tespiti sonrası ayrıca", renk=TURUNCU)
+    S.kutu(s, KENAR, 4.3, 3.8, 1.6, "Baz vaka beklenen NPV", f"{tr(e)} M$", f"kâr olasılığı %{baz['P(NPV > 0) [%]']:.0f}", renk=TURUNCU)
+    S.kutu(s, KENAR + 4.05, 4.3, 3.8, 1.6, "Talep edilen karar", "Rafa kaldır", "durum tespiti bütçesi ve teklif yok", renk=SOLUK)
+    S.kutu(s, KENAR + 8.1, 4.3, 3.8, 1.6, "Yeniden değerlendirme", "5 tetikleyici", "YEKDEM endeksleme, fiyat, CAPEX, SFK, kesinti")
 
     # 2 — Yönetici özeti
-    s = S.slayt(f"Değer pozitif ama ince: kesin yatırım değil, durum tespiti ve ≤ {tr(prim)}\u00a0M$ teklif",
+    s = S.slayt(f"Değer marjinal olarak negatif ({tr(e)}\u00a0M$): edinimi rafa kaldır, gözlenebilir tetikleyicileri izle",
                 "Nihai baz vaka: inşaata hazır proje, COD Kasım 2029; RES 58,8 MW + batarya 30 MW / 60 MWh; YEKDEM yıllık opsiyonu + tüccar",
                 KAYNAK)
     w = (G - 2 * KENAR - 0.75) / 4
-    for i, (u, d, a, r) in enumerate([("Beklenen NPV", f"+{tr(e)} M$", f"endeksli YEKDEM'de +{tr(end['Beklenen NPV [M USD]'])} M$", MAVI),
-                                      ("Kâr olasılığı P(NPV>0)", f"%{baz['P(NPV > 0) [%]']:.0f}", "yarı yarıya", MAVI),
+    for i, (u, d, a, r) in enumerate([("Beklenen NPV", f"{tr(e)} M$", f"endeksli YEKDEM'de {tr(end['Beklenen NPV [M USD]'], '+.1f')} M$", TURUNCU),
+                                      ("Kâr olasılığı P(NPV>0)", f"%{baz['P(NPV > 0) [%]']:.0f}", f"saf tüccarda %{tuc['P(NPV > 0) [%]']:.0f}", MAVI),
                                       ("En kötü %5 ortalaması", f"{tr(baz['CVaR %5 [M USD]'])} M$", "CVaR %5", TURUNCU),
-                                      ("Azami edinim primi", f"{tr(prim)} M$", f"durum tespiti tavanı {tr(tavan)} M$", YESIL)]):
+                                      ("Başabaş beklenen fiyat", "≈ 59 $/MWh", "baz varsayım 58 $/MWh", MAVI)]):
         S.kutu(s, KENAR + i * (w + 0.25), 2.2, w, 1.6, u, d, a, r)
     S.yazi(s, KENAR, 4.2, G - 2 * KENAR, 2.8, [
         [("GES elendi. ", True), ("Güneş kendi öğle fiyatını düşürüyor; hiçbir optimal tasarıma girmedi.", False)],
         [("Batarya SFK geliri için. ", True), ("30 MW, ikili SFK katılım eşiği; piyasa doyarsa kaybı küçük, yavaş doyumda kazancı büyük.", False)],
         [("YEKDEM bir taban. ", True), (f"Her yıl seçilebilen opsiyon olarak değerli; 10 yıl kilitlemek E[NPV]'yi {tr(sabit['Beklenen NPV [M USD]'])} M$'a düşürüyor.", False)],
-        [("Durum tespiti değeri ölçülebilir. ", True), (f"TEİAŞ SFK görüşü, teşvik belgesi ve ornitoloji kalemlerinin bilgi değeri toplamı {tr(tavan, '.2f')} M$.", False)],
+        [("Önceki +1,5 M$ bir tutarsızlıktı. ", True), ("Monte Carlo'da 58 fiyatın medyanıydı; ortalama 61,8'e çıkıyordu. Düzeltilince −1,7 M$.", False)],
+        [("Durum tespitinin bilgi değeri sıfır. ", True), ("Olumlu sonuçlar bile E[NPV]'yi pozitife çevirmiyor; tek istisna YEKDEM endekslemesi.", False)],
     ], boyut=15)
 
     # 3 — Problem ve yaklaşım
@@ -178,7 +180,7 @@ def main():
     S.gorsel(s, KOK / "outputs/05_risk/s_senaryo_npv.png")
 
     # 8 — Gelir yapıları
-    s = S.slayt("YEKDEM'i her yıl seçilebilen bir taban olarak kullanmak en iyi yapı; 10 yıl kilitlemek değeri yok ediyor",
+    s = S.slayt("YEKDEM'i her yıl seçilebilen bir taban olarak kullanmak en iyi yapı, ama nominal koridorda değer yine negatif",
                 "YEK Yönetmeliği md. 4/2, 5/1: katılım her yıl 30 Kasım'a kadar ayrı karar. Opsiyon, fiyat düştüğü yıllarda koridora sığınma hakkı veriyor.",
                 KAYNAK)
     S.gorsel(s, GRAF / "gelir_yapilari.png")
@@ -196,27 +198,26 @@ def main():
     S.gorsel(s, KOK / "outputs/07/risk_isi_haritasi.png")
 
     # 11 — Karar yolculuğu
-    s = S.slayt("Karar dört kez değişti: önce iyimser SFK varsayımı, sonra kötümser sabit YEKDEM varsayımı düzeltildi",
-                "Her nokta o aşamadaki önerinin beklenen NPV'si. Son adım üç tutarlılık düzeltmesi: YEKDEM yıllık opsiyonu (+12,5), ortak batarya sürücüsü (+0,2), inşaata hazır takvim (+0,2).",
+    s = S.slayt("Karar beş kez değişti: iyimser SFK, kötümser sabit YEKDEM ve iyimser fiyat ortalaması varsayımları düzeltildi",
+                "Her nokta o aşamadaki önerinin beklenen NPV'si. Tutarlılık 2: YEKDEM yıllık opsiyonu, ortak batarya sürücüsü, inşaata hazır takvim. Nihai: 58 $/MWh medyan değil beklenen değer.",
                 KAYNAK)
     S.gorsel(s, GRAF / "karar_yolculugu.png")
 
-    # 12 — Öneri, karar ve koşullar
-    s = S.slayt(f"Talep: 0,5 M$ durum tespiti ve ≤ {tr(prim)} M$ primle bağlayıcı olmayan teklif; FID altı koşula bağlı",
-                f"Durum tespiti kalemleri FID koşullarından; bütçe tavanı her kalemin bilgi değeri (EVPPI) toplamı: {tr(tavan, '.2f')} M$.",
+    # 12 — Öneri, karar ve tetikleyiciler
+    s = S.slayt("Talep: edinimi rafa kaldır; değeri pozitif gösteren fark fiyat ortalamasındaki bir ayar hatasıydı",
+                "Deterministik baz (−2,4 M$) ile Monte Carlo arasındaki fark bileşenlere ayrıldı. Çubuk: düzeltme sonrası; nokta: öncesi (58 = medyan).",
                 KAYNAK)
-    S.gorsel(s, GRAF / "dd_bilgi_degeri_dar.png", x=KENAR, y=2.2, w=7.4, h=4.7)
+    S.gorsel(s, GRAF / "kopru.png", x=KENAR, y=2.2, w=7.4, h=4.7)
     S.yazi(s, KENAR + 7.8, 2.25, G - 2 * KENAR - 7.8, 4.6, [
-        [("FID koşulları", True)],
-        "1. TEİAŞ SFK ön yeterliliği",
-        "2. Yatırım teşvik belgesi",
-        "3. COD ≤ 31.12.2030 güvencesi (türbin slotu, cezalı EPC)",
-        "4. YEKDEM endekslemesine hukuki görüş",
-        "5. Ornitoloji yükümlülüklerinin maliyeti",
-        "6. Borç, SFK geliri olmadan boyutlanır",
-        [("Vazgeç tetikleyicileri", True)],
-        "Teşvik belgesi yok · fiyat beklentisi < ~52 $/MWh · türbin teslimi > 24 ay",
-        [("Prim tavanı 3,1 M$'a çıkabilir: ", True), ("YEKDEM koridoru endeksli teyit edilirse (komiteye dönülür).", False)],
+        [("Durum tespiti bütçesi ve teklif yok", True)],
+        "TEİAŞ, teşvik ve ornitoloji kalemleri olumlu sonuçlansa bile E[NPV] < 0: bilgi değerleri sıfır.",
+        [("Yeniden değerlendirme tetikleyicileri", True)],
+        f"1. YEKDEM koridoru endeksli teyit edilir (E[NPV] {tr(end['Beklenen NPV [M USD]'], '+.1f')} M$)",
+        "2. Uzun vadeli fiyat beklentisi ≳ 60 $/MWh",
+        "3. Türbin + EPC maliyeti ≳ %2 düşer",
+        "4. 2027'de depolama < ~1 GW, SFK fiyatı korunur",
+        "5. RES'lere sistem kesintisi 2027'de < %5",
+        [("Pencere: ", True), ("tetikleyici 2027 ortasından sonra gelirse YEKDEM'e erişim riski artar.", False)],
     ], boyut=13)
 
     # 13 — Ek: yöntem ve varsayımlar

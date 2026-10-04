@@ -11,15 +11,17 @@ Kod ve veri hattı: proje deposu (`calistir.py`); ayrıntılı formülasyonlar `
 **Soru.** Türkiye'de 50 MW'lık bir şebeke bağlantısına güneş (GES), rüzgâr (RES) ve batarya (BESS) kapasitelerinden
 hangi bileşim kurulmalı ve bu yatırım belirsizlik altında yapılmalı mı?
 
-**Cevap.** **Kesin yatırım için henüz değil; inşaata hazır bir proje için dar kapsamlı durum tespiti (due diligence) ve
-azami ~1,5 M$ primle bağlayıcı olmayan teklif için evet.**
+**Cevap.** **Şimdilik hayır: proje rafa kaldırılmalı ve gözlenebilir tetikleyiciler izlenmeli.** Tasarım belli
+(RES + batarya, GES yok), ama 58 $/MWh beklenen fiyatta değer marjinal olarak negatif.
 
 - **Nihai baz vaka** (`config.yaml → nihai_baz_vaka`): inşaata hazır proje, COD Kasım 2029 (takvim P50); RES 58,8 MW +
   30 MW / 60 MWh batarya; her yıl 30 Kasım'da verilen YEKDEM katılım kararı (nominal koridor) ve aksi halde tüccar.
-  **Sonuç:** beklenen NPV **+1,5 M$**, kâr olasılığı **%50**, en kötü %5'in ortalaması −25,8 M$, azami edinim primi **1,5 M$**.
-- **Değer ince ve belirsizliğe çok bağlı.** Endeksli YEKDEM koridorunda +3,1 M$; saf tüccarda +1,2 M$; PPA'da −4,0 M$.
-- **Durum tespiti bütçesi tavanı ~1,0 M$:** TEİAŞ SFK kabulü, teşvik belgesi ve ornitoloji kalemlerinin bilgi değeri
-  toplamı. Önerilen bütçe ~0,5 M$.
+  **Sonuç:** beklenen NPV **−1,7 M$**, kâr olasılığı **%42**, en kötü %5'in ortalaması −28,0 M$, azami edinim primi **0**.
+- **Önceki "+1,5 M$" bir model tutarsızlığından geliyordu.** Monte Carlo'da 58 $/MWh fiyat medyanıydı; lognormal
+  çarpıklık yüzünden simüle ortalama 61,8 $/MWh çıkıyordu. Beklenen fiyat 58'e sabitlenince sonuç −1,7 M$ (§9.1).
+- **Değer ince.** Endeksli YEKDEM koridorunda +0,4 M$; saf tüccarda −2,1 M$; PPA'da −6,1 M$. Başabaş beklenen fiyat ≈ 59 $/MWh.
+- **Durum tespitine bütçe ayrılmıyor:** TEİAŞ, teşvik belgesi ve ornitoloji kalemleri olumlu sonuçlansa bile beklenen
+  NPV negatif kalıyor; bilgi değerleri sıfır. Kararı değiştirebilecek tek kalem YEKDEM endekslemesi.
 
 **Ana bulgular**
 
@@ -30,11 +32,12 @@ azami ~1,5 M$ primle bağlayıcı olmayan teklif için evet.**
 | 3 | Bataryanın değeri SFK'dan geliyor ve SFK piyasası doyma riskinde | Gelirin %87'si; doyumla P(NPV>0) %97 → %59 |
 | 4 | 2026'da sistem kaynaklı kesinti başladı | Sistem YAT 2,9 → 9,5 TWh; Ezine'de ~%9,5 |
 | 5 | Gerçekçi takvim COD'u ~2–4 yıl kaydırıyor | COD P50 Kas 2029 (inşaata hazır) / May 2032 (geliştirme) |
-| 6 | YEKDEM her yıl seçilebilen bir opsiyon; sabit nominal YEKDEM baskın olunan bir stratejiydi | Opsiyonlu baz vaka +1,5 M$ (10 yıl sabit: −10,9 M$) |
+| 6 | YEKDEM her yıl seçilebilen bir opsiyon; sabit nominal YEKDEM baskın olunan bir stratejiydi | Opsiyon değeri +0,5 M$ (10 yıl sabit: −12,3 M$) |
+| 7 | Beklenen fiyat medyan değil ortalama olarak ayarlanınca değer negatife döndü | Fiyat ortalaması 61,8 → 59,4 $/MWh (kriz hariç 58); baz vaka +1,5 → −1,7 M$ |
 
 **Öneri nasıl evrildi?** Koşullu onay (Aşama 6) → inşaata hazır proje + YEKDEM (Aşama 7) → "hayır" (YEKDEM/PPA'da batarya
 arbitrajı düzeltmesi) → dar kapsamlı durum tespiti + teklif (YEKDEM'in yıllık opsiyon yapısı, ortak batarya sürücüsü ve
-takvim düzeltmeleri). Bkz. §9–§10.
+takvim düzeltmeleri) → rafa kaldır, tetikleyicileri izle (fiyat ortalaması düzeltmesi). Bkz. §9–§10.
 
 <div class="sayfa-sonu"></div>
 
@@ -323,14 +326,14 @@ YEKDEM reel fiyatı > 1,066 × beklenen PTF ise katıl.
 
 | | COD 2028 (model) E[NPV] | **COD Kas 2029 (baz vaka) E[NPV]** | P(NPV>0) | CVaR %5 |
 |---|---|---|---|---|
-| **YEKDEM yıllık opsiyonu (nominal) + tüccar — baz vaka** | +4,9 | **+1,5** | %50 | −25,8 |
-| YEKDEM yıllık opsiyonu (endeksli) + tüccar | +6,4 | +3,1 | %54 | −20,5 |
-| Tüccar | +4,4 | +1,2 | %50 | −27,8 |
-| PPA | −1,0 | −4,0 | %34 | −24,4 |
-| YEKDEM 10 yıl sabit (nominal) | −6,3 | −10,9 | %14 | −28,6 |
+| **YEKDEM yıllık opsiyonu (nominal) + tüccar — baz vaka** | +1,5 | **−1,7** | %42 | −28,0 |
+| YEKDEM yıllık opsiyonu (endeksli) + tüccar | +3,4 | +0,4 | %46 | −22,2 |
+| Tüccar | +0,9 | −2,1 | %42 | −30,4 |
+| PPA | −3,3 | −6,1 | %28 | −26,0 |
+| YEKDEM 10 yıl sabit (nominal) | −7,8 | −12,3 | %12 | −29,7 |
 
-Opsiyonun saf tüccara göre değeri +0,3 M$. Nominal koridor reel olarak aşındığı için YEKDEM yalnız fiyatların düştüğü
-yıllarda seçiliyor (katılım 2. yılda %15, sonra azalıyor).
+Opsiyonun saf tüccara göre değeri +0,5 M$ (endeksliyse +2,5 M$). Nominal koridor reel olarak aşındığı için YEKDEM yalnız
+fiyatların düştüğü yıllarda seçiliyor (katılım 2. yılda %17, 10. yılda %1; endeksli koridorda ~%30).
 
 ![Gelir yapıları](../outputs/07/gelir_yapilari.png)
 
@@ -353,12 +356,50 @@ yıllarda seçiliyor (katılım 2. yılda %15, sonra azalıyor).
   kaldırıldı; gerçekçi takvimde FID'e kadar doyum zaten gözlenmiş olacak.
 - **Takvim kontrolü:** İnşaata hazır projede bağlantı anlaşması tamam; finansman PPA'yı beklemiyor; türbin teslimi
   2024–25 sektör verisine göre 12/18/30 ay. Bununla COD P50 Kasım 2029, P80 Mart 2030 (önceden P50 Mart 2030).
-- **Takvim → NPV:** 1,8 yıllık kayma, baz vaka yapısında beklenen NPV'yi 4,9'dan 1,5 M$'a indiriyor. Bunun nedeni SFK
+- **Takvim → NPV:** 1,8 yıllık kayma, baz vaka yapısında beklenen NPV'yi +1,5'ten −1,7 M$'a indiriyor. Bunun nedeni SFK
   penceresinin kapanması ve kesintinin büyümesi.
 
 ![Gantt](../outputs/07/takvim_gantt.png)
 
 ![COD](../outputs/07/takvim_cod_kritiklik.png)
+
+### 9.1 Deterministik baz ile Monte Carlo arasındaki fark
+
+Sabit 58 $/MWh'te deterministik NPV −2,4 M$ (Excel modeli), Monte Carlo ortalaması ise +1,5 M$ çıkıyordu. Fiyat tabanı
+olmayan saf tüccar da +1,2 M$ olduğu için fark YEKDEM tabanıyla açıklanamazdı.
+
+**Fiyat ortalaması.** Log-fiyat süreci (uzun dönem seviye μ ~ LogNormal, log-AR(1), φ = 0,55, σ = 0,20) ln 58 etrafında
+kurulmuştu: 58 fiyatın *medyanıydı*. Beklenen değer E[P] = medyan × exp(s²/2) ile daha yüksek kalır. Durağan
+dağılımda E[L] = exp(m + s_μ²/2 + σ²/(2(1−φ²))) = 58 × 1,041 = 60,4; kriz yılları (×1,6) eklenince simüle ortalama
+iskonto ağırlıklı **61,8 $/MWh** oluyordu. Config'te 58, "yıllık baz yük ortalama PTF" olarak tanımlı ve deterministik
+modelde beklenen fiyat yerine kullanılıyor. Bu yüzden süreç merkezi m = ln 58 − s_μ²/2 − σ²/(2(1−φ²)) (= ln 55,7)
+yapıldı (`monte_carlo.fiyat_uzun_ortalama.tanim = "ortalama"`). Kriz hariç ortalama artık tam 58; kriz yıllarıyla
+59,4. YEKDEM karar kuralındaki fiyat tahmini de koşullu medyandan koşullu beklenen değere çevrildi.
+
+**Ayrıştırma** (`src/07_fark_ayristirma.py`). Deterministik girdiler sırayla stokastik karşılıklarıyla değiştirildi;
+aynı rastgele sayılar kullanıldı. İlk adım Excel sonucunu, son adım baz vakayı birebir veriyor.
+
+| Bileşen | Düzeltme öncesi | **Düzeltme sonrası** |
+|---|---|---|
+| Deterministik baz (58 sabit, COD 2030) | −2,37 | **−2,37** |
+| (i) Fiyat ortalaması sapması | +5,47 | **+2,04** (yalnız kriz yılları) |
+| (iii) Fiyat oynaklığı — batarya gelirleri | 0,00 | **0,00** (dispatch fiyata doğrusal) |
+| (iv) Fiyat oynaklığı — vergi, mahsup vb. | −0,92 | **−0,86** |
+| (iv) Kriz yıllarında düzenleyici tavan | −2,11 | **−2,04** |
+| (ii) YEKDEM yıllık opsiyonu (dışbükeylik) | +0,31 | **+0,42** |
+| (iii) SFK doyum senaryoları (karışım ≠ baz yol) | +2,67 | **+2,71** |
+| (v) Hava, model hatası, kanibalizasyon, kesinti | −0,90 | **−0,87** |
+| (iv) CAPEX / OPEX / bozunma | −0,90 | **−0,90** |
+| Takvim: COD 2030 → Kas 2029 | +0,24 | **+0,22** |
+| **Monte Carlo beklenen NPV** | **+1,49** | **−1,66** |
+
+**Yorum.** Farkın en büyük kaynağı fiyat ortalamasıydı (+5,5 M$). Düzeltmeden sonra kalan bileşenler birbirini büyük
+ölçüde götürüyor. Kriz fiyatı ortalamayı yükseltiyor ama tavan bunu yenilenebilir gelirine yansıtmıyor. SFK
+senaryolarının ortalaması deterministik "baz doyum" yolundan yüksek: yavaş doyumun yukarı potansiyeli büyük, hızlı
+doyumun kaybı fırsat maliyetiyle sınırlı. CAPEX belirsizliği yukarı çarpık. Bataryanın fiyat oynaklığından kazancı
+sıfır, çünkü dispatch tabloları fiyat seviyesine göre ölçekleniyor. Oynaklığın gün içi şekli ayrıca modellenmiyor.
+
+![Fark ayrıştırması](../outputs/07/fark_ayristirma_sonra.png)
 
 **Risk kaydı.** 20 risk. En yüksek beşi: fiyat seviyesi (20), SFK doyumu (16), ÇED/imar gecikmesi (16), YEKDEM
 sınırlarının nominal kalması (12), YEKDEM için 2030 COD sınırını kaçırma (12). Modelde olmayanlardan en önemlisi
@@ -368,34 +409,32 @@ ornitoloji: Çanakkale Boğazı süzülen kuş göç yolu (`outputs/07/risk_kayd
 
 ## 10. Öneri
 
-| | Aşama 6 | Aşama 7 | Ö1–Ö2 | **Nihai (üç tutarlılık düzeltmesi sonrası)** |
-|---|---|---|---|---|
-| Karar | Koşullu onay | İnşaata hazır + YEKDEM: koşullu onay | Yatırım önerilmez | **Dar kapsamlı durum tespiti + bağlayıcı olmayan teklif** |
-| Tasarım | RES 58,8 + 30 MW aşamalı | Aynı | RES 58,8 + 30/60 | RES 58,8 + 30/60 |
-| Gelir yapısı | PPA | YEKDEM | YEKDEM sabit nominal | **YEKDEM yıllık opsiyonu + tüccar** |
-| Beklenen NPV | +4,5 | +2,1 | −11,4 | **+1,5 M$** |
-| Azami edinim primi | — | ~2 M$ | 0 | **~1,5 M$** |
+| | Aşama 6 | Aşama 7 | Ö1–Ö2 | Güncelleme 2 | **Nihai (fiyat ortalaması düzeltmesi)** |
+|---|---|---|---|---|---|
+| Karar | Koşullu onay | İnşaata hazır + YEKDEM: koşullu onay | Yatırım önerilmez | Durum tespiti + sınırlı teklif | **Rafa kaldır, tetikleyicileri izle** |
+| Tasarım | RES 58,8 + 30 MW aşamalı | Aynı | RES 58,8 + 30/60 | RES 58,8 + 30/60 | RES 58,8 + 30/60 |
+| Gelir yapısı | PPA | YEKDEM | YEKDEM sabit nominal | YEKDEM yıllık opsiyonu + tüccar | **YEKDEM yıllık opsiyonu + tüccar** |
+| Beklenen NPV | +4,5 | +2,1 | −11,4 | +1,5 | **−1,7 M$** |
+| Azami edinim primi | — | ~2 M$ | 0 | ~1,5 M$ | **0** |
 
-**Karar:** İnşaata hazır bir Ezine RES projesinin edinimi için (i) ~0,5 M$'lık durum tespiti bütçesinin onayı (tavan
-~1,0 M$, EVPPI ile gerekçeli) ve (ii) en fazla ~1,5 M$ edinim primiyle sınırlı, bağlayıcı olmayan teklif yetkisi.
+**Karar:** İnşaata hazır Ezine RES + batarya projesinin edinimi rafa kaldırılır; durum tespiti bütçesi ve teklif yetkisi
+istenmez. Durum tespiti kalemlerinin (TEİAŞ SFK, teşvik belgesi, ornitoloji) bilgi değeri sıfır: olumlu sonuçlansalar
+bile beklenen NPV negatif kalıyor. Tüm belirsizliğin bilgi değeri (EVPI 5,3 M$) fiyat ve SFK doyumundan geliyor; bunlar
+zamanla gözlenir.
 
-**Durum tespiti kapsamı (FID koşullarından):**
-1. TEİAŞ'tan bataryanın SFK ön yeterliliği.
-2. YEKDEM koridorunun endekslemesine dair hukuki görüş. Endeksliyse azami prim ~3,1 M$'a çıkar.
-3. Teşvik belgesi.
-4. Ornitoloji ve işletme izleme yükümlülükleri.
-5. COD ve türbin teslim slotunun teyidi.
-
-**Tetikleyiciler:**
+**Tetikleyiciler (üç ayda bir izlenir):**
 
 | Gösterge | Eşik | Karar |
 |---|---|---|
-| TEİAŞ SFK ön yeterliliği | Red | Bataryasız değerle yeniden fiyatla (teklif primi düşer) |
-| YEKDEM endekslemesi | Teyit | Azami prim ~3,1 M$'a çıkar |
-| Teşvik belgesi | Alınamaz | Vazgeç (−5,8 M$) |
-| RES'lere YAT/kesinti | 2027'de de > %8 | Teklifi düşür |
-| Uzun vadeli fiyat beklentisi | < ~52 $/MWh | Vazgeç |
-| İşletmedeki depolama | FID'de > ~1,5 GW | Batarya 30 MW'ta, SFK değeri düşük |
+| YEKDEM endekslemesi | Teyit | Komiteye dön: E[NPV] +0,4 M$, azami prim ~0,4 M$ |
+| Uzun vadeli fiyat beklentisi / PPA teklifleri | ≳ 60 $/MWh | Yeniden değerlendir (başabaş ≈ 59) |
+| Türbin + EPC fiyatı | Baz CAPEX'in ≳ %2 altında | Yeniden değerlendir |
+| İşletmedeki depolama ve SFK fiyatı | 2027'de < ~1 GW, SFK fiyatı korunuyor | Yavaş doyum: yeniden değerlendir |
+| RES'lere YAT/kesinti | 2027'de < %5 | Yeniden değerlendir |
+| COD penceresi | Tetikleyici 2027 ortasından sonra | YEKDEM'siz değer (−2,1 M$) esas alınır |
+
+Yeniden değerlendirmede durum tespiti kapsamı: TEİAŞ SFK ön yeterliliği, teşvik belgesi, ornitoloji, YEKDEM endeksleme
+hukuki görüşü, COD ve türbin slotu.
 
 ## 11. Sınırlamalar ve sonraki adımlar
 
@@ -408,6 +447,8 @@ ornitoloji: Çanakkale Boğazı süzülen kuş göç yolu (`outputs/07/risk_kayd
   çoğu kapasite ödemesi.
 - **Kur ve finansman:** Kur riski ayrıca modellenmedi (reel USD). Borç simülasyonda yeniden yapılandırılmıyor.
 - **Aşamalı büyütme:** Karar basit bir eşik kuralı; optimal durma problemi olarak çözülmedi.
+- **Tarihsel sayılar:** Aşama 5–6 sonuçları (§7–§8, docs/05) fiyatın medyan tanımıyla hesaplandı ve karar yolculuğunun
+  bir parçası olarak bırakıldı; bu yüzden beklenen fiyatı ~4 $/MWh yüksek varsayıyorlar. Nihai sayılar §9–§10'dadır.
 
 **Sonraki adımlar (gerçek bir proje için):**
 1. En az 12 aylık met direği / LiDAR ölçümü ve MCP ile uzun dönem düzeltme; türbin yerleşimi ve iz kaybı analizi.

@@ -28,7 +28,7 @@ from src import gorsel as g
 from src.ayarlar import CIKTILAR, deger
 from src.risk.degerleme import borc_boyutla, irr_vektor, nakit_akislari, ozkaynak
 from src.risk.doyum import ornekle_doyum
-from src.risk.monte_carlo import ornekle, ucgen_ters
+from src.risk.monte_carlo import ornekle, ucgen_ters, yekdem_katilim
 from src.risk.tasarim import Tasarim
 from src.risk.yekdem_tablo import yekdem_tablosu
 
@@ -193,16 +193,11 @@ def main():
     kes_yb = kesinti_ornekle(cfg, n, yil_ext, senaryo, np.random.default_rng(tohum + 11), True, kurtarma, deger_faktoru, yekdem=True, **kw)
     kes_y0 = kesinti_ornekle(cfg, n, yil_ext, senaryo, np.random.default_rng(tohum + 11), False, kurtarma, deger_faktoru, yekdem=True, **kw)
     # --- YEKDEM yıllık opsiyonu: karar t−1 yılının 30 Kasım'ında, o gün bilinen bilgiyle (YEK Yön. md. 4/2, 5/1, 8/1)
-    fs_ = deger(cfg["monte_carlo"]["fiyat_sureci"]); mu_hat = deger(cfg["monte_carlo"]["fiyat_uzun_ortalama"])["medyan"]
     yo = deger(cfg["yekdem_opsiyon"])
     L_ext = girdi_ext["L"]
     def yekdem_karar(yol, kd):
         """(n × N) katılım: YEKDEM reel fiyatı > beklenen tüccar geliri/MWh × (1 + arbitraj kaybı payı), yalnız ilk 10 işletme yılı."""
-        kol = np.arange(kd, kd + N)
-        onceki = np.where(kol[None, :] >= 1, L_ext[:, np.clip(kol - 1, 0, None)],
-                          mu_hat * (49.0 / mu_hat) ** (fs_["phi"] ** 2))          # 2027: 2026 seviyesinden tahmin
-        tahmin = np.exp(np.log(mu_hat) + fs_["phi"] * (np.log(onceki) - np.log(mu_hat)))
-        return (yol[:, kol] > tahmin * yo["esik_carpani"]) & (k_[None, :] <= yk["sure_yil"])
+        return yekdem_katilim(cfg, L_ext, yol, kd, N, yo["esik_carpani"], yk["sure_yil"])
     sec_kes = lambda pil, yapi: (kes_yb if pil else kes_y0) if yapi.startswith("yekdem") else (kes_b if pil else kes_0)
     log(f"Kesinti oranı κ (2028): ortalama {kes_0['kappa'][:, 0].mean():.1%}, P90 {np.percentile(kes_0['kappa'][:, 0], 90):.1%}")
     baz_yol = st.deterministik_yol(cfg, "baz", o.yillar, firsat_oran)

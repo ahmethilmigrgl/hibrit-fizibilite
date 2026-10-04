@@ -90,19 +90,30 @@ with sekmeler[0]:
     st.subheader(T("Yatırım önerisi", "Investment recommendation"))
     bv = oku("baz_vaka.csv"); b0 = bv[bv["Baz vaka"]].iloc[0]; tuc = bv[bv["Senaryo"] == "Tüccar"].iloc[0]
     dd = oku("durum_tespiti_bilgi_degeri.csv", index_col=0)["değer"]
-    st.info(T(
-        f"**Dar kapsamlı durum tespiti ve bağlayıcı olmayan teklif; henüz yatırım kararı yok.** Nihai baz vaka: inşaata hazır proje, "
-        f"COD {b0['COD']}, RES 58,8 MW + 30 MW / 60 MWh batarya, her yıl seçilen YEKDEM (nominal koridor) + tüccar → beklenen NPV "
-        f"{sayi(b0['Beklenen NPV [M USD]'])} M$, kâr olasılığı {yuzde(b0['P(NPV > 0) [%]'])}, azami edinim primi "
-        f"{sayi(b0['Azami edinim primi [M USD]'])} M$. Durum tespiti bütçesi tavanı {sayi(dd.iloc[-1])} M$ (bilgi değeri).",
-        f"**Narrow due diligence and a non-binding offer; no investment decision yet.** Final base case: ready-to-build project, COD "
-        f"{b0['COD']}, 58.8 MW wind + 30 MW / 60 MWh battery, YEKDEM chosen year by year (nominal corridor) + merchant → expected NPV "
-        f"{sayi(b0['Beklenen NPV [M USD]'])} M$, probability of profit {yuzde(b0['P(NPV > 0) [%]'])}, maximum acquisition premium "
-        f"{sayi(b0['Azami edinim primi [M USD]'])} M$. Due diligence budget cap {sayi(dd.iloc[-1])} M$ (value of information)."))
-    st.caption(T("Öneri dört kez değişti: SFK doyum stres testi (kâr olasılığı %97 → %59), Aşama 7'nin gerçek dünya analizleri, YEKDEM/PPA'da "
-                 "batarya arbitrajı düzeltmesi (\"hayır\") ve YEKDEM'in yıllık opsiyon yapısı + ortak batarya sürücüsü + takvim düzeltmeleri. docs/RAPOR.md §10.",
-                 "The recommendation changed four times: the SFK saturation stress test (97% → 59%), stage 7's real-world analysis, the battery "
-                 "arbitrage fix under YEKDEM/PPA (\"no\") and YEKDEM's annual-option structure + common battery driver + schedule fixes. docs/RAPOR.md §10."))
+    ozet_tr = (f"Nihai baz vaka: inşaata hazır proje, COD {b0['COD']}, RES 58,8 MW + 30 MW / 60 MWh batarya, her yıl seçilen YEKDEM "
+               f"(nominal koridor) + tüccar → beklenen NPV {sayi(b0['Beklenen NPV [M USD]'])} M$, kâr olasılığı {yuzde(b0['P(NPV > 0) [%]'])}, "
+               f"azami edinim primi {sayi(b0['Azami edinim primi [M USD]'])} M$.")
+    ozet_en = (f"Final base case: ready-to-build project, COD {b0['COD']}, 58.8 MW wind + 30 MW / 60 MWh battery, YEKDEM chosen year by "
+               f"year (nominal corridor) + merchant → expected NPV {sayi(b0['Beklenen NPV [M USD]'])} M$, probability of profit "
+               f"{yuzde(b0['P(NPV > 0) [%]'])}, maximum acquisition premium {sayi(b0['Azami edinim primi [M USD]'])} M$.")
+    # Karar kuralı (memo): E[NPV] > 0 ve azami prim > 0 → (a) durum tespiti + sınırlı teklif; aksi halde (b) rafa kaldır
+    if b0["Beklenen NPV [M USD]"] > 0 and b0["Azami edinim primi [M USD]"] > 0:
+        st.info(T(f"**Dar kapsamlı durum tespiti ve bağlayıcı olmayan teklif; henüz yatırım kararı yok.** {ozet_tr} "
+                  f"Durum tespiti bütçesi tavanı {sayi(dd.iloc[-1])} M$ (bilgi değeri).",
+                  f"**Narrow due diligence and a non-binding offer; no investment decision yet.** {ozet_en} "
+                  f"Due diligence budget cap {sayi(dd.iloc[-1])} M$ (value of information)."))
+    else:
+        st.warning(T(f"**Rafa kaldır, tetikleyicileri izle; şimdilik durum tespiti bütçesi ve teklif yok.** {ozet_tr} Yeniden "
+                     "değerlendirme tetikleyicileri: YEKDEM koridorunun endeksli olduğunun teyidi, uzun vadeli fiyat beklentisi ≳ 60 $/MWh, "
+                     "türbin + EPC maliyetinde ≳ %2 düşüş, yavaş depolama yayılımı.",
+                     f"**Shelve and monitor triggers; no due-diligence budget or offer for now.** {ozet_en} Triggers to revisit: YEKDEM "
+                     "corridor confirmed as indexed, long-term price expectation ≳ 60 $/MWh, turbine + EPC cost ≳ 2% lower, slow storage build-out."))
+    st.caption(T("Öneri beş kez değişti: SFK doyum stres testi (kâr olasılığı %97 → %59), Aşama 7'nin gerçek dünya analizleri, YEKDEM/PPA'da "
+                 "batarya arbitrajı düzeltmesi (\"hayır\"), YEKDEM'in yıllık opsiyon yapısı + ortak batarya sürücüsü + takvim düzeltmeleri "
+                 "(\"durum tespiti + teklif\") ve fiyat ortalaması düzeltmesi (58 medyan değil beklenen değer: \"rafa kaldır\"). docs/RAPOR.md §9.1, §10.",
+                 "The recommendation changed five times: the SFK saturation stress test (97% → 59%), stage 7's real-world analysis, the battery "
+                 "arbitrage fix under YEKDEM/PPA (\"no\"), YEKDEM's annual-option structure + common battery driver + schedule fixes (\"due diligence + "
+                 "offer\") and the price-mean fix (58 as expected value, not median: \"shelve\"). docs/RAPOR.md §9.1, §10."))
     tk = oku("takvim_ozet.csv"); co2 = oku("co2.csv").set_index("Kalem")["Değer"]
     hazir = tk[(tk["Proje olgunluğu"] == "İnşaata hazır proje") & tk["Politika"].str.startswith("B1")].iloc[0]
     gel = tk[(tk["Proje olgunluğu"].str.startswith("Geliştirme")) & tk["Politika"].str.startswith("B1")].iloc[0]
@@ -369,6 +380,11 @@ with sekmeler[4]:
     st.dataframe(oku("takvim_ozet.csv").set_index(["Proje olgunluğu", "Politika"]).round(2), width="stretch")
     st.subheader(T("Gelir yapıları (doyum + sistem kesintisi dahil)", "Revenue structures (saturation + curtailment)"))
     st.dataframe(oku("gelir_yapilari_metrikler.csv").set_index("Seçenek").round(2), width="stretch")
+    st.markdown(T("**Deterministik baz → Monte Carlo beklenen NPV köprüsü** (fiyat ortalaması düzeltmesi öncesi ve sonrası, M$)",
+                  "**Deterministic base → Monte Carlo expected NPV bridge** (before and after the price-mean fix, M$)"))
+    kopru = oku("fark_ayristirma_once.csv")[["Adım", "Bileşen", "E[NPV] katkısı [M USD]"]].rename(columns={"E[NPV] katkısı [M USD]": T("Önce", "Before")})
+    kopru[T("Sonra", "After")] = oku("fark_ayristirma_sonra.csv")["E[NPV] katkısı [M USD]"]
+    st.dataframe(kopru.round(2), width="stretch", hide_index=True)
     st.subheader(T("Risk kaydı", "Risk register"))
     rk = oku("risk_kaydi.csv")
     c1, c2 = st.columns([1, 1.6])

@@ -115,14 +115,23 @@ def main():
     dt = d_(cfg["durum_tespiti"])
     p_t, kayip_t = dt["tesvik_ret_olasiligi"], dt["tesvik_kaybi_musd"]
     p_o, kayip_o = dt["ornitoloji_olasiligi"], dt["ornitoloji_kaybi_musd"]
-    ikili = lambda p_, kayip: p_ * max(kayip - x.mean(), 0.0)    # olumsuz cevap gelirse NPV < 0 → vazgeçilir, kayıp önlenir
+    def ikili(p_, kayip):
+        """
+        İkili bilgi (olumsuz olay p olasılıkla, NPV'yi 'kayip' kadar düşürür). E[NPV] = x̄ ⇒ olumlu durumda E = x̄ + p·kayıp,
+        olumsuzda E = x̄ + p·kayıp − kayıp. Bilgi değeri = (1−p)·max(E_olumlu, 0) + p·max(E_olumsuz, 0) − max(x̄, 0).
+        (x̄ > 0 ve E_olumsuz < 0 iken eski formül p·(kayıp − x̄) ile aynı; x̄ < 0 iken 'kötü haber' değersizdir.)
+        """
+        e_iyi = x.mean() + p_ * kayip
+        return (1 - p_) * max(e_iyi, 0.0) + p_ * max(e_iyi - kayip, 0.0) - max(x.mean(), 0.0)
     bilgi = {
         "EVPI (tüm belirsizlik) [M USD]": evpi,
         "EVPPI — TEİAŞ SFK kabulü (katılamama senaryosu) [M USD]": evppi_grup(senaryo == "katilamama"),
         "EVPPI — batarya doyum senaryosu [M USD]": evppi_grup(senaryo),
         "EVPPI — teşvik belgesi (KDV) [M USD]": ikili(p_t, kayip_t),
         "EVPPI — ornitoloji (göç dönemi durdurma) [M USD]": ikili(p_o, kayip_o),
-        "EVPPI — YEKDEM endeksleme (karar değişmez: iki varyantta da E[NPV] > 0) [M USD]": 0.0,
+        # Endekslemeye olasılık atanmadı (config'te yok): yalnız iki varyantta kararın aynı olup olmadığı raporlanır
+        "EVPPI — YEKDEM endeksleme (olasılık atanmadı; iki varyantta karar aynıysa 0) [M USD]":
+            0.0 if (dagilim(z, "GYoe", k).mean() > prim) == (x.mean() > 0) else np.nan,
     }
     # COD / takvim teyidi: inşaata hazır COD dağılımı → koşullu E[NPV] (gecikme eğrisi), karar edin/edinme
     cods = np.load(CIKTI / "takvim_cod_ornekleri.npz")["insaata_hazir_B1_cod"]
@@ -131,7 +140,7 @@ def main():
     e_k = np.interp(kk, np.arange(4), egri_)
     bilgi["EVPPI — COD / takvim teyidi [M USD]"] = np.maximum(e_k, 0).mean() - max(e_k.mean(), 0.0)
     dd_kalem = [k_ for k_ in bilgi if k_.startswith("EVPPI") and "doyum senaryosu" not in k_]
-    bilgi["Durum tespiti kalemlerinin EVPPI toplamı (doyum hariç: DD ile çözülemez) [M USD]"] = sum(bilgi[k_] for k_ in dd_kalem)
+    bilgi["Durum tespiti kalemlerinin EVPPI toplamı (doyum hariç: DD ile çözülemez) [M USD]"] = np.nansum([bilgi[k_] for k_ in dd_kalem])
     bilgi["Önerilen DD bütçesi tavanı [M USD]"] = min(bilgi["Durum tespiti kalemlerinin EVPPI toplamı (doyum hariç: DD ile çözülemez) [M USD]"], evpi)
     pd.Series(bilgi, name="değer").to_csv(CIKTI / "durum_tespiti_bilgi_degeri.csv", encoding="utf-8-sig", float_format="%.3f")
     pd.Series(bilgi, name="değer").to_csv(KOK / "results" / "durum_tespiti_bilgi_degeri.csv", encoding="utf-8-sig", float_format="%.3f")

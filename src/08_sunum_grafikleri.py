@@ -13,6 +13,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import matplotlib.pyplot as plt
+from matplotlib.patches import Patch
 import numpy as np
 import pandas as pd
 
@@ -25,17 +26,19 @@ GRI = "#8a8984"
 
 # (aşama, neyi değiştirdi, E[NPV] M$, karar, karar türü, kaynak)
 KARAR_YOLCULUGU = [
-    ("Aşama 4", "Deterministik optimum:\nyalnız RES", -1.58, "Yatırım yapılamaz", "hayir", "docs/04 §4.1"),
-    ("Aşama 5", "Batarya + SFK geliri,\nMonte Carlo", 28.4, "Güçlü evet", "evet", "docs/05 B3 (C tasarımı)"),
-    ("Aşama 6", "SFK piyasası\ndoyum stres testi", 4.5, "Koşullu onay\n(PPA, aşamalı batarya)", "kosullu", "docs/05 stres testi (F2P)"),
-    ("Aşama 7", "Gerçekçi takvim,\nsistem kesintisi", 2.1, "Koşullu onay\n(inşaata hazır + YEKDEM)", "kosullu", "docs/07 §takvim"),
-    ("Tutarlılık 1", "YEKDEM'de batarya\narbitrajı yok", -11.4, "Yatırım önerilmez", "hayir", "docs/07 Güncelleme 1"),
-    ("Nihai", "YEKDEM yıllık opsiyon,\nortak sürücü, takvim", None, "Durum tespiti +\nsınırlı teklif", "teklif", "outputs/07/baz_vaka.csv"),
+    ("Aşama 4", "Deterministik:\nyalnız RES", -1.58, "Yatırım yapılamaz", "hayir", "docs/04 §4.1"),
+    ("Aşama 5", "Batarya + SFK,\nMonte Carlo", 28.4, "Güçlü evet", "evet", "docs/05 B3 (C tasarımı)"),
+    ("Aşama 6", "SFK doyum\nstres testi", 4.5, "Koşullu onay\n(PPA, aşamalı batarya)", "kosullu", "docs/05 stres testi (F2P)"),
+    ("Aşama 7", "Takvim,\nsistem kesintisi", 2.1, "Koşullu onay\n(inşaata hazır + YEKDEM)", "kosullu", "docs/07 §takvim"),
+    ("Tutarlılık 1", "YEKDEM'de\narbitraj yok", -11.4, "Yatırım önerilmez", "hayir", "docs/07 Güncelleme 1"),
+    ("Tutarlılık 2", "YEKDEM opsiyonu,\nsürücü, takvim", 1.49, "Durum tespiti +\nsınırlı teklif", "teklif", "docs/07 Güncelleme 2"),
+    ("Nihai", "Fiyat ortalaması\n(58 = beklenen)", None, "Rafa kaldır,\ntetikleyicileri izle", "raf", "outputs/07/baz_vaka.csv"),
 ]
 # kare (karusel) sürüm için kısa eksen ve karar etiketleri, aynı sırayla
 KISA = [("Aşama 4\nyalnız RES", "Hayır"), ("Aşama 5\n+ SFK", "Güçlü evet"), ("Aşama 6\nSFK doyumu", "Koşullu"),
-        ("Aşama 7\ntakvim", "Koşullu"), ("Tutarlılık\nYEKDEM", "Hayır"), ("Nihai\n3 düzeltme", "DD + teklif")]
-TUR_RENK = {"hayir": TURUNCU, "evet": YESIL, "kosullu": YESIL, "teklif": MAVI}
+        ("Aşama 7\ntakvim", "Koşullu"), ("Tutarlılık\nYEKDEM", "Hayır"), ("Tutarlılık 2\n3 düzeltme", "DD + teklif"),
+        ("Nihai\nfiyat ort.", "Rafa kaldır")]
+TUR_RENK = {"hayir": TURUNCU, "evet": YESIL, "kosullu": YESIL, "teklif": MAVI, "raf": GRI}
 
 
 def tr(x: float, fmt: str = "+.1f") -> str:
@@ -81,9 +84,9 @@ def karar_yolculugu(boyut=(12, 5.0), ad="karar_yolculugu.png", yazi=1.0, kisa: b
     ax.set_ylim(-24, 40)
     ax.set_xlim(-0.5, len(v) - 0.5)
     g.eksen_sade(ax)
-    for t, etiket in [("evet", "Yatırım onayı (koşulsuz/koşullu)"), ("hayir", "Yatırım önerilmez"), ("teklif", "Durum tespiti + sınırlı teklif")]:
+    for t, etiket in [("evet", "Yatırım onayı (koşulsuz/koşullu)"), ("hayir", "Yatırım önerilmez"), ("teklif", "Durum tespiti + sınırlı teklif"), ("raf", "Rafa kaldır, izle")]:
         ax.scatter([], [], s=80, color=TUR_RENK[t], label=etiket)
-    ax.legend(loc="upper right", fontsize=8.6 * yazi, ncol=3, bbox_to_anchor=(1, 1.08))
+    ax.legend(loc="upper right", fontsize=8.6 * yazi, ncol=4, bbox_to_anchor=(1, 1.08))
     ax.tick_params(axis="y", labelsize=8.6 * yazi)
     kaydet(fig, ad)
 
@@ -187,6 +190,36 @@ def bilgi_degeri(boyut=(12, 4.2), ad="dd_bilgi_degeri.png", yazi=1.0):
     kaydet(fig, ad)
 
 
+def kopru(boyut=(7.6, 5.0), ad="kopru.png", yazi=1.3):
+    """Deterministik baz → Monte Carlo köprüsü: bileşen katkıları, fiyat ortalaması düzeltmesi sonrası (çubuk) ve öncesi (nokta)."""
+    on, so = (pd.read_csv(CIKTILAR / "07" / f"fark_ayristirma_{e}.csv") for e in ("once", "sonra"))
+    kisa = ["Deterministik baz (58 sabit)", "(i) Fiyat ortalaması", "(iii) Oynaklık: batarya", "(iv) Oynaklık: vergi vb.",
+            "(iv) Kriz tavanı", "(ii) YEKDEM opsiyonu", "(iii) SFK senaryoları", "(v) Hava, kesinti",
+            "(iv) CAPEX/OPEX", "Takvim (COD)", "Monte Carlo E[NPV]"]
+    k = "E[NPV] katkısı [M USD]"
+    fig, ax = plt.subplots(figsize=boyut)
+    y = np.arange(len(so))[::-1]
+    renk = [GRI] + [YESIL if d >= 0 else TURUNCU for d in so[k].iloc[1:-1]] + [MAVI]
+    ax.barh(y, so[k], color=renk, height=0.6)
+    ax.scatter(on[k], y, s=40 * yazi, facecolor="white", edgecolor=g.MUREKKEP, zorder=3, label="Düzeltme öncesi (58 = medyan)")
+    fig.legend(handles=[Patch(color=g.IKINCIL, label="Düzeltme sonrası (58 = beklenen değer)"),
+                                     plt.Line2D([], [], ls="", marker="o", mfc="white", mec=g.MUREKKEP, label="Düzeltme öncesi (58 = medyan)")],
+               loc="upper center", bbox_to_anchor=(0.5, 0.0), ncol=2, fontsize=8.2 * yazi)
+    for yi, d, d0 in zip(y, so[k], on[k]):
+        etk = tr(d, "+.2f") + (f"  (önce {tr(d0, '+.2f')})" if abs(d - d0) > 0.3 else "")
+        sag = d >= 0 or d0 > 0                      # işaret değiştiyse etiket sağda (eksen etiketleriyle çakışmasın)
+        ax.text((max(d, d0) + 0.2) if sag else (min(d, d0) - 0.2), yi, etk, va="center", ha="left" if sag else "right",
+                fontsize=8.5 * yazi, color=g.MUREKKEP)
+    ax.set_yticks(y, kisa, fontsize=8.6 * yazi)
+    ax.axvline(0, color=g.MUREKKEP, lw=0.9)
+    ax.set_xlim(-4.2, 7.2)
+    ax.set_xlabel("Katkı [M USD]", fontsize=9 * yazi)
+    ax.tick_params(axis="x", labelsize=8.6 * yazi)
+    g.eksen_sade(ax, izgara="x")
+    virgul_ekseni(ax, "x")
+    kaydet(fig, ad)
+
+
 def main():
     karar_yolculugu()
     gelir_yapilari()
@@ -194,6 +227,7 @@ def main():
     cod_dagilimi()
     bilgi_degeri()
     bilgi_degeri(boyut=(7.6, 5.0), ad="dd_bilgi_degeri_dar.png", yazi=1.3)       # sunumda yan metinle
+    kopru()
     print(f"Kaydedildi: {CIKTI}")
 
 

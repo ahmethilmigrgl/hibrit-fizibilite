@@ -103,7 +103,8 @@ def main():
     kopyala(CIKTILAR / "05_risk" / "revizyon_oncesi" / "b_varyans_katkisi.csv", "b_varyans_katkisi_revizyon_oncesi.csv")
     for f in ["takvim_ozet.csv", "takvim_aktiviteler.csv", "takvim_cod_ornekleri.npz", "gelir_yapilari_metrikler.csv",
               "kesinti_sistem_yat_yillik.csv", "kesinti_referans_santraller.csv", "co2.csv", "tesvik_etkisi.csv", "risk_kaydi.csv", "baz_vaka.csv", "baz_vaka_duzeltmeler.csv",
-              "durum_tespiti_bilgi_degeri.csv", "yekdem_opsiyon_katilim.csv", "yekdem_opsiyon_degeri.csv"]:
+              "durum_tespiti_bilgi_degeri.csv", "yekdem_opsiyon_katilim.csv", "yekdem_opsiyon_degeri.csv",
+              "fark_ayristirma_sonra.csv", "fark_ayristirma_once.csv", "fiyat_ortalamasi_ozet_sonra.csv", "fiyat_ortalamasi_ozet_once.csv"]:
         kopyala(CIKTILAR / "07" / f)
     varsayim_tablosu(cfg).to_csv(R / "varsayimlar.csv", encoding="utf-8-sig", index=False)
 

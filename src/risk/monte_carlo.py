@@ -5,7 +5,7 @@ Bir simülasyon i için (N işletme yılı):
     Hava          w_ik ∈ {0..9}, s_ik ∈ {0,1}  (blok bootstrap: yıllar bütün olarak çekilir)
     RES modeli    m_i ~ Üçgen(0,88; 1; 1,08) — simülasyon başına SABİT (sistematik model hatası)
                   × (1 + N(0; 0,01)) simülasyon × (1 + N(0; 0,015)) yıl  (kullanılabilirlik)
-    Fiyat         μ_i ~ LogNormal(ln 58; 0,15);  x_k = ln μ + φ(x_{k−1} − ln μ) + σ ε_k,  L_k = e^{x_k}
+    Fiyat         μ_i ~ LogNormal(m; 0,15), m = log_merkez(cfg) (bkz. tanım: medyan/ortalama);  x_k = ln μ + φ(x_{k−1} − ln μ) + σ ε_k,  L_k = e^{x_k}
     Kriz          yıllık %3 başlama, 1-2 yıl sürer: L × 1,6; %80 olasılıkla spot gelire tavan (0,70 × L)
     Kanibalizasyon taban f_i ~ Üçgen(0,55; 0,62; 0,769) → h_ik yolu
     Yan hizmet    azalma ~ Üçgen(5%; 15%; 30%), taban ~ Düzgün(0,15; 0,40) → a_ik yolu
@@ -28,6 +28,48 @@ def ucgen_ters(u: np.ndarray, a: float, c: float, b: float) -> np.ndarray:
     return np.where(u < fc, a + np.sqrt(u * (b - a) * (c - a)), b - np.sqrt((1 - u) * (b - a) * (b - c)))
 
 
+def log_merkez(cfg: dict) -> float:
+    """
+    Log-fiyat sürecinin merkezi m (μ_i ~ LogNormal(m; s_μ)).
+    config → monte_carlo.fiyat_uzun_ortalama.tanim:
+      "medyan"   : m = ln(seviye) — seviye fiyatın medyanıdır; beklenen fiyat lognormal çarpıklık yüzünden daha yüksektir.
+      "ortalama" : m = ln(seviye) − s_μ²/2 − σ²/(2(1−φ²)) — durağan dağılımda E[L] = seviye (kriz olayları hariç).
+    Gerekçe: x_k | μ ~ N(ln μ, σ²/(1−φ²)) (AR(1) durağan varyansı), ln μ ~ N(m, s_μ²) → E[L] = exp(m + s_μ²/2 + σ²/(2(1−φ²))).
+    """
+    fo, fs = deger(cfg["monte_carlo"]["fiyat_uzun_ortalama"]), deger(cfg["monte_carlo"]["fiyat_sureci"])
+    m = float(np.log(fo["seviye"]))
+    if fo.get("tanim", "medyan") == "ortalama":
+        m -= fo["log_sd"] ** 2 / 2 + fs["sigma"] ** 2 / (2 * (1 - fs["phi"] ** 2))
+    return m
+
+
+def fiyat_tahmini(cfg: dict, log_onceki: np.ndarray, adim: int = 1) -> np.ndarray:
+    """
+    YEKDEM kararı için bilinen son fiyattan 'adim' yıl sonrasının fiyat tahmini (karar verenin bildiği m, φ, σ ile).
+    "medyan" tanımında (eski) koşullu medyan; "ortalama" tanımında koşullu beklenen değer (lognormal düzeltmeli).
+    """
+    fo, fs = deger(cfg["monte_carlo"]["fiyat_uzun_ortalama"]), deger(cfg["monte_carlo"]["fiyat_sureci"])
+    m, phi, sig = log_merkez(cfg), fs["phi"], fs["sigma"]
+    x = m + phi ** adim * (log_onceki - m)
+    if fo.get("tanim", "medyan") == "ortalama":
+        x = x + sig ** 2 * (1 - phi ** (2 * adim)) / (1 - phi ** 2) / 2 + (1 - phi ** adim) ** 2 * fo["log_sd"] ** 2 / 2
+    return np.exp(x)
+
+
+def yekdem_katilim(cfg: dict, L_ext: np.ndarray, yol: np.ndarray, kd: int, N: int, esik: float, sure: int) -> np.ndarray:
+    """
+    YEKDEM yıllık opsiyonu (YEK Yön. md. 4/2, 5/1, 8/1): t−1 yılının 30 Kasım'ında, bilinen son yıl fiyatından tahminle
+    katıl ⇔ YEKDEM reel fiyatı > eşik × tahmini PTF; yalnız ilk 'sure' işletme yılı. Döndürür (n × N) bool.
+    L_ext: uzatılmış fiyat yolları (ilk sütun model COD yılı), kd: erteleme yılı.
+    """
+    kol = np.arange(kd, kd + N)
+    log_onceki = np.where(kol[None, :] >= 1, np.log(L_ext[:, np.clip(kol - 1, 0, None)]), np.log(49.0))
+    adim = np.where(kol >= 1, 1, 3)                      # ilk yıl: 2026 seviyesinden (49 USD/MWh) üç adımlık tahmin
+    tahmin = np.where(adim[None, :] == 1, fiyat_tahmini(cfg, log_onceki, 1), fiyat_tahmini(cfg, log_onceki, 3))
+    k = np.arange(1, N + 1)
+    return (yol[:, kol] > tahmin * esik) & (k[None, :] <= sure)
+
+
 def ornekle(cfg: dict, n: int, yillar: np.ndarray, oran0: float, tohum: int, W: int = 10) -> dict:
     mc = cfg["monte_carlo"]
     rng = np.random.default_rng(tohum)
@@ -37,7 +79,7 @@ def ornekle(cfg: dict, n: int, yillar: np.ndarray, oran0: float, tohum: int, W: 
     z = rng.multivariate_normal([0, 0], [[1, rho], [rho, 1]], size=n)
     u_mu, u_capex = norm.cdf(z[:, 0]), norm.cdf(z[:, 1])
     fo = deger(mc["fiyat_uzun_ortalama"])
-    mu = np.exp(np.log(fo["medyan"]) + fo["log_sd"] * norm.ppf(u_mu))
+    mu = np.exp(log_merkez(cfg) + fo["log_sd"] * norm.ppf(u_mu))
     cx = deger(mc["capex"])
     capex = {k: ucgen_ters(u_capex, *cx[k]) for k in ("res", "ges", "bess")}
     # --- Fiyat yolu (2026'dan başlar; ilk değer son 12 ayın seviyesi ~49 USD/MWh)

@@ -100,3 +100,7 @@ başvuru için hazırlanıyor. Sonuçlar, varsayımlar ve formülasyonlar mülak
    `src/08_memo_pdf.py`), sunum (`src/08_sunum_grafikleri.py` + `src/08_sunum.py` → `Sunum.pptx/.pdf`, 13 slayt),
    LinkedIn karuseli (`src/08_karusel.py` → `docs/kariyer/`). Memo kararı: 0,5 M$ durum tespiti + ≤1,5 M$ primle bağlayıcı
    olmayan teklif. Belgeler dashboard Yöntem sekmesinden ve README'den indirilebilir. LibreOffice: `~/Applications/LibreOffice.app`.
+   **Güncelleme 3 (Aşama 9 Bölüm A):** fiyat süreci artık `fiyat_uzun_ortalama.tanim = "ortalama"` (58 = beklenen değer,
+   `monte_carlo.log_merkez`; YEKDEM kararı `fiyat_tahmini`/`yekdem_katilim`). Deterministik → Monte Carlo köprüsü
+   `src/07_fark_ayristirma.py [once|sonra]`. Baz vaka E[NPV] −1,66 M$ → karar (b) rafa kaldır, tetikleyicileri izle.
+   Aşama 5–6 çıktıları (outputs/05_risk) medyan tanımıyla kaldı (tarihsel).

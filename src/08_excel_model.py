@@ -629,6 +629,13 @@ class Kitap:
             rw += 1
             w.cell(rw, 1, rr["Senaryo"]); w.cell(rw, 2, round(float(rr["Beklenen NPV [M USD]"]), 2))
             w.cell(rw, 3, f"P(NPV>0) %{rr['P(NPV > 0) [%]']:.0f} · CVaR %5 {rr['CVaR %5 [M USD]']:.1f} M$ · azami prim {rr['Azami edinim primi [M USD]']:.2f} M$")
+        ay = CIKTILAR / "07" / "fark_ayristirma_sonra.csv"
+        if ay.exists():                               # deterministik baz → Monte Carlo beklenen değer köprüsü (Bölüm A)
+            rw += 2
+            w.cell(rw, 1, "Deterministik → Monte Carlo köprüsü (outputs/07/fark_ayristirma_sonra.csv)").font = Font(bold=True, color="1D4F91")
+            for _, rr in pd.read_csv(ay).iterrows():
+                rw += 1
+                w.cell(rw, 1, rr["Adım"]); w.cell(rw, 2, round(float(rr["E[NPV] katkısı [M USD]"]), 2)); w.cell(rw, 3, rr["Bileşen"])
 
     def senaryolar_ve_kontroller(self, py: pd.DataFrame, ex: pd.DataFrame | None):
         A = self.ad

@@ -1,0 +1,12 @@
+﻿Adım,Bileşen,E[NPV] katkısı [M USD]
+"Deterministik baz (58 USD/MWh sabit, COD 2030)",—,-2.369
+Fiyat ortalaması sapması,(i),2.038
+Fiyat oynaklığı: batarya (arbitraj + SFK) gelirleri,(iii),0.000
+"Fiyat oynaklığı: vergi, mahsup ve diğer satırlar",(iv),-0.859
+Kriz yıllarında düzenleyici tavan,(iv),-2.044
+YEKDEM yıllık opsiyonu (dışbükeylik),(ii),0.424
+SFK doyum senaryoları (karışım ≠ baz yol),(iii),2.710
+"Hava, model hatası, kanibalizasyon, kesinti",(v),-0.870
+CAPEX / OPEX / bozunma belirsizliği,(iv),-0.904
+Takvim: COD 2030 → 2029-11 (P50),—,0.216
+Monte Carlo beklenen NPV (baz vaka),—,-1.659

@@ -1,0 +1,8 @@
+﻿,değer
+Baz varsayım [USD/MWh],58.0
+Log-süreç merkezi exp(m) [USD/MWh],57.999999999999986
+"Durağan beklenen fiyat, kriz hariç (analitik) [USD/MWh]",60.36242723137249
+"Simüle ortalama, ömür boyu (basit) [USD/MWh]",61.88240483051782
+"Simüle ortalama, iskonto ağırlıklı [USD/MWh]",61.80084600280675
+"Simüle medyan, iskonto ağırlıklı [USD/MWh]",58.645453871058606
+Fiyat tanımı (config),medyan
