@@ -23,3 +23,9 @@ checkpoints/
 
 # Sistem
 .DS_Store
+
+# Kariyer materyalleri (kişisel, repoya girmez)
+docs/kariyer/
+
+# Test önbelleği
+.pytest_cache/

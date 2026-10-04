@@ -143,6 +143,16 @@ def _vergi_hesapla(matrah_oncesi: np.ndarray, oran: float, mahsup: int) -> np.nd
     return vergi
 
 
+def lcoe_hesapla(capex_akisi: np.ndarray, isletme_maliyeti: np.ndarray, enerji: np.ndarray, wacc: float) -> float:
+    """
+    LCOE = [Σ_t CAPEX_t·DF_t + Σ_k maliyet_k·DF_k] / Σ_k enerji_k·DF_k   (vergi öncesi, reel)
+    CAPEX inşaat yıllarında (t = 1..nb), maliyet ve enerji işletme yıllarında (nb+1..nb+N); DF_t = (1 + wacc)^−t.
+    """
+    nb, N = len(capex_akisi), len(enerji)
+    df = (1 + wacc) ** -(np.arange(nb + N) + 1.0)
+    return float(((capex_akisi * df[:nb]).sum() + (isletme_maliyeti * df[nb:]).sum()) / (enerji * df[nb:]).sum())
+
+
 def proje_degerle(konfig: Konfig | dict, v: Varsayimlar, fiyat: FiyatSenaryosu, uretim: UretimProfili,
                   bess_dispatch: BessDispatch | None = None, gelir_carpani: float = 1.0) -> Sonuc:
     k = konfig if isinstance(konfig, Konfig) else Konfig.sozlukten(konfig)
@@ -277,8 +287,8 @@ def proje_degerle(konfig: Konfig | dict, v: Varsayimlar, fiyat: FiyatSenaryosu, 
         isl_maliyet = opx + sebeke_payi * v.teias_kapasite * k.sebeke_mw + v.sigorta_oran * (capex[tek] + capex["sebeke"] * sebeke_payi)
         isl_maliyet = isl_maliyet + v.teias_enerji * ur + (v.sokum[tek] * pay[tek]) * (np.arange(1, N + 1) == min(N, getattr(v, f"omur_{tek}")))
         lcoe[tek] = float((maliyet + (isl_maliyet * df_isl).sum()) / (ur * df_isl).sum())
-    toplam_maliyet = (capex_akisi * df).sum() + ((opex + aug + sokum) * df_isl).sum()
-    lcoe["hibrit_satilan"] = float(toplam_maliyet / (enerji_sat * df_isl).sum()) if enerji_sat.sum() > 0 else float("nan")
+    lcoe["hibrit_satilan"] = (lcoe_hesapla(capex_akisi[:nb], opex + aug + sokum, enerji_sat, v.wacc)
+                              if enerji_sat.sum() > 0 else float("nan"))
 
     yillik = pd.DataFrame({
         "İşletme yılı": yil_isl, "Takvim yılı": takvim,

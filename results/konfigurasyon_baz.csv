@@ -1,0 +1,5 @@
+﻿Konfigürasyon,NPV [M USD],"Proje IRR (reel, vergi sonrası) [%]",Öz kaynak IRR reel [%],Öz kaynak IRR nominal [%],LCOE GES [USD/MWh],LCOE RES [USD/MWh],LCOE hibrit (satılan) [USD/MWh],Yakalanan fiyat [USD/MWh],Ort. PTF [USD/MWh],GES yakalanan [USD/MWh],RES yakalanan [USD/MWh],Kesinti [%],Satılan enerji yıl 1 [GWh],CAPEX [M USD],P90/P50,Borç kapasitesi P90 [M USD],Borç oranı P90 [%],Borç kapasitesi P50 [M USD],Borç oranı P50 [%]
+(a) RES 50,-2.140,6.595,7.750,10.443,,50.482,53.159,57.819,58.000,,57.819,5.596,158.347,63.500,0.927,38.205,60.165,42.161,66.396
+(b) RES 50 + GES 25,-7.433,5.847,6.392,9.052,48.601,49.043,53.759,55.216,58.000,42.129,58.274,9.584,192.383,79.000,0.941,45.288,57.326,48.970,61.987
+(c) RES 50 + GES 50,-15.644,4.935,4.929,7.553,47.259,48.324,56.469,54.124,58.000,42.655,59.274,15.945,216.107,94.500,0.952,50.231,53.154,53.537,56.653
+(d) GES 50,-15.297,1.127,-0.025,2.475,51.287,,59.749,41.874,58.000,41.874,,15.597,79.945,37.000,0.966,13.593,36.738,14.341,38.759

@@ -116,32 +116,6 @@ def santral_listesi(istemci: EpiasIstemcisi) -> pd.DataFrame:
     return pd.DataFrame(istemci.onbellekli_istek("santral_listesi", SANTRAL_LISTESI_YOLU, yontem="GET")["items"])
 
 
-def yekdem_kurulu_guc(istemci: EpiasIstemcisi, donemler: list[str]) -> pd.DataFrame:
-    """
-    YEKDEM kapsamındaki kurulu güç [MW], kaynak ve lisans türüne göre (EPİAŞ renewables servisleri).
-    donemler: 'YYYY-MM' listesi. Önce 'new' (YEKDEM son tarih sonrası), veri yoksa 'old' servisi denenir.
-    Not: YEKDEM dışında serbest piyasada satış yapan santralleri içermez.
-    """
-    from src.piyasa.epias import EpiasHatasi
-
-    satirlar = []
-    for d in donemler:
-        govde = {"period": f"{d}-01T00:00:00+03:00"}
-        for tur, yol in [("new", "/v1/renewables/data/new-installed-capacity"),
-                         ("old", "/v1/renewables/data/old-installed-capacity")]:
-            try:
-                r = istemci.onbellekli_istek(f"kurulu_guc_{tur}", yol, govde)
-            except EpiasHatasi:
-                continue
-            for k in r.get("installedCapacities", []):
-                satirlar.append({"donem": d, "kaynak": k.get("renewableEnergyType") or k.get("resourceType"),
-                                 "servis": tur,
-                                 "lisansli": k.get("licencedCapacity"), "lisanssiz": k.get("unlicencedCapacity"),
-                                 "toplam": k.get("total")})
-            break
-    return pd.DataFrame(satirlar)
-
-
 def auf_cek(istemci: EpiasIstemcisi, bas: str = "2022-04-01", son: str = "2023-09-30") -> pd.DataFrame:
     """
     Azami Uzlaştırma Fiyatı (AUF), aylık, kaynak bazında [TL/MWh] (1 Nisan 2022 – 30 Eylül 2023).

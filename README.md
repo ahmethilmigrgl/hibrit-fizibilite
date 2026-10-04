@@ -1,144 +1,128 @@
-# Hibrit GES + RES + BESS Fizibilite Modeli (Türkiye)
+# Hybrid Wind + Solar + Battery Feasibility Model (Türkiye)
 
-> 🚧 Geliştirme aşamasında — portföy projesi.
+[Türkçe](README.tr.md) · **Live dashboard:** _link will be added after deployment_ · [Full report (TR, PDF)](outputs/RAPOR.pdf)
 
-Türkiye'de seçilen bir saha için güneş (GES), rüzgâr (RES) ve batarya (BESS) kapasitelerini,
-şebeke bağlantı kısıtı altında **NPV'yi en yüksek yapacak** şekilde boyutlandıran ve sonucu
-**Monte Carlo** ile belirsizlik altında test eden fizibilite modeli.
+This model sizes solar (PV), wind and battery storage behind a **50 MW grid connection** at Çanakkale-Ezine, Türkiye, to
+**maximise project NPV**. It then stress-tests that answer under uncertainty. The pipeline goes end to end:
 
-## Yöntem (özet)
-1. Saha seçimi ve çok yıllı saatlik üretim profilleri (PVGIS/pvlib, ERA5)
-2. Piyasa analizi (EPİAŞ PTF, yakalanan fiyat, kanibalizasyon)
-3. Finansal model (NPV, IRR, LCOE)
-4. Kapasite + dispatch optimizasyonu (Pyomo + HiGHS, MILP)
-5. Batarya gelir yığını (yan hizmet, PPA) ve risk simülasyonu (Monte Carlo, P50/P90, EVPI)
-6. Streamlit dashboard
+- **Generation:** hourly profiles from satellite and reanalysis data, with wind calibrated against nearby operating wind farms.
+- **Market:** 12 years of Turkish day-ahead and ancillary-service prices.
+- **Finance:** a project-finance model in real USD.
+- **Optimisation:** a capacity MILP in Pyomo + HiGHS.
+- **Risk:** a 10,000-scenario Monte Carlo, including a stress test of how quickly batteries saturate the secondary-reserve market.
 
-## Kurulum
-```bash
-uv venv --python 3.11 .venv
-uv pip install -r requirements.txt --python .venv/bin/python
-cp .env.example .env   # CDS ve EPİAŞ bilgilerini doldurun
-.venv/bin/python src/00_kurulum_testi.py      # ısınma LP modeli
-.venv/bin/python src/01_saha_taramasi.py      # Aşama 1: 4 saha taraması
-.venv/bin/python src/01_uretim_profilleri.py  # Aşama 1: Ezine 10 yıllık profiller
-.venv/bin/python src/02_piyasa_verisi.py      # Aşama 2: EPİAŞ verisi (önbellekli)
-.venv/bin/python src/02_ruzgar_kalibrasyonu.py # Aşama 2: rüzgâr kalibrasyonu (öneri k)
-.venv/bin/python src/02_piyasa_analizi.py     # Aşama 2: yakalanan fiyat, batarya göstergeleri
-.venv/bin/python src/03_finansal_model.py     # Aşama 3: NPV/IRR/LCOE, borç, duyarlılık
-.venv/bin/python src/04_optimizasyon.py       # Aşama 4: LP/MILP optimizasyon, senaryolar (~20 dk)
+It is a portfolio project. Every assumption is sourced in `config.yaml`, and every optimisation model is written out
+mathematically in `docs/`.
+
+## Key findings
+
+| # | Finding | Number |
+|---|---|---|
+| 1 | **Solar never enters the optimal design.** Turkish solar capture rates collapsed as installed PV reached 25 GW, and afternoon sea breezes make wind and solar peak together behind the shared connection. | Solar capture rate 1.21 (2016) → 0.71 (2026); 14–40% of added PV is curtailed |
+| 2 | **Merchant wind alone is not investable** at today's price expectations. | NPV −1.6 M$, break-even 59 $/MWh, P(NPV > 0) 42% |
+| 3 | **Battery value comes almost entirely from secondary-reserve (SFK) capacity payments**, not arbitrage. | 87% of battery revenue; NPV −1.6 → +26 M$ in the no-saturation case |
+| 4 | **The saturation stress test changed the recommendation.** The SFK market needs ~1 GW against 28–33 GW of storage pre-licences. A supply–demand model calibrated on GB, Germany and Australia turns the battery into an *option*. | P(NPV > 0) for the 40 MW battery design: 97% → 59%; CVaR 5%: −2.5 → −30 M$ |
+| 5 | **The valuable flexibility is deferring battery scale, not adding duration.** A 30 MW battery (the SFK entry threshold) with a conditional expansion beats both a 40 MW and a 4-hour battery. Waiting to learn costs more than the information is worth. | E[NPV] +6.3 M$ (staged) vs −0.4 M$ (4-hour); 1-year delay −2.1 M$ |
+
+**Recommendation (conditional):** 58.8 MW wind + 30 MW / 52.5 MWh battery (expandable to 40 MW) + a 12-year PPA on
+70% of P90 output. E[NPV] +4.5 M$, P(NPV > 0) 58%, CVaR −23 M$. Conditions:
+
+1. Written TEİAŞ pre-qualification for the battery.
+2. PPA price ≥ ~52 $/MWh.
+3. Debt sized without ancillary revenue.
+4. Battery ordered ~12 months after the wind FID.
+
+Monitoring triggers are listed in the [report](docs/RAPOR.md#9-öneri).
+
+<p align="center">
+  <img src="outputs/05_risk/s_risk_getiri.png" width="85%"><br>
+  <em>Risk–return before (hollow) and after (filled) modelling ancillary-service saturation. Labels in Turkish.</em>
+</p>
+
+<p align="center">
+  <img src="outputs/02_piyasa/yakalanma_orani_trendi.png" width="85%"><br>
+  <em>Solar cannibalisation in Türkiye: capture rates of solar vs wind, 2014–2026.</em>
+</p>
+
+<p align="center">
+  <img src="outputs/05_risk/s_firsat_penceresi.png" width="85%"><br>
+  <em>Opportunity window: NPV if secondary-reserve revenue lasts only N years.</em>
+</p>
+
+## Method
+
+```mermaid
+flowchart LR
+    A[Data<br/>PVGIS · ERA5 · EPİAŞ] --> B[Generation<br/>pvlib · windpowerlib<br/>month×hour wind calibration]
+    B --> C[Market<br/>capture prices · cannibalisation<br/>ancillary services]
+    C --> D[Finance<br/>real-USD cash flows · tax<br/>P90-sculpted debt]
+    D --> E[Optimisation<br/>Pyomo + HiGHS<br/>dispatch LP · capacity MILP]
+    E --> F[Risk<br/>Monte Carlo · EVPI<br/>saturation stress test]
+    F --> G[Dashboard & report]
 ```
 
-## Klasör yapısı
-| Klasör | İçerik |
-|---|---|
-| `src/` | Modüller ve scriptler |
-| `notebooks/` | Analiz defterleri |
-| `data/raw`, `data/processed` | Veri (git'e eklenmez) |
-| `outputs/` | Grafikler ve sonuçlar |
-| `docs/` | Matematiksel formülasyonlar ve açıklamalar |
-| `config.yaml` | Tüm varsayımlar ve kaynakları |
+| Stage | What | Docs |
+|---|---|---|
+| 1 Site & generation | Four candidate sites screened; 10 years of hourly PV (PVGIS-SARAH3 + pvlib PVWatts) and wind (ERA5 + Enercon E-141 power curve, 120 m) profiles | [docs/01](docs/01_uretim_modeli.md) |
+| 2 Market & calibration | EPİAŞ prices 2014–2026 (DST-safe UTC conversion), capture rates, duck curve. ERA5 wind calibrated with a month × hour speed factor against three wind farms (cross-validated; hourly-profile error ÷10) | [docs/02](docs/02_piyasa_analizi.md) |
+| 3 Finance | Real-USD cash flows, TEİAŞ charges, imbalance, 25% tax with loss carry-forward, P90-sculpted debt, LCOE, tornado | [docs/03](docs/03_finansal_model.md) |
+| 4 Optimisation | Battery arbitrage LP → hybrid dispatch LP with grid shadow prices → capacity MILP (integer turbines, binary build decision, full year 2 × 8,760 h, ~35 s); representative days vs full year; regret analysis | [docs/04](docs/04_optimizasyon.md) |
+| 5 Revenue stack & risk | Ancillary services (binary participation ≥ 30 MW), PPA, storage licence. Monte Carlo with block-bootstrapped weather, mean-reverting log prices with crisis/price-cap events, Gaussian copula. Dispatch pre-computed on a grid + trilinear interpolation (error ~1%). EVPI/EVPPI, Sobol indices | [docs/05](docs/05_risk_ve_gelir_yigini.md) |
+| 6 Stress test | SFK supply–demand saturation model (GB/DE/AU calibration), opportunity window, delay & wait-and-see, flexible battery designs, conservative debt | [docs/05 §9](docs/05_risk_ve_gelir_yigini.md#9-stres-testi-sfk-piyasasının-doyumu-aşama-6) |
 
-## Sonuçlar
+## Tech stack
+Python 3.11 · Pyomo + HiGHS (`highspy`) · pandas / NumPy / SciPy · pvlib · windpowerlib · xarray / ERA5 (cdsapi) ·
+EPİAŞ Transparency API · matplotlib / Plotly · Streamlit · pytest
 
-### Aşama 1 — Saha seçimi ve üretim modeli ✅
-Dört aday saha (Çanakkale-Ezine, Balıkesir-Bandırma, İzmir-Aliağa, Konya-Karapınar) PVGIS ve ERA5
-verisiyle tarandı. **Çanakkale-Ezine** seçildi: en yüksek rüzgâr kaynağı ve en güçlü GES–RES
-tamamlayıcılığı.
+## How to run
 
-| Ezine, 2014–2023 | 1 MW GES | 1 MW RES | 1+1 MW / 1 MW bağlantı |
-|---|---|---|---|
-| Ortalama kapasite faktörü | %20,6 | %37,7 | %52,6 (bağlantı kullanımı) |
-| P50 [MWh/yıl] | 1.815 | 3.328 | 4.652 |
-| P90 [MWh/yıl] (normal) | 1.741 | 3.057 | 4.390 |
-| Yıllar arası değişkenlik katsayısı | %2,6 | %5,7 | %3,7 |
-| Hibrit kesinti | — | — | %9,6 |
+```bash
+# Environment (Python 3.11)
+uv venv --python 3.11 .venv
+uv pip install -r requirements.txt --python .venv/bin/python
+cp .env.example .env              # CDS (ERA5) and EPİAŞ credentials — only needed to download raw data
 
-RES değerleri Aşama 2'de Ezine'deki gerçek santral üretimiyle kalibre edildi: ERA5'in kaçırdığı
-öğleden sonraki deniz meltemi pikini düzelten ay × saat hız katsayısı matrisi, dönem bölmeli
-çapraz doğrulamayla seçildi. Revizyonun etkisi: [docs/01, Revizyon](docs/01_uretim_modeli.md).
+.venv/bin/python calistir.py --listele          # list steps and which credentials each one needs
+.venv/bin/python calistir.py --asama all        # full pipeline (first run ~3–4 h, mostly downloads)
+.venv/bin/python calistir.py --asama 5 6        # re-run risk + packaging from cached data
+.venv/bin/python -m pytest -q                   # tests: NPV/IRR/LCOE, battery SOC, DST conversion, capacity factors
 
-![Aylık kapasite faktörü](outputs/01_uretim_modeli/aylik_kapasite_faktoru.png)
+# Dashboard only — needs no credentials and no raw data (reads results/)
+uv pip install -r requirements-app.txt --python .venv/bin/python
+.venv/bin/streamlit run app.py
+```
 
-Ayrıntılar, doğrulama ve sınırlamalar: [docs/01_uretim_modeli.md](docs/01_uretim_modeli.md)
+Credentials are read only from `.env`. They are never printed or committed. Raw and processed data (`data/`) are not
+in the repository; the dashboard and report use small aggregated files in `results/` (< 1 MB).
 
-### Aşama 2 — Piyasa analizi ve rüzgâr kalibrasyonu ✅
-EPİAŞ Şeffaflık Platformu'ndan 2014–2026 saatlik PTF ve üretim verisi çekildi (yaz saati geçişleri
-ele alınarak UTC'ye çevrildi).
+## Project structure
 
-| Yakalanma oranı (yakalanan / ortalama PTF, USD) | 2016 | 2023 | 2025 | 2026 (Oca–Eyl) |
-|---|---|---|---|---|
-| Ezine GES | 1,21 | 0,92 | 0,82* | 0,71* |
-| Ezine RES | 1,01 | 0,96 | 0,94* | 1,00* |
-| Ezine hibrit (1+1 MW / 1 MW) | 1,07 | 0,96 | 0,92* | 0,91* |
-| Türkiye güneş şekli | — | 0,90 | 0,83 | 0,75 |
+```
+├── app.py                  Streamlit dashboard (6 tabs, TR/EN)
+├── calistir.py             Single entry point for the whole pipeline
+├── config.yaml             Every assumption with value, unit, source and note
+├── src/
+│   ├── 00–06_*.py          Stage scripts
+│   ├── uretim/             Generation models (PV, wind, calibration)
+│   ├── piyasa/             EPİAŞ client, market analysis
+│   ├── finans/             Price scenarios, cash-flow model, debt
+│   ├── optimizasyon/       Battery/hybrid LPs, representative days, capacity MILP
+│   └── risk/               Dispatch tables, vectorised valuation, Monte Carlo, saturation, design explorer
+├── tests/                  pytest suite
+├── docs/                   Formulations per stage + RAPOR.md (report)
+├── outputs/                Figures and tables per stage, RAPOR.pdf
+├── results/                Small aggregated results for the dashboard
+└── dashboard/              Streamlit Community Cloud entry point (light requirements)
+```
 
-\* 2024 sonrası: 10 hava yılı × gerçek fiyat, eşzamanlılık düzeltmeli.
+## Limitations
+- **Wind resource:** ERA5 calibrated on three plants; no on-site measurement; wake losses are a lump-sum loss factor.
+- **Market estimates:** SFK prices, saturation pace, scenario probabilities and the PPA discount are estimates. No
+  Turkish battery has participated in SFK at scale yet.
+- **Dispatch:** perfect foresight (annual LP). Arbitrage revenue is overstated, but the impact is limited because most
+  battery value is capacity payments.
+- **FX and debt:** FX risk is not modelled separately (real USD). Debt is not restructured within simulations.
+- **Design explorer:** uses one representative weather year plus interpolation (error vs full model ≈ 0.5–0.8 M$).
 
-- **Güneş kanibalizasyonu:** Kurulu güneş 25 GW'a çıktıkça öğle fiyatları çöktü. Akşam/öğle fiyat oranı 2015'te 0,89, 2025'te 1,60, 2026'da 2,33.
-- **Batarya göstergeleri:** 2026'da 10 $/MWh altındaki saat sayısı 1.564 ve günlük spread ortalama fiyatın 1,4 katı.
-- **2022–2023 azami uzlaştırma fiyatı (AUF):** YEKDEM dışı yenilenebilir gelirlerini ~%44 kırptı.
-
-![Yakalanma oranı trendi](outputs/02_piyasa/yakalanma_orani_trendi.png)
-
-Ayrıntılar: [docs/02_piyasa_analizi.md](docs/02_piyasa_analizi.md)
-
-### Aşama 3 — Finansal model ✅
-Reel USD bazlı proje finansmanı modeli. Saatlik üretim × saatlik fiyat (3 seviye × 2 kanibalizasyon
-senaryosu), Türkiye'ye özgü TEİAŞ bedelleri, dengesizlik ve vergi; P90'a göre borç boyutlandırma.
-
-| 50 MW bağlantı, baz fiyat 58 $/MWh, kanibalizasyon devam | (a) RES 50 | (b) RES 50 + GES 25 | (c) RES 50 + GES 50 | (d) GES 50 |
-|---|---|---|---|---|
-| NPV [M$, %7 reel WACC] | −2,1 | −7,4 | −15,6 | −15,3 |
-| Proje IRR (reel) | 6,6% | 5,9% | 4,9% | 1,1% |
-| Başabaş fiyat [$/MWh, reel] | 59,6 | 62,8 | 67,1 | 89,4 |
-| Yakalanan fiyat [$/MWh] | 57,8 | 55,2 | 54,1 | 41,9 |
-| Kesinti (ekonomik kesinti dahil) | 5,6% | 9,6% | 15,9% | 15,6% |
-
-- **En etkili değişkenler:** fiyat seviyesi, CAPEX ve WACC.
-- **Ek GES'in değeri azalıyor:** İkinci 25 MW'ın enerjisinin %40'ı kesiliyor. Bu da batarya ve kapasite optimizasyonunu (Aşama 4) gerekli kılıyor.
-
-![Konfigürasyon karşılaştırması](outputs/03_finans/konfigurasyon_karsilastirma.png)
-
-Ayrıntılar: [docs/03_finansal_model.md](docs/03_finansal_model.md) · Excel: `outputs/03_finans/nakit_akisi_b.xlsx`
-
-### Aşama 4 — Optimizasyon (Pyomo + HiGHS) ✅
-Batarya arbitrajı (LP) → hibrit + batarya dispatch ve şebeke gölge fiyatı (LP) → türbin sayısı
-tamsayı, yatırım kararı ikili kapasite MILP'i (tam yıl, 2 × 8.760 saat; temsilî günlerle karşılaştırıldı).
-
-| Senaryo (fiyat / kanibalizasyon) | Optimal karar | Kurulursa en iyi tasarım (50 MW bağlantı) | NPV [M$] |
-|---|---|---|---|
-| Düşük 45 | Yatırım yapma | — | — |
-| Baz 58 / devam | Yatırım yapma (sınırda) | RES 58,8 MW (14 türbin) | −1,0 |
-| Baz 58 / durur | Kur | RES 58,8 MW | +0,4 |
-| Yüksek 72 / devam | Kur | RES 63,0 + BESS 7 MW / 18 MWh | +18,9 |
-
-- **Asıl karar "kurmalı mı":** Tasarımlar arası pişmanlık ≤ 0,6 M$, yanlış yatırım kararının bedeli ~20 M$.
-- **Optimal tasarımın başabaş fiyatı 59,0 $/MWh** (b: 62,8).
-- **Bağlantının marjinal değeri** yüksek senaryoda MW başına ~0,38 M$; bu, TEİAŞ katkı payı için teklif tavanı.
-
-![Senaryolar](outputs/04_optimizasyon/b4_senaryo_tasarimlari.png)
-
-Ayrıntılar ve formülasyonlar: [docs/04_optimizasyon.md](docs/04_optimizasyon.md)
-
-### Aşama 5 — Batarya gelir yığını, PPA ve Monte Carlo ✅
-**Bölüm A:** EPİAŞ SFK/PFK kapasite fiyatları (2023–26), dengesizlik azaltımı, YEK-G, kurumsal PPA ve depolamalı
-lisans MILP'e eklendi. **Yan hizmet (SFK) geliri 40 MW / 70 MWh bataryayı tasarıma sokuyor:** NPV −1,6 → +26,4 M$,
-başabaş 59 → 40 $/MWh (PPA ile 33). GES hiçbir kombinasyonda girmiyor; depolamalı lisans kullanılmıyor.
-
-**Bölüm B:** 11 belirsizlik, 10.000 senaryo, önceden hesaplanmış işletme tabloları (hata ~%1, 2 dk).
-
-| Tasarım | E[NPV] [M$] | P(NPV>0) | CVaR %5 [M$] | P(DSCR<1) |
-|---|---|---|---|---|
-| RES 58,8 (tüccar) | −1,9 | %43 | −30,2 | %80 |
-| RES 50 + GES 25 | −6,3 | %33 | −34,9 | %80 |
-| RES 58,8 + BESS 40/70 (gelir yığınlı) | **28,4** | %97 | −2,5 | %35 |
-| + PPA (%70 P90, 12 yıl) | 26,8 | **%99** | **+2,5** | **%16** |
-| RES 58,8 + PPA | −4,9 | %28 | −21,8 | %70 |
-
-- Varyansın %50–85'i fiyattan; bataryalı tasarımda %15–25'i yan hizmet fiyatının geleceğinden.
-- EVPI: tüccar RES 5,2 M$ (bilginin değeri), gelir yığınlı tasarım ~0 (karar zaten sağlam).
-
-![Risk-getiri](outputs/05_risk/b_risk_getiri.png)
-
-Ayrıntılar: [docs/05_risk_ve_gelir_yigini.md](docs/05_risk_ve_gelir_yigini.md)
+## License
+MIT — see [LICENSE](LICENSE).

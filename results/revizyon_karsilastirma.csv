@@ -1,0 +1,19 @@
+﻿,"1) Aşama 2: sabit k, anlık zaman","2) Sabit k, aralık hizası","3) Revizyon: ay × saat k, aralık hizası"
+RES KF [%],38.1371,38.1054,37.6761
+RES gün içi tepe saati (TSİ),21.0000,21.0000,15.0000
+RES öğleden sonra (13–16) / gece (0–5) KF oranı,0.9122,0.9318,1.6115
+GES–RES saatlik korelasyon,-0.1128,-0.1140,0.1247
+1 MW RES P50 [MWh/yıl],3378.3141,3375.4328,3328.3266
+1 MW RES P90 normal [MWh/yıl],3079.8690,3076.9647,3057.3228
+Hibrit 1+1/1 P50 [MWh/yıl],4880.2954,4889.4608,4651.9700
+Hibrit 1+1/1 P90 normal [MWh/yıl],4582.0406,4590.8966,4390.3438
+Hibrit değişkenlik katsayısı [%],3.9664,3.9598,3.7183
+Hibrit kesinti [%],6.1127,5.8888,9.6313
+Bağlantı kullanım oranı [%],55.1082,55.2098,52.6263
+RES yakalanma oranı 2014–23 ort.,0.9744,0.9745,0.9875
+RES yakalanma oranı 2023,0.9601,0.9603,0.9558
+"RES yakalanma oranı 2025 (uzantı, düzeltilmiş)",0.9656,0.9661,0.9404
+"RES yakalanma oranı 2026 Oca–Eyl (uzantı, düzeltilmiş)",1.0403,1.0417,0.9945
+GES yakalanma oranı 2023,0.9237,0.9221,0.9221
+Hibrit yakalanma oranı 2014–23 ort.,1.0056,1.0048,1.0121
+"Hibrit yakalanma oranı 2025 (uzantı, düzeltilmiş)",0.9291,0.9277,0.9162

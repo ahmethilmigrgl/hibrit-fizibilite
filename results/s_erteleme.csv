@@ -1,0 +1,5 @@
+﻿Erteleme [yıl],"A: RES 58,8 (Aşama 4)",C: gelir yığınlı optimal,D: gelir yığınlı + PPA,"E: RES 58,8 + PPA",F1: uzun süreli batarya (40 MW / 160 MWh),"F2a: küçük batarya (30 MW / 52,5 MWh)",F2: aşamalı (30 → 40 MW),F2P: aşamalı + PPA (30 → 40 MW),En iyi tasarım (bilgisiz) [M USD],Bekle-gör: senaryo bilinerek seçim [M USD]
+0,-1.894,6.157,4.884,-4.922,-0.363,6.061,6.315,4.525,6.315,7.144
+1,-1.621,3.946,2.721,-4.547,-1.622,4.080,4.231,2.528,4.231,4.763
+2,-1.457,2.665,1.504,-4.239,-2.068,2.896,2.960,1.364,2.960,3.319
+3,-1.345,1.900,0.819,-3.961,-2.108,2.156,2.170,0.705,2.170,2.379

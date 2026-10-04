@@ -5,6 +5,8 @@ Aşama 2 — EPİAŞ verisinin indirilmesi ve işlenmesi
     • Türkiye geneli kaynak bazında saatlik üretim    → data/processed/uretim_turkiye_2014_guncel.parquet
     • Ezine çevresi RES'lerin saatlik üretimi         → data/processed/ezine_res_santralleri.parquet
     • Azami uzlaştırma fiyatı (AUF), aylık            → data/processed/auf_2022_2023.parquet
+    • Yan hizmet (PFK/SFK) kapasite fiyat/miktarı, SMF → data/processed/yan_hizmet_2023_guncel.parquet (Aşama 5)
+    • YEK-G ağırlıklı ortalama fiyatı                  → data/processed/yekg_fiyat.parquet (Aşama 5)
 
 Ham yanıtlar data/raw/epias altında önbelleğe alınır; tekrar çalıştırmada yalnızca eksik parçalar indirilir.
 Tüm zaman damgaları UTC'dir (dönüşüm kuralları: src/piyasa/veri.py).
@@ -21,7 +23,7 @@ import pandas as pd
 
 from src.ayarlar import ISLENMIS_VERI, config_oku, deger
 from src.piyasa.epias import EpiasIstemcisi
-from src.piyasa.veri import auf_cek, ptf_cek, uretim_cek
+from src.piyasa.veri import auf_cek, ptf_cek, saatlik_seri_cek, uretim_cek, yekg_fiyat_cek
 
 
 def main():
@@ -51,6 +53,18 @@ def main():
     santraller = pd.concat(parcalar, axis=1)
     santraller.index.name = "zaman_utc"
     santraller.to_parquet(ISLENMIS_VERI / "ezine_res_santralleri.parquet")
+
+    # Aşama 5: yan hizmet kapasite fiyatları (2023 sonrası; USD'ye saatlik PTF TL/USD oranıyla çevrilir)
+    print("Yan hizmet (PFK/SFK) ve SMF ...", flush=True)
+    seriler = {ad: saatlik_seri_cek(c, ad, "2023-01-01", son) for ad in ["pfk_fiyat", "sfk_fiyat", "pfk_miktar", "sfk_miktar", "smf"]}
+    yh = pd.concat(seriler, axis=1); yh.index.name = "zaman_utc"
+    kur = (ptf.ptf_tl / ptf.ptf_usd).replace([float("inf")], float("nan"))
+    kur = kur.where(ptf.ptf_usd > 1).ffill().reindex(yh.index).ffill()
+    for a in ["pfk_fiyat", "sfk_fiyat", "smf"]:
+        yh[a + "_usd"] = yh[a] / kur
+    yh.join(ptf[["ptf_tl", "ptf_usd"]]).to_parquet(ISLENMIS_VERI / "yan_hizmet_2023_guncel.parquet")
+    print("YEK-G fiyatları ...", flush=True)
+    yekg_fiyat_cek(c, "2023-01-01", son).to_parquet(ISLENMIS_VERI / "yekg_fiyat.parquet")
     print("Tamamlandı.", flush=True)
 
 

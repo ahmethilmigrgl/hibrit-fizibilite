@@ -30,7 +30,10 @@ başvuru için hazırlanıyor. Sonuçlar, varsayımlar ve formülasyonlar mülak
   - `data/raw` — ham indirilen veri (git'e eklenmez)
   - `data/processed` — işlenmiş veri (git'e eklenmez)
   - `src` — Python modülleri/scriptleri
-  - `notebooks` — keşif ve analiz defterleri
+  - `tests` — pytest testleri (`.venv/bin/python -m pytest -q`)
+  - `results` — dashboard ve rapor için küçük, toplulaştırılmış sonuçlar (repoya girer, < 1 MB)
+  - `dashboard` — Streamlit Community Cloud giriş noktası (hafif requirements)
+  - `docs/kariyer` — kişisel kariyer materyalleri (gitignore'da, repoya girmez)
   - `outputs` — grafikler ve sonuç tabloları
   - `docs` — açıklamalar ve matematiksel formülasyonlar
 - **API kimlik bilgileri yalnızca `.env`** içinde (şablon: `.env.example`). Asla koda veya git'e girmez.
@@ -71,4 +74,9 @@ başvuru için hazırlanıyor. Sonuçlar, varsayımlar ve formülasyonlar mülak
    `gelir_yigini.*`; `src/05_gelir_yigini.py`. Bölüm B: `src/risk/` (işletme tabloları + ara değerleme, vektörize
    nakit akışı), `src/05_monte_carlo.py`, dağılımlar `monte_carlo.*`. İşletme tabloları
    `data/processed/isletme_tablolari/` altında önbellekli (tasarım değişirse yeniden üretilir).
-6. **Streamlit dashboard, README, kısa rapor.**
+   **Stres testi (Aşama 6 Bölüm A):** SFK doyum modeli `src/risk/doyum.py`, `src/05_stres_testi.py`, parametreler
+   `stres_testi.*`; öneri değişti (RES 58,8 + 30 MW aşamalı batarya + PPA), bkz. docs/05 §9.
+6. **Paketleme ve yayın:** ✅ Giriş noktası `calistir.py --asama all|0..6`; testler `tests/`; dashboard `app.py`
+   (yalnızca `results/` + `config.yaml`, pyomo gerektirmez; gezgin motoru `src/risk/gezgin.py`, ızgara
+   `src/06_gezgin_tablolari.py`); `src/06_sonuclari_paketle.py` → `results/`; rapor `docs/RAPOR.md` →
+   `src/06_rapor_pdf.py` → `outputs/RAPOR.pdf` (Chrome headless). README İngilizce, README.tr.md Türkçe.

@@ -1,0 +1,9 @@
+# Yalnızca dashboard (app.py) için hafif bağımlılıklar — Streamlit Community Cloud bu dosyayı kullanır.
+streamlit==1.65.0
+plotly==7.1.0
+numpy==2.4.6
+pandas==3.0.6
+scipy==1.17.1
+numpy-financial==1.0.0
+pyyaml==6.0.3
+python-dotenv==1.2.4

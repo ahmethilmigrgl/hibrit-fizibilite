@@ -1,0 +1,9 @@
+﻿Tasarım,Yavaş doyum,Baz doyum,Hızlı doyum,SFK'ya katılamama
+"A: RES 58,8 (Aşama 4)",-1.512,-2.236,-2.015,-1.449
+C: gelir yığınlı optimal,23.847,2.846,-1.423,-3.925
+D: gelir yığınlı + PPA,22.180,1.695,-2.509,-5.126
+"E: RES 58,8 + PPA",-4.649,-5.201,-4.882,-4.683
+F1: uzun süreli batarya (40 MW / 160 MWh),17.725,-3.626,-7.965,-11.201
+"F2a: küçük batarya (30 MW / 52,5 MWh)",21.161,3.127,-0.435,-2.214
+F2: aşamalı (30 → 40 MW),22.187,3.127,-0.435,-2.214
+F2P: aşamalı + PPA (30 → 40 MW),20.226,1.451,-2.095,-4.205
