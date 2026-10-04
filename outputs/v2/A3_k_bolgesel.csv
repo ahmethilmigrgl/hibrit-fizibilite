@@ -1,0 +1,7 @@
+﻿grup,gruplama,santral,k_medyan,k_p10,k_p90,gwa_era5_medyan,gunici_genlik
+kıyı (<20 km),bolge,3,1.068,1.049,1.197,1.087,0.106
+düşük,karmasiklik_sinifi,1,1.068,1.068,1.068,1.087,0.518
+orta,karmasiklik_sinifi,1,1.045,1.045,1.045,1.014,0.106
+yüksek,karmasiklik_sinifi,1,1.229,1.229,1.229,1.254,0.085
+<300 m,rakim_sinifi,2,1.056,1.047,1.066,1.051,0.312
+300–800 m,rakim_sinifi,1,1.229,1.229,1.229,1.254,0.085

@@ -307,3 +307,30 @@ durum_tespiti:
   birim: "olasılık; M USD; üretim payı"
   kaynak: "Teşvik kaybı: outputs/07/tesvik_etkisi.csv (KDV, TL aşınması dahil); 60 MW RES durum tespiti maliyeti: hukuki + teknik (bağımsız mühendis) + çevresel/ornitoloji incelemesi için sektör pratiği"
   not: "TAHMİN — teşvik belgesinin alınamama olasılığı; işletmede göç dönemi seçici durdurma zorunluluğu olasılığı ve NPV kaybı (~%2,5 üretim × ~100 M$ RES gelirinin bugünkü değeri); tipik maliyet aralığı. EVPPI hesaplarında kullanılır (src/07_baz_vaka.py)."
+
+# =====================================================================================================================
+# v2 — Türkiye geneli saha parametreleri (dal v2-genel). v1 (Ezine) anahtarları yukarıda, değişmedi.
+# =====================================================================================================================
+v2:
+  teias_2026:
+    kaynak: "EPDK Kurul Kararı 14204 (30/12/2025), 1/1/2026'dan itibaren; EK-2 TEİAŞ Tarife Bölgeleri Listesi. TEİAŞ duyurusu '2026 Yılı Sistem Kullanım ve Sistem İşletim Tarifeleri' ekleri (data/raw/teias/, taranmış PDF elle aktarıldı)"
+    uretim_tarifesi: {value: {1: 123429.69, 2: 156234.30, 3: 145494.07, 4: 151658.69, 5: 161960.64, 6: 160972.61, 7: 184979.16, 8: 183166.40, 9: 189835.83, 10: 246182.29, 11: 252828.95, 12: 244772.27, 13: 235605.83, 14: 260949.94, 15: 273224.42}, birim: "TL/MW-yıl (üretim sistem kullanım, kapasite bileşeni)", kaynak: "EPDK 14204", not: "Tüm bölgelerde üretim enerji bileşeni aynı: sistem kullanım 109,68 + sistem işletim 60,71 TL/MWh"}
+    uretim_enerji_bedeli: {value: 170.39, birim: "TL/MWh (109,68 kullanım + 60,71 işletim)", kaynak: "EPDK 14204", not: ""}
+    kur_tl_usd: {value: 45.0, birim: "TL/USD", kaynak: "v1 ile aynı varsayım (finans.teias_kapasite_bedeli notu)", not: "Reel USD'ye çevirmek için"}
+    il_bolge: {value: {EDİRNE: 1, İSTANBUL: 1, KIRKLARELİ: 1, TEKİRDAĞ: 1, BALIKESİR: 2, BURSA: 2, ÇANAKKALE: 2, YALOVA: 2, ANKARA: 3, BİLECİK: 3, BOLU: 3, DÜZCE: 3, ESKİŞEHİR: 3, KOCAELİ: 3, SAKARYA: 3, AYDIN: 4, İZMİR: 4, MANİSA: 4, MUĞLA: 4, AFYONKARAHİSAR: 5, BURDUR: 5, DENİZLİ: 5, ISPARTA: 5, KÜTAHYA: 5, UŞAK: 5, ANTALYA: 6, AMASYA: 7, BARTIN: 7, ÇANKIRI: 7, ÇORUM: 7, KARABÜK: 7, KASTAMONU: 7, KIRIKKALE: 7, KIRŞEHİR: 7, SAMSUN: 7, SİNOP: 7, YOZGAT: 7, ZONGULDAK: 7, KARAMAN: 8, KONYA: 8, AKSARAY: 9, KAYSERİ: 9, NEVŞEHİR: 9, NİĞDE: 9, ADANA: 10, HATAY: 10, KAHRAMANMARAŞ: 10, MERSİN: 10, OSMANİYE: 10, AĞRI: 11, ARDAHAN: 11, ARTVİN: 11, BAYBURT: 11, ERZİNCAN: 11, ERZURUM: 11, GİRESUN: 11, GÜMÜŞHANE: 11, IĞDIR: 11, KARS: 11, ORDU: 11, RİZE: 11, SİVAS: 11, TOKAT: 11, TRABZON: 11, TUNCELİ: 11, ADIYAMAN: 12, BİNGÖL: 12, ELAZIĞ: 12, MALATYA: 12, GAZİANTEP: 13, KİLİS: 13, ŞANLIURFA: 13, BATMAN: 14, DİYARBAKIR: 14, MARDİN: 14, SİİRT: 14, ŞIRNAK: 14, BİTLİS: 15, HAKKARİ: 15, MUŞ: 15, VAN: 15}, birim: "il → 2026 iletim tarife bölgesi", kaynak: "EPDK 14204 EK-2", not: "Üretim tarifesi doğu/güneydoğuda (üretim fazlası bölgeler) yüksek, batıda düşük"}
+  turbin_secimi:
+    value:
+      - {gwa_100m_ust: 6.5, sinif: "IEC III/S (düşük rüzgâr)", turbin: "E-141/4200", gobek: 135}
+      - {gwa_100m_ust: 7.5, sinif: "IEC III", turbin: "E-141/4200", gobek: 120}
+      - {gwa_100m_ust: 8.5, sinif: "IEC II", turbin: "E-126/4200", gobek: 105}
+      - {gwa_100m_ust: 99, sinif: "IEC I", turbin: "V112/3450", gobek: 94}
+    birim: "GWA 100 m ortalama hız [m/s] üst sınırı → türbin (windpowerlib), göbek [m]"
+    kaynak: "IEC 61400-1 rüzgâr sınıfları (göbek yüksekliğinde yıllık ortalama referans: I 10, II 8,5, III 7,5 m/s); windpowerlib kütüphanesindeki güç eğrili 3–4,2 MW türbinlerin özgül gücü (W/m²)"
+    not: "Gerekçe: düşük rüzgârda büyük rotor/düşük özgül güç (E-141 ≈ 269 W/m²) ve yüksek göbek kapasite faktörünü artırır; yüksek rüzgârda yük ve sertifika nedeniyle IEC I sınıfı, daha yüksek özgül güçlü türbin (V112/3450 ≈ 350 W/m²). Sınır değerler göbek yüksekliğine kaymayla taşınmış hızın sınıf eşiklerine yakınlığı gözetilerek 100 m'de ~1 m/s aşağı alındı. Kütüphanede güncel 5–7 MW platformlar (N149/N163, SG 6.6-170) yok: sınırlama"
+  aday_nokta_sayisi: {value: 5, birim: "adet", kaynak: "Proje kararı", not: "İl/ilçe seçildiğinde ilçe içinde GWA ortalama hızı en yüksek hücreler (ilçe merkezi değil)"}
+  aday_nokta_asgari_aralik_km: {value: 3.0, birim: "km", kaynak: "Proje kararı", not: "Aday noktaların aynı sırtta yığılmaması için"}
+  aktarim:
+    value: {yakin_km: 30, orta_km: 80, azami_komsu: 3, idw_us: 2, rakim_farki_m: 400, karmasiklik_farki: 0.04, kiyi_benzerlik: true}
+    birim: "km, m, GWA değişkenlik katsayısı farkı"
+    kaynak: "Proje kararı; eşikler A4 'birini dışarıda bırak' çapraz doğrulamasıyla sınandı (docs/v2_A_veri_altyapisi.md)"
+    not: "Benzer santral: rakım farkı ≤ 400 m, karmaşıklık farkı ≤ 0,04 ve aynı kıyı sınıfı (kıyı < 20 km / iç). Yakın: ≤ 30 km (yüksek güven), 30–80 km (orta), yoksa yalnız GWA (düşük)"

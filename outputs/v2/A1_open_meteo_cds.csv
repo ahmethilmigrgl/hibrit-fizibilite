@@ -1,0 +1,20 @@
+﻿,değer
+100 m hız: saatlik korelasyon,0.99990
+100 m hız: ortalama CDS [m/s],6.69757
+100 m hız: ortalama Open-Meteo [m/s],6.69718
+100 m hız: ortalama fark OM − CDS [m/s],-0.00039
+100 m hız: RMSE [m/s],0.04812
+10 m hız: saatlik korelasyon,0.99985
+10 m hız: ortalama CDS [m/s],4.58291
+10 m hız: ortalama Open-Meteo [m/s],4.58253
+10 m hız: ortalama fark OM − CDS [m/s],-0.00037
+10 m hız: RMSE [m/s],0.04015
+2 m sıcaklık: ortalama fark [K],-0.17488
+Yüzey basıncı: ortalama fark [hPa],-3.37463
+RES KF: ortalama CDS [%],37.67609
+RES KF: ortalama Open-Meteo [%],37.61036
+RES KF: fark OM − CDS [puan],-0.06573
+RES KF: saatlik korelasyon,0.99993
+RES KF: yıllık en büyük mutlak fark [puan],0.08770
+RES KF: gün içi profil en büyük fark [puan],0.08645
+Ortak saat sayısı,87648.00000

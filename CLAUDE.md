@@ -109,3 +109,28 @@ başvuru için hazırlanıyor. Sonuçlar, varsayımlar ve formülasyonlar mülak
    `requirements-dev.txt`), `DATA_SOURCES.md` (Copernicus/PVGIS/EPİAŞ atıfları birebir), `docs/MODEL_DOGRULAMA.md`,
    dashboard cilası (Hakkında, `dashboard/favicon.png`, TR/EN sayı biçimi `tablo()`/`ciz()`, Markdown'da `$` kaçışı),
    README ekran görüntüleri `docs/img/`, `CHANGELOG.md`, etiket v1.0.0. Repo henüz push edilmedi (`REPO_URL` yer tutucu).
+
+---
+
+## v2 — Türkiye geneli saha tarama ve analiz uygulaması (dal: `v2-genel`)
+**Amaç:** Projeyi yalnız Ezine için değil, kullanıcının Türkiye'de seçtiği herhangi bir saha için hızlı tarama ve tam
+analiz yapan, herkese açık bir web uygulamasına dönüştürmek. v1.0.0 (Ezine analizi, `main` dalı ve etiket) değiştirilmez;
+tüm v2 işi `v2-genel` dalında.
+
+**Fazlar** (Faz A kullanıcı tarafından tanımlandı; B ve C taslaktır, başlarken kullanıcıyla netleştirilir):
+- **Faz A — Veri altyapısı ve genelleştirme:** çalışma zamanı rüzgâr kaynağı (Open-Meteo), Global Wind Atlas, Türkiye
+  RES kalibrasyon atlası (çevrimdışı EPİAŞ), kalibrasyon aktarım kuralı ve güven seviyeleri, sahaya bağlı parametreler
+  (il/ilçe, TEİAŞ tarife bölgesi, türbin seçimi), ulusal piyasa paketi, saha nesnesiyle genelleştirilmiş hat + regresyon.
+- **Faz B — Web uygulaması (taslak):** saha seçimi (harita/il-ilçe), hızlı tarama (dakikalar içinde) ve tam analiz
+  (optimizasyon + Monte Carlo) akışları, sonuç raporu.
+- **Faz C — Yayın ve işletim (taslak):** barındırma, önbellek/istek limiti yönetimi, izleme, kullanıcı dokümanı.
+
+**Mimari kurallar (v2):**
+- Web uygulaması çalışırken hiçbir kişisel kimlik bilgisi (CDS, EPİAŞ) kullanılmaz. EPİAŞ ve CDS yalnız çevrimdışı ön
+  hesaplama betiklerinde; uygulama yalnız ön hesaplanmış dosyalar ve anahtarsız açık API'lerle çalışır.
+- Saha bir parametredir: saha nesnesi (ad, enlem, boylam, il, ilçe, şebeke bağlantı MW, arazi/kapasite sınırları,
+  isteğe bağlı kullanıcı varsayımları). Tüm hat bu nesneyle çalışır; Ezine'ye özgü sabit kalmaz.
+- Her veri kaynağının lisansı ve kullanım koşulları (ticari olmayan kullanım, istek limitleri, atıf metni) kendi
+  sayfasından doğrulanır ve DATA_SOURCES.md'ye yazılır. Herkese açık uygulamada kullanımı engelleyen koşul varsa durulur
+  ve kullanıcıya sorulur.
+- Kişisel bilgi gerektiren indirme formları (ör. GEM) kullanıcı tarafından doldurulur.

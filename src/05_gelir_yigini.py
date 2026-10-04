@@ -11,6 +11,7 @@ Monte Carlo adayları: outputs/05_risk/adaylar.json
 Çalıştırma: .venv/bin/python src/05_gelir_yigini.py  (~10-15 dk)
 """
 
+import hashlib
 import json
 import sys
 import time
@@ -27,7 +28,7 @@ from src import gorsel as g
 from src.ayarlar import CIKTILAR, ISLENMIS_VERI, config_oku, deger
 from src.finans.fiyat_senaryosu import fiyat_senaryosu_uret
 from src.finans.model import Varsayimlar
-from src.finans.veri import uretim_profili
+from src.finans.veri import UretimProfili, uretim_profili
 from src.optimizasyon.gelir_yigini import gelir_parametreleri
 from src.optimizasyon.hibrit import temsili_hava_yili
 from src.optimizasyon.kapasite import Segment, ekonomi_hesapla, kapasite_coz
@@ -52,9 +53,17 @@ def log(*a):
 
 
 class Ortam:
-    def __init__(self):
-        self.cfg = config_oku()
-        self.u = uretim_profili()
+    def __init__(self, cfg: dict | None = None, uretim: UretimProfili | None = None):
+        """cfg: sahaya özgü config (v2: saha_cfg); uretim: sahanın profili. İkisi de verilmezse v1 Ezine."""
+        self.cfg = cfg if cfg is not None else config_oku()
+        self.u = uretim if uretim is not None else uretim_profili()
+        # Önbellek anahtarı: v1 profilinde boş (v1 önbelleği geçerli kalır), diğer sahalarda profil parmak izi
+        self.profil_imza = (
+            None
+            if uretim is None
+            else hashlib.md5(np.ascontiguousarray(np.r_[self.u.ges.ravel(), self.u.res.ravel()]).tobytes()).hexdigest()[:12]
+        )
+        self.baglanti = float(deger(self.cfg["saha"]["sebeke_baglanti_kapasitesi"]) or 50.0)
         self.v = Varsayimlar.configten(self.cfg)
         self.c = Sabitler.configten(self.cfg, self.v)
         self.opt = {
@@ -91,7 +100,7 @@ class Ortam:
         if yanlar is not None:
             yanlar = [y * yh_carpan for y in yanlar]
         seg = segmentleri_kur([p[0], p[1]], self.g, self.r, K, Segment, yanlar)
-        r = kapasite_coz(seg, self.v, eko, 50, self.opt, {}, gelir=gelir, zaman_siniri=zaman)
+        r = kapasite_coz(seg, self.v, eko, self.baglanti, self.opt, {}, gelir=gelir, zaman_siniri=zaman)
         r.pop("model", None)
         return r
 
@@ -100,7 +109,6 @@ class Ortam:
         İşletme tablosu (diskte önbellekli: data/processed/isletme_tablolari/). Bataryasız tasarım kapalı formla
         ince ızgarada; bataryalı tasarım LP ile daha seyrek ızgarada hesaplanır (hata Bölüm B'de ölçülür).
         """
-        import hashlib
         import pickle
 
         pil = t.bess_mw > 0.5
@@ -128,6 +136,7 @@ class Ortam:
                     A,
                     pp,
                     sabit,
+                    *([self.profil_imza, self.baglanti] if self.profil_imza else []),
                 ],
                 default=float,
             ).encode()
@@ -191,14 +200,14 @@ class Ortam:
         }
 
 
-def tasarim_of(ad, r, kal):
+def tasarim_of(ad, r, kal, baglanti: float = 50.0):
     return Tasarim(
         ad,
         r["RES [MW]"] + r.get("Blok RES [MW]", 0),
         r["GES [MWac]"] + r.get("Blok GES [MWac]", 0),
         max(r["BESS [MW]"], 0),
         max(r["BESS [MWh]"], 0),
-        50.0 + r.get("Ek bağlantı L2 [MW]", 0),
+        baglanti + r.get("Ek bağlantı L2 [MW]", 0),
         yan_hizmet="yh" in kal and r.get("Yan hizmete katılım", 0) == 1,
         dengesizlik_azaltim="dz" in kal,
         yekg="yekg" in kal,
