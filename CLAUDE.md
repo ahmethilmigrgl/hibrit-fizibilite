@@ -95,3 +95,8 @@ başvuru için hazırlanıyor. Sonuçlar, varsayımlar ve formülasyonlar mülak
    takvim (COD P50 Kas 2029). Baz vaka: E[NPV] +1,5 M$ → dar kapsamlı durum tespiti + teklif (azami prim ~1,5 M$).
    Durum tespiti bilgi değeri: `outputs/07/durum_tespiti_bilgi_degeri.csv`. Sürücü kapalı karşılaştırma:
    `ORTAK_SURUCU=0 SADECE_G=1 .venv/bin/python src/07_gelir_yapilari.py`.
+8. **Karar paketi:** ✅ `outputs/08/`. Excel modeli (`src/08_excel_model.py`: FAST benzeri, formüllü; LibreOffice ile yeniden
+   hesap, 48/48 senaryo Python ile mutabık, `excel_mutabakat.csv`), yatırım memosu (`Yatirim_Memosu.md` → PDF,
+   `src/08_memo_pdf.py`), sunum (`src/08_sunum_grafikleri.py` + `src/08_sunum.py` → `Sunum.pptx/.pdf`, 13 slayt),
+   LinkedIn karuseli (`src/08_karusel.py` → `docs/kariyer/`). Memo kararı: 0,5 M$ durum tespiti + ≤1,5 M$ primle bağlayıcı
+   olmayan teklif. Belgeler dashboard Yöntem sekmesinden ve README'den indirilebilir. LibreOffice: `~/Applications/LibreOffice.app`.

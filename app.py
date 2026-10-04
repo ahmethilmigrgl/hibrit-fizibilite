@@ -430,3 +430,15 @@ with sekmeler[5]:
         "on three plants (no on-site met mast); FX risk not modelled separately; debt is not restructured within simulations."))
     st.markdown(f"[{T('Rapor', 'Report')} (docs/RAPOR.md)]({REPO_URL}/blob/main/docs/RAPOR.md) · "
                 f"[{T('Formülasyonlar', 'Formulations')} (docs/)]({REPO_URL}/tree/main/docs) · [GitHub]({REPO_URL})")
+    st.markdown(T("**İndirilebilir belgeler**", "**Downloads**"))
+    belgeler = [(T("Yatırım memosu (PDF)", "Investment memo (PDF, TR)"), "outputs/08/Yatirim_Memosu.pdf", "application/pdf"),
+                (T("Sunum (PDF)", "Presentation (PDF, TR)"), "outputs/08/Sunum.pdf", "application/pdf"),
+                (T("Rapor (PDF)", "Report (PDF, TR)"), "outputs/RAPOR.pdf", "application/pdf"),
+                (T("Excel finansal model", "Excel financial model"), "outputs/08/Ezine_Hibrit_Finansal_Model.xlsx",
+                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")]
+    for sutun, (ad, yol, tur) in zip(st.columns(len(belgeler)), belgeler):
+        dosya = KOK / yol
+        if dosya.exists():
+            sutun.download_button(ad, dosya.read_bytes(), file_name=dosya.name, mime=tur, width="stretch")
+        else:                                            # dosya dağıtımda yoksa GitHub bağlantısı
+            sutun.markdown(f"[{ad}]({REPO_URL}/blob/main/{yol})")

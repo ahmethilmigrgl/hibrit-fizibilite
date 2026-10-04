@@ -198,7 +198,8 @@ def nakit_akislari(t: Tasarim, tablo: dict, c: Sabitler, girdi: dict) -> dict:
     sna[:, :nb] = -capex_top[:, None] * takvim[None]
     sna[:, nb:] = cfads
     df = (1 + v.wacc) ** -(np.arange(T) + 1)
-    return {"sna": sna, "npv": sna @ df, "cfads": cfads, "favok": favok, "vergi": vergi, "satilan": satilan,
+    return {"X": X, "aug": aug, "sokum": sokum, "amort": amort, "opex": opex, "esz": esz, "gelir_yekg": gelir_yekg,
+            "sna": sna, "npv": sna @ df, "cfads": cfads, "favok": favok, "vergi": vergi, "satilan": satilan,
             "capex_top": capex_top, "gelir_bess": gelir_bess, "gelir_yh": gelir_yh, "gelir_spot": gelir_ges + gelir_res,
             "E_res": E_res, "E_ges": E_ges, "dengesizlik": dengesizlik, "azaltim": azaltim,
             "kesilen": g("E_k"), "uretilebilir": g("E_A")}

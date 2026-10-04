@@ -48,6 +48,11 @@ ADIMLAR = [
     ("6", "06_gezgin_tablolari.py", None, "Dashboard tasarım gezgini işletme tabloları"),
     ("6", "06_sonuclari_paketle.py", None, "Dashboard/rapor için results/ klasörü (küçük, toplulaştırılmış)"),
     ("6", "06_rapor_pdf.py", None, "docs/RAPOR.md → outputs/RAPOR.pdf"),
+    ("8", "08_excel_model.py", None, "Excel finansal model + Python mutabakatı (LibreOffice ile yeniden hesap)"),
+    ("8", "08_memo_pdf.py", None, "Yatırım komitesi memosu → outputs/08/Yatirim_Memosu.pdf"),
+    ("8", "08_sunum_grafikleri.py", None, "Sunum grafikleri (karar yolculuğu, gelir yapıları, COD, bilgi değeri)"),
+    ("8", "08_sunum.py", None, "Yatırım komitesi sunumu → outputs/08/Sunum.pptx + PDF"),
+    ("8", "08_karusel.py", None, "LinkedIn karuseli → docs/kariyer/ (git'e girmez)"),
 ]
 KIMLIK = {"CDS": ["CDS_URL", "CDS_KEY"], "EPİAŞ": ["EPIAS_USERNAME", "EPIAS_PASSWORD"]}
 

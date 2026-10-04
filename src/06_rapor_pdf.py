@@ -44,13 +44,12 @@ def chrome_bul() -> str | None:
     return None
 
 
-def main():
-    kaynak = KOK / "docs" / "RAPOR.md"
+def md_pdf(kaynak: Path, pdf: Path, baslik: str, css_ek: str = "") -> None:
+    """Markdown → HTML (kaynakla aynı klasörde, göreli görsel yolları korunur) → Chrome headless PDF."""
     govde = markdown.markdown(kaynak.read_text(encoding="utf-8"), extensions=["tables", "fenced_code", "sane_lists", "attr_list"])
-    html = f"<!doctype html><html lang='tr'><head><meta charset='utf-8'><title>Hibrit Fizibilite Raporu</title><style>{CSS}</style></head><body>{govde}</body></html>"
-    html_yol = KOK / "docs" / "RAPOR.html"        # görsel yolları docs/ klasörüne göre göreli
+    html = f"<!doctype html><html lang='tr'><head><meta charset='utf-8'><title>{baslik}</title><style>{CSS}{css_ek}</style></head><body>{govde}</body></html>"
+    html_yol = kaynak.with_suffix(".html")
     html_yol.write_text(html, encoding="utf-8")
-    pdf = KOK / "outputs" / "RAPOR.pdf"
     chrome = chrome_bul()
     if chrome is None:
         print(f"Chrome/Chromium bulunamadı; HTML bırakıldı: {html_yol} (tarayıcıda açıp PDF olarak yazdırabilirsiniz)")
@@ -59,6 +58,10 @@ def main():
                     html_yol.as_uri()], check=True, capture_output=True)
     html_yol.unlink()
     print(f"Kaydedildi: {pdf.relative_to(KOK)} ({pdf.stat().st_size / 1e6:.1f} MB)")
+
+
+def main():
+    md_pdf(KOK / "docs" / "RAPOR.md", KOK / "outputs" / "RAPOR.pdf", "Hibrit Fizibilite Raporu")
 
 
 if __name__ == "__main__":

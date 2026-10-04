@@ -375,10 +375,18 @@ def grafik(tablo, npv_tum):
     ax.set_xlabel("CVaR %5 [M USD]"); ax.set_ylabel("Beklenen NPV [M USD]"); ax.set_title("Risk-getiri ve DSCR ihlali (muhafazakâr borç)", loc="left")
     xl = ax.get_xlim(); ax.set_xlim(xl[0], xl[1] + (xl[1] - xl[0]) * 0.35)
     g.eksen_sade(ax, izgara="both")
-    g.baslik(fig, "Gelir yapısı: tüccar en yüksek beklenen değer, YEKDEM reel aşınma ve kesinti yüzünden geride", "Doyum senaryoları + sistem kesintisi dahil, 10.000 simülasyon. Mavi: tüccar, yeşil: PPA, mor: YEKDEM (açık mor: sınırlar endeksli varsayımı).")
+    g.baslik(fig, "Gelir yapısı: YEKDEM'in yıllık opsiyonu tüccardan iyi; 10 yıl sabit YEKDEM ve PPA geride", "Model takvimi (COD 2028); doyum senaryoları + sistem kesintisi dahil, 10.000 simülasyon. Mavi: tüccar, yeşil: PPA, mor: YEKDEM (açık mor: sınırlar endeksli varsayımı).")
     fig.tight_layout(rect=(0, 0, 1, 0.88)); g.kaynak_notu(fig, KAYNAK)
     fig.savefig(CIKTI / "gelir_yapilari.png"); plt.close(fig)
 
 
+def grafik_yeniden():
+    """Grafiği kayıtlı çıktılardan (metrikler + NPV örnekleri) simülasyonu tekrarlamadan yeniden çizer."""
+    tablo = pd.read_csv(CIKTI / "gelir_yapilari_metrikler.csv")
+    z = np.load(CIKTI / "gelir_yapilari_npv.npz")
+    npv_tum = {ad_: z[ad_.split(":")[0]].astype(float) * 1e6 for ad_ in tablo["Seçenek"] if ad_.split(":")[0] in z}
+    grafik(tablo, npv_tum)
+
+
 if __name__ == "__main__":
-    main()
+    grafik_yeniden() if "--grafik" in sys.argv else main()

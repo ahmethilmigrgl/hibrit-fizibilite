@@ -1,6 +1,9 @@
 # Hibrit RES + GES + Batarya Fizibilite Modeli (Türkiye)
 
-[English](README.md) · **Canlı dashboard:** _yayından sonra eklenecek_ · [Rapor (PDF)](outputs/RAPOR.pdf) · [Rapor (Markdown)](docs/RAPOR.md)
+[English](README.md) · **Canlı dashboard:** _yayından sonra eklenecek_
+
+**Belgeler:** [Yatırım memosu (PDF)](outputs/08/Yatirim_Memosu.pdf) · [Sunum (PDF)](outputs/08/Sunum.pdf) ·
+[Rapor (PDF)](outputs/RAPOR.pdf) · [Rapor (Markdown)](docs/RAPOR.md) · [Excel finansal model](outputs/08/Ezine_Hibrit_Finansal_Model.xlsx)
 
 Bu model, Çanakkale-Ezine'de **50 MW şebeke bağlantısının** arkasındaki güneş (GES), rüzgâr (RES) ve batarya (BESS)
 kapasitelerini **proje NPV'sini en yüksek yapacak** şekilde boyutlandırıyor ve bu cevabı belirsizlik altında stres
@@ -73,6 +76,7 @@ flowchart LR
 | 5 Gelir yığını ve risk | Yan hizmet (≥30 MW ikili katılım), PPA, depolamalı lisans; Monte Carlo (blok bootstrap, ortalamaya dönen log-fiyat + kriz/tavan, Gauss kopula), önceden hesaplanmış dispatch + ara değerleme (~%1 hata), EVPI/EVPPI, Sobol | [docs/05](docs/05_risk_ve_gelir_yigini.md) |
 | 6 Stres testi | SFK arz-talep doyum modeli, fırsat penceresi, erteleme ve bekle-gör, esnek batarya tasarımları, muhafazakâr borç | [docs/05 §9](docs/05_risk_ve_gelir_yigini.md) |
 | 7 Gerçek dünya | EPİAŞ talimatları ve referans santrallerle sistem kesintisi; teşvikler (KDV); tüccar / PPA / YEKDEM aynı Monte Carlo'da; önlenen CO2; CPM + Monte Carlo proje takvimi (COD P50/P80, kritiklik indeksi); 20 maddelik risk kaydı | [docs/07](docs/07_tamamlayici_analizler.md) |
+| 8 Karar paketi | Formüllü Excel modeli (FAST benzeri; 48/48 senaryo Python ile mutabık), 3 sayfalık yatırım komitesi memosu, karar yolculuğu grafikli 13 slaytlık sunum | [outputs/08](outputs/08) |
 
 ## Kullanılan teknolojiler
 Python 3.11 · Pyomo + HiGHS · pandas / NumPy / SciPy · pvlib · windpowerlib · xarray / ERA5 (cdsapi) · EPİAŞ Şeffaflık
@@ -107,7 +111,7 @@ repoda yok; dashboard ve rapor `results/` altındaki küçük, toplulaştırılm
 ├── src/                    Aşama betikleri (00–06) ve modüller (uretim, piyasa, finans, optimizasyon, risk)
 ├── tests/                  pytest testleri
 ├── docs/                   Aşama bazında formülasyonlar + RAPOR.md
-├── outputs/                Aşama bazında grafikler ve tablolar, RAPOR.pdf
+├── outputs/                Aşama bazında grafikler ve tablolar, RAPOR.pdf; 08/: memo, sunum, Excel modeli
 ├── results/                Dashboard için küçük, toplulaştırılmış sonuçlar
 └── dashboard/              Streamlit Community Cloud giriş noktası (hafif bağımlılıklar)
 ```

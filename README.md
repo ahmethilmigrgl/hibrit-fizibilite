@@ -1,6 +1,9 @@
 # Hybrid Wind + Solar + Battery Feasibility Model (Türkiye)
 
-[Türkçe](README.tr.md) · **Live dashboard:** _link will be added after deployment_ · [Full report (TR, PDF)](outputs/RAPOR.pdf)
+[Türkçe](README.tr.md) · **Live dashboard:** _link will be added after deployment_
+
+**Documents (Turkish):** [Investment memo (PDF)](outputs/08/Yatirim_Memosu.pdf) · [Presentation (PDF)](outputs/08/Sunum.pdf) ·
+[Full report (PDF)](outputs/RAPOR.pdf) · [Excel financial model](outputs/08/Ezine_Hibrit_Finansal_Model.xlsx)
 
 This model sizes solar (PV), wind and battery storage behind a **50 MW grid connection** at Çanakkale-Ezine, Türkiye, to
 **maximise project NPV**. It then stress-tests that answer under uncertainty. The pipeline goes end to end:
@@ -70,6 +73,7 @@ flowchart LR
 | 5 Revenue stack & risk | Ancillary services (binary participation ≥ 30 MW), PPA, storage licence. Monte Carlo with block-bootstrapped weather, mean-reverting log prices with crisis/price-cap events, Gaussian copula. Dispatch pre-computed on a grid + trilinear interpolation (error ~1%). EVPI/EVPPI, Sobol indices | [docs/05](docs/05_risk_ve_gelir_yigini.md) |
 | 6 Stress test | SFK supply–demand saturation model (GB/DE/AU calibration), opportunity window, delay & wait-and-see, flexible battery designs, conservative debt | [docs/05 §9](docs/05_risk_ve_gelir_yigini.md#9-stres-testi-sfk-piyasasının-doyumu-aşama-6) |
 | 7 Real-world frictions | System curtailment detected from EPİAŞ instructions + co-located wind farms; incentives (VAT); merchant vs PPA vs YEKDEM in one Monte Carlo; avoided CO2; CPM + Monte Carlo project schedule (COD P50/P80, criticality index); 20-item risk register | [docs/07](docs/07_tamamlayici_analizler.md) |
+| 8 Decision package | Formula-driven Excel model (FAST-style; 48/48 scenarios reconciled to Python), 3-page investment-committee memo, 13-slide deck with a decision-journey chart | [outputs/08](outputs/08) |
 
 ## Tech stack
 Python 3.11 · Pyomo + HiGHS (`highspy`) · CPM / schedule Monte Carlo · pandas / NumPy / SciPy · pvlib · windpowerlib · xarray / ERA5 (cdsapi) ·
@@ -111,7 +115,7 @@ in the repository; the dashboard and report use small aggregated files in `resul
 │   └── risk/               Dispatch tables, vectorised valuation, Monte Carlo, saturation, design explorer
 ├── tests/                  pytest suite
 ├── docs/                   Formulations per stage + RAPOR.md (report)
-├── outputs/                Figures and tables per stage, RAPOR.pdf
+├── outputs/                Figures and tables per stage, RAPOR.pdf; 08/: memo, deck, Excel model
 ├── results/                Small aggregated results for the dashboard
 └── dashboard/              Streamlit Community Cloud entry point (light requirements)
 ```
