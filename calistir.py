@@ -40,6 +40,10 @@ ADIMLAR = [
     ("5", "05_gelir_yigini.py", None, "Gelir yığını (yan hizmet, PPA, depolamalı lisans) ile yeniden optimizasyon"),
     ("5", "05_monte_carlo.py", None, "Monte Carlo risk simülasyonu"),
     ("5", "05_stres_testi.py", None, "Yan hizmet doyum stres testi, fırsat penceresi, erteleme, esnek batarya"),
+    ("7", "07_sistem_kesintisi.py", "EPİAŞ", "Sistem kaynaklı kesinti (YAT talimatları; ERA5 2024-26 gerekir)"),
+    ("7", "07_gelir_yapilari.py", None, "Tüccar / PPA / YEKDEM + kesinti Monte Carlo, teşvik, CO2"),
+    ("7", "07_takvim.py", None, "Proje takvimi: CPM + Monte Carlo, COD dağılımı, kritiklik"),
+    ("7", "07_risk_kaydi.py", None, "Risk kaydı (Excel) ve ısı haritası"),
     ("6", "06_gezgin_tablolari.py", None, "Dashboard tasarım gezgini işletme tabloları"),
     ("6", "06_sonuclari_paketle.py", None, "Dashboard/rapor için results/ klasörü (küçük, toplulaştırılmış)"),
     ("6", "06_rapor_pdf.py", None, "docs/RAPOR.md → outputs/RAPOR.pdf"),
@@ -59,7 +63,7 @@ def kimlik_var(tur: str) -> bool:
 
 def main():
     ap = argparse.ArgumentParser(description="Hibrit fizibilite hattını çalıştırır.")
-    ap.add_argument("--asama", nargs="+", default=[], help="0-6 veya 'all'")
+    ap.add_argument("--asama", nargs="+", default=[], help="0-7 veya 'all'")
     ap.add_argument("--listele", action="store_true", help="Adımları listele")
     ap.add_argument("--kuru", action="store_true", help="Çalıştırmadan göster")
     a = ap.parse_args()

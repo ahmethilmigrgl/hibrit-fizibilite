@@ -98,6 +98,8 @@ def nakit_akislari(t: Tasarim, tablo: dict, c: Sabitler, girdi: dict) -> dict:
     nb = v.insaat_suresi
     k = np.arange(1, N + 1)
     phi = np.where(k <= c.ppa_vade, c.ppa_pay, 0.0) if t.ppa else np.zeros(N)
+    if "phi" in girdi:              # sözleşmeli pay yolu dışarıdan (ör. YEKDEM: ilk 10 yıl %100)
+        phi = np.asarray(girdi["phi"], float)
     ip = (k <= c.ppa_vade).astype(int) if (t.ppa and len(tablo["ppa"]) > 1) else np.zeros(N, int)
     deg_g = (1 - v.degr_ges) ** (k - 1)
     deg_r = (1 - v.degr_res) ** (k - 1)
@@ -122,9 +124,12 @@ def nakit_akislari(t: Tasarim, tablo: dict, c: Sabitler, girdi: dict) -> dict:
     q_res = np.where(tav, g("gelir_res_qt"), g("gelir_res_q"))
     q_d = np.where(tav, g("gelir_d_qt"), g("gelir_d_q"))
     E_ges, E_res, E_d = g("E_ges") * deg_g, g("E_res"), g("E_d")
-    ppa_fiyat_t = c.ppa_fiyat          # PPA fiyatı sabit; düzenleyici tavandan etkilenmez
+    ppa_fiyat_t = girdi.get("ppa_fiyat", c.ppa_fiyat)   # sabit PPA ya da (n × N) YEKDEM reel fiyat yolu; tavandan etkilenmez
     gelir_ges = (1 - phi) * L * q_ges + phi * ppa_fiyat_t * E_ges
     gelir_res = (1 - phi) * L * q_res + phi * ppa_fiyat_t * E_res
+    if "kesinti_gelir" in girdi:    # sistem kaynaklı kesinti (TEİAŞ YAT talimatları): RES gelir ve enerji kaybı
+        gelir_res = gelir_res * (1 - girdi["kesinti_gelir"])
+        E_res = E_res * (1 - girdi["kesinti_enerji"])
     gelir_bess = L * q_d
     gelir_yh = girdi["a"] * g("yh_a") if t.yan_hizmet else 0.0 * L
     gelir_yekg = c.yekg * (E_ges + E_res + E_d) if t.yekg else 0.0 * L

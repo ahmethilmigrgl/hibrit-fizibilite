@@ -1,0 +1,19 @@
+﻿,Aktivite,İyimser,Olası,Kötümser,Öncüller,ES,EF,LS,LF,Bolluk,Kritik,Kritiklik indeksi (B1),"Spearman (süre ↔ COD, B1)",Kritiklik indeksi (B3),"Kritiklik indeksi (inşaata hazır, B1)"
+ONL,Ön lisans devri (EPDK onayı),3,5,9,,0.0,5.0,7.0,12.0,7.0,False,0.0,0.025,0.0,1.0
+OLC,Rüzgâr ölçümü (met direği/LiDAR),12,12,15,,0.0,12.0,21.0,33.0,21.0,False,0.0,0.007,0.0,0.0
+KUS,Ornitoloji temel çalışması (2 göç dönemi),9,12,14,,0.0,12.0,0.0,12.0,0.0,True,1.0,0.271,1.0,0.0
+CED,ÇED raporu ve ÇED olumlu kararı,6,9,15,"ONL, KUS",12.0,21.0,12.0,21.0,0.0,True,1.0,0.505,1.0,0.0
+IMR,"İmar planı, arazi ve izinler",6,9,15,CED,21.0,30.0,21.0,30.0,0.0,True,1.0,0.503,1.0,0.0
+TBA,TEİAŞ bağlantı ve sistem kullanım anlaşması,3,6,12,ONL,5.0,11.0,27.0,33.0,22.0,False,0.0,0.007,0.0,0.598
+LIS,Üretim lisansı,2,3,6,"CED, IMR",30.0,33.0,30.0,33.0,0.0,True,1.0,0.227,1.0,0.0
+PPA,PPA müzakeresi,3,6,10,ONL,5.0,11.0,27.0,33.0,22.0,False,0.0,-0.0,0.0,0.402
+FIN,Finansman kapanışı (FID),3,4,8,"LIS, OLC, TBA, PPA",33.0,37.0,33.0,37.0,0.0,True,1.0,0.287,0.999,1.0
+TUR,Türbin tedariki (sipariş → teslim),12,15,20,FIN,37.0,52.0,37.0,52.0,0.0,True,0.982,0.415,0.999,0.985
+BOP,"RES altyapı inşaatı (yol, temel, trafo)",6,8,12,FIN,37.0,45.0,43.5,51.5,6.5,False,0.202,0.006,0.653,0.194
+SEB,Şebeke bağlantısı (TM/ENH),9,12,20,"TBA, FIN",37.0,49.0,42.5,54.5,5.5,False,0.605,0.053,0.305,0.613
+MNT,Türbin montajı,3,4,6,"TUR, BOP",52.0,56.0,52.0,56.0,0.0,True,0.982,0.153,0.999,0.985
+DRES,"RES test, devreye alma, geçici kabul (COD)",1,2,4,"MNT, SEB",56.0,58.0,56.0,58.0,0.0,True,1.0,0.155,1.0,1.0
+BAT,Batarya tedariki,6,8,12,FIN,37.0,45.0,43.5,51.5,6.5,False,0.193,-0.002,0.043,0.193
+BIN,Batarya inşaat ve montaj,2,3,5,"BAT, BOP",45.0,48.0,51.5,54.5,6.5,False,0.395,-0.0,0.695,0.387
+DBAT,Batarya devreye alma,1,1.5,3,"BIN, SEB",49.0,50.5,54.5,56.0,5.5,False,1.0,0.014,1.0,1.0
+SFK,SFK ön yeterlilik ve performans testleri,1,2,4,DBAT,50.5,52.5,56.0,58.0,5.5,False,1.0,0.021,1.0,1.0

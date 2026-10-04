@@ -23,7 +23,7 @@ import pandas as pd
 
 from src.ayarlar import ISLENMIS_VERI, config_oku, deger
 from src.piyasa.epias import EpiasIstemcisi
-from src.piyasa.veri import auf_cek, ptf_cek, saatlik_seri_cek, uretim_cek, yekg_fiyat_cek
+from src.piyasa.veri import auf_cek, ptf_cek, saatlik_seri_cek, talimat_ozeti_cek, uretim_cek, yekg_fiyat_cek
 
 
 def main():
@@ -65,6 +65,9 @@ def main():
     yh.join(ptf[["ptf_tl", "ptf_usd"]]).to_parquet(ISLENMIS_VERI / "yan_hizmet_2023_guncel.parquet")
     print("YEK-G fiyatları ...", flush=True)
     yekg_fiyat_cek(c, "2023-01-01", son).to_parquet(ISLENMIS_VERI / "yekg_fiyat.parquet")
+    # Aşama 7: DGP YAL/YAT talimat özetleri (sistem geneli, 0/1/2 kodlu)
+    print("DGP talimat özetleri ...", flush=True)
+    talimat_ozeti_cek(c, "2023-01-01", son).to_parquet(ISLENMIS_VERI / "talimat_ozeti_2023_guncel.parquet")
     print("Tamamlandı.", flush=True)
 
 

@@ -25,16 +25,16 @@ formülasyonları `docs/` altında.
 | 3 | **Bataryanın değeri neredeyse tamamen SFK kapasite ödemesinden geliyor**, arbitrajdan değil. | Batarya gelirinin %87'si; doyumsuz durumda NPV −1,6 → +26 M$ |
 | 4 | **Doyum stres testi öneriyi değiştirdi.** SFK ihtiyacı ~1 GW, depolamalı ön lisans 28–33 GW. İngiltere, Almanya ve Avustralya ile kalibre edilen arz-talep modeli bataryayı bir *opsiyona* dönüştürüyor. | 40 MW bataryalı tasarımın P(NPV>0) değeri %97 → %59; CVaR %5: −2,5 → −30 M$ |
 | 5 | **Değerli esneklik, süre eklemek değil ölçeği ertelemek.** 30 MW (SFK eşiği) + koşullu büyütme, hem 40 MW'lık hem 4 saatlik bataryadan iyi. Beklemenin maliyeti, kazandırdığı bilgiden büyük. | E[NPV] +6,3 M$ (aşamalı) vs −0,4 M$ (4 saatlik); 1 yıl erteleme −2,1 M$ |
+| 6 | **Gerçek dünya sürtünmeleri cevabı değiştiriyor.** 2026'da RES'lere sistem kaynaklı kesinti başladı, teşvik belgesi (KDV istisnası) şart, CPM + Monte Carlo takvimi COD'u varsayılan 2028'den 2030'a (inşaata hazır) ya da 2032'ye (ön lisanstan) kaydırıyor. YEKDEM (2030 sonuna kadar açık), USD sınırları endeksliyse en iyi gelir yapısı. | Kesinti −2,1 M$; COD P50 Mar 2030 / Oca 2032; YEKDEM E[NPV] 5,5 M$, CVaR −20 M$ |
 
-**Öneri (koşullu):** RES 58,8 MW + 30 MW / 52,5 MWh batarya (40 MW'a büyütülebilir) + P90'ın %70'ine 12 yıllık PPA.
-E[NPV] +4,5 M$, P(NPV>0) %58, CVaR −23 M$. Koşullar:
+**Öneri:** **Bugünkü haliyle hayır; inşaata hazır bir proje edinilebilirse koşullu evet.**
 
-1. TEİAŞ'tan batarya için yazılı ön yeterlilik.
-2. PPA fiyatı ≥ ~52 $/MWh.
-3. Borcun SFK geliri olmadan boyutlandırılması.
-4. Batarya siparişinin RES FID'inden ~12 ay sonra verilmesi.
+- **Tasarım:** RES 58,8 MW + 30 MW / 52,5 MWh batarya (40 MW'a büyütülebilir).
+- **Gelir yapısı:** 10 yıllık YEKDEM, USD taban/tavanının endekslendiği hukuken teyit edilirse; değilse 12 yıllık PPA.
+- **Değer:** Takvim ve kesinti dahil beklenen NPV +2,1 M$; bu, edinim primine ~2 M$'lık bir tavan koyuyor.
+- **Ön lisanstan başlanırsa:** COD 2032'ye kayıyor; SFK penceresi ve YEKDEM'in 2030 sonu sınırı kaçıyor.
 
-Tetikleyiciler: [rapor §9](docs/RAPOR.md#9-öneri).
+Koşullar ve tetikleyiciler: [rapor §10](docs/RAPOR.md#10-öneri), [docs/07](docs/07_tamamlayici_analizler.md).
 
 <p align="center">
   <img src="outputs/05_risk/s_risk_getiri.png" width="85%"><br>
@@ -71,6 +71,7 @@ flowchart LR
 | 4 Optimizasyon | Arbitraj LP → hibrit dispatch LP (şebeke gölge fiyatı) → kapasite MILP (tamsayı türbin, ikili yatırım kararı, tam yıl); temsilî günler; pişmanlık | [docs/04](docs/04_optimizasyon.md) |
 | 5 Gelir yığını ve risk | Yan hizmet (≥30 MW ikili katılım), PPA, depolamalı lisans; Monte Carlo (blok bootstrap, ortalamaya dönen log-fiyat + kriz/tavan, Gauss kopula), önceden hesaplanmış dispatch + ara değerleme (~%1 hata), EVPI/EVPPI, Sobol | [docs/05](docs/05_risk_ve_gelir_yigini.md) |
 | 6 Stres testi | SFK arz-talep doyum modeli, fırsat penceresi, erteleme ve bekle-gör, esnek batarya tasarımları, muhafazakâr borç | [docs/05 §9](docs/05_risk_ve_gelir_yigini.md) |
+| 7 Gerçek dünya | EPİAŞ talimatları ve referans santrallerle sistem kesintisi; teşvikler (KDV); tüccar / PPA / YEKDEM aynı Monte Carlo'da; önlenen CO2; CPM + Monte Carlo proje takvimi (COD P50/P80, kritiklik indeksi); 20 maddelik risk kaydı | [docs/07](docs/07_tamamlayici_analizler.md) |
 
 ## Kullanılan teknolojiler
 Python 3.11 · Pyomo + HiGHS · pandas / NumPy / SciPy · pvlib · windpowerlib · xarray / ERA5 (cdsapi) · EPİAŞ Şeffaflık

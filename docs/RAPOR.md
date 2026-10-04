@@ -2,7 +2,7 @@
 
 **Hazırlayan:** Ahmet Hilmi Görgülü · **Tarih:** Ekim 2026 · **Para birimi:** reel 2026 USD, iskonto %7 reel WACC
 **Kapsam:** 50 MW şebeke bağlantısı için GES/RES/batarya boyutlandırması, değerleme, optimizasyon ve risk analizi.
-Kod ve veri hattı: proje deposu (`calistir.py`); ayrıntılı formülasyonlar `docs/00–05`.
+Kod ve veri hattı: proje deposu (`calistir.py`); ayrıntılı formülasyonlar `docs/00–07`.
 
 ---
 
@@ -11,32 +11,34 @@ Kod ve veri hattı: proje deposu (`calistir.py`); ayrıntılı formülasyonlar `
 **Soru.** Türkiye'de 50 MW'lık bir şebeke bağlantısına güneş (GES), rüzgâr (RES) ve batarya (BESS) kapasitelerinden
 hangi bileşim kurulmalı ve bu yatırım belirsizlik altında yapılmalı mı?
 
-**Cevap.** **Koşullu evet.** Önerilen tasarım: **RES 58,8 MW (14 × 4,2 MW) + 30 MW / 52,5 MWh batarya** (SFK fiyatı
-yüksek kalırsa 40 MW'a büyütme opsiyonuyla) **+ P90 üretimin %70'ine 12 yıllık kurumsal PPA**. Beklenen NPV
-**+4,5 M$**, kâr olasılığı **%58**, en kötü %5'in ortalaması **−23 M$**. TEİAŞ teyidiyle bu değerler 6,1 M$ ve %62'ye
-çıkıyor. FID dört koşula bağlı:
+**Cevap.** **Bugünkü haliyle hayır; inşaata hazır bir proje edinilebilirse koşullu evet.**
 
-1. TEİAŞ'tan hibrit tesisteki bataryanın SFK'ya katılabileceğine dair yazılı ön yeterlilik.
-2. PPA fiyatının ≥ ~52 $/MWh (reel) olması.
-3. Borcun SFK geliri olmadan ve düşük fiyatla boyutlandırılması (~43 M$, CAPEX'in ~%52'si).
-4. Batarya siparişinin RES FID'inden ~12 ay sonra, 2027 piyasa verisi görülerek verilmesi.
+- **Tasarım:** RES 58,8 MW (14 × 4,2 MW) + 30 MW / 52,5 MWh batarya (SFK fiyatı yüksek kalırsa 40 MW'a büyütme
+  opsiyonuyla).
+- **Gelir yapısı:** 10 yıllık YEKDEM; USD taban/tavanının endekslendiği hukuken teyit edilirse. Değilse P90'ın %70'ine
+  12 yıllık PPA.
+- **Geliştirme aşamasından başlanırsa** (ön lisans devri) COD P50 Ocak 2032'ye kayıyor: SFK penceresi kaçıyor, YEKDEM'in
+  31.12.2030 sınırına yetişilemiyor. Beklenen NPV tüm gelir yapılarında negatif (−0,9 ile −1,5 M$).
+- **İnşaata hazır bir proje** (ÇED, imar, lisans tamam) ile COD P50 Mart 2030 ve beklenen NPV **+2,1 M$** (endeksli
+  YEKDEM, sistem kesintisi ve takvim dahil). Bu, edinim primine ~2 M$'lık bir tavan koyuyor.
+
+**FID koşulları:** (1) inşaata hazır proje ve COD ≤ 31.12.2030 güvencesi; (2) YEKDEM endekslemesinin hukuki teyidi,
+değilse PPA ≥ ~52 $/MWh; (3) yatırım teşvik belgesi (yoksa −5,8 M$); (4) TEİAŞ'tan bataryanın SFK ön yeterliliği;
+(5) SFK'sız ve düşük fiyatla boyutlanan borç + 6 ay DSRA; (6) batarya kararı FID'de, gözlenen doyumla.
 
 **Ana bulgular**
 
 | | Bulgu | Sayı |
 |---|---|---|
-| 1 | Ezine, dört aday saha arasında en güçlü rüzgâr kaynağı | Kalibre RES KF %37,7 (E-141, 120 m) |
-| 2 | GES hiçbir optimal tasarıma girmedi: kanibalizasyon + şebeke çakışması | Güneş yakalanma oranı 2016: 1,21 → 2026: 0,71; ek GES'in %14–40'ı kesiliyor |
-| 3 | Yalnız RES bugünkü fiyat beklentisiyle yatırım yapılabilir değil | NPV −1,6 M$, başabaş 59 $/MWh, P(NPV>0) %42 |
-| 4 | Bataryanın değeri neredeyse tamamen yan hizmetten (SFK) geliyor | Batarya gelirinin %87'si; arbitraj tek başına yetmiyor |
-| 5 | SFK piyasası küçük (~1 GW), depolama boru hattı büyük (28–33 GW) → doyum riski | Doyum modeliyle bataryalı tasarımın P(NPV>0) değeri %97 → %59 |
-| 6 | En büyük risk elektrik fiyat seviyesi, ikincisi SFK doyumu | NPV varyansının %45–85'i fiyat, %25–36'sı doyum |
+| 1 | GES hiçbir optimal tasarıma girmedi (kanibalizasyon + şebeke çakışması) | Güneş yakalanma oranı 2016: 1,21 → 2026: 0,71 |
+| 2 | Yalnız RES yatırım yapılabilir değil | NPV −1,6 M$, başabaş 59 $/MWh |
+| 3 | Bataryanın değeri SFK'dan geliyor ve SFK piyasası doyma riskinde | Gelirin %87'si; doyumla P(NPV>0) %97 → %59 |
+| 4 | 2026'da sistem kaynaklı kesinti başladı | Sistem YAT 2,9 → 9,5 TWh; Ezine'de ~%9,5; E[NPV] −2,1 M$ |
+| 5 | Gerçekçi takvim COD'u 2–4 yıl kaydırıyor | COD P50 2030 (inşaata hazır) / 2032 (geliştirme) |
+| 6 | YEKDEM 2030 sonuna kadar açık; endeksliyse en iyi risk-getiri | E[NPV] 5,5 M$, CVaR −20 M$ (model takvimi) |
 
-**Neden öneri Aşama 5'ten farklı?** İlk risk analizi 40 MW'lık bataryayı %97 başarı olasılığıyla gösteriyordu. Ama bu
-olasılık, SFK fiyatının yavaş düşeceği varsayımına dayanıyordu. İngiltere, Almanya ve Avustralya'da bataryalar frekans
-piyasalarını 1–3 yılda doyurdu. Bu deneyimle kalibre edilen stres testi bataryanın değerini bir **opsiyona**
-dönüştürdü: büyük kazanç yalnızca yavaş doyum senaryosunda (%25 olasılık) var. Bu yüzden batarya SFK'ya giriş eşiğine
-(30 MW) küçültüldü ve büyütme SFK fiyatına bağlandı.
+**Öneri nasıl evrildi?** SFK doyum stres testi 40 MW bataryanın kâr olasılığını %97'den %59'a indirdi (Aşama 6).
+Kesinti, mevzuat ve gerçekçi takvim ise öneriyi "projeyi geliştir"den "inşaata hazır projeyi uygun primle al"a çevirdi (§9–§10).
 
 <div class="sayfa-sonu"></div>
 
@@ -289,30 +291,97 @@ Hız için dispatch LP'leri önceden bir ızgarada çözülüp ara değerlemeyle
    SFK'sız ve 45 $/MWh ile boyutlanan muhafazakâr borçla bu oran ~%37–46'ya iniyor. Kalan ihlaller yıllık fiyat
    oynaklığından; bir borç servisi yedek hesabı (DSRA) bunların çoğunu karşılar.
 
-## 9. Öneri
+## 9. Tamamlayıcı analizler (Aşama 7)
 
-**Karar: koşullu onay — RES 58,8 MW + 30 MW / 52,5 MWh batarya (40 MW'a büyütme opsiyonu) + 12 yıllık PPA.**
+Ayrıntılar ve kaynaklar: `docs/07_tamamlayici_analizler.md`.
 
-**Koşullar (FID öncesi):**
-1. TEİAŞ'tan hibrit tesisteki bataryanın SFK'ya katılabileceğine dair **yazılı ön yeterlilik**. Sağlanamazsa proje FID'e
-   gitmez: yalnız RES'in beklenen NPV'si negatif.
-2. **PPA fiyatı ≥ ~52 $/MWh** (reel), P90'ın %70'i, 12 yıl. Tasarımın baz doyumda başabaş fiyatı ~57 $/MWh.
-3. **Borç SFK geliri olmadan, 45 $/MWh ile boyutlanır** (~43 M$) ve 6 aylık DSRA eklenir.
-4. **Batarya siparişi RES FID'inden ~12 ay sonra** verilir; 2027'deki SFK fiyatı ve kurulu depolama görülerek.
+**Sistem kaynaklı kesinti.**
+- EPİAŞ sistem geneli YAT talimatları 2023–2025'te yılda ~2,5–2,9 TWh iken 2026'nın ilk dokuz ayında 9,5 TWh oldu
+  (Mayıs'ta 3,1 TWh). YAT bahar öğlelerinde ve bayramlarda yoğunlaşıyor.
+- Üç referans RES'te, kalibre ERA5'in yüksek üretim beklediği saatlerde eşzamanlı düşüşler 2026'da üretimin ~%9,5'ine
+  ulaştı (2016–2025'te taban üstü %0–1).
+- DGP'de YAT alan birim enerjiyi kendi teklif fiyatından geri alır. Düşük teklif veren bir RES gelirini korur; talimat
+  DGP dışından geliyorsa ya da tesis YEKDEM'deyse kayıp tamdır. Tazmin oranı belirsiz.
+- Modelde kesinti yıllık %1–12 (merkez %5), güneşle büyüyor. Batarya kayıp gelirin yalnız ~%16'sını kurtarıyor.
+  **Etkisi:** önerilen tasarımda E[NPV] −2,1 M$.
+
+![Kesinti](../outputs/07/kesinti_analizi.png)
+
+**Teşvikler.** 9903 sayılı karar RES ve depolamaya KDV istisnası ve gümrük muafiyeti veriyor; elektrik üretiminde vergi
+indirimi yok. Model KDV'yi içermediği için zımnen belgeyi varsayıyordu. Belge olmazsa 14 M$ KDV'nin ön finansmanı ve
+TL bakiyenin aşınması net **−5,8 M$**. Bu yüzden belge FID koşulu.
+
+**YEKDEM, PPA, tüccar** (model takvimi, kesinti ve doyum dahil):
+
+| Önerilen tasarım | E[NPV] | P(NPV>0) | CVaR %5 | P(DSCR<1), muhafazakâr borç |
+|---|---|---|---|---|
+| Tüccar | 3,7 | %55 | −30,4 | %41 |
+| PPA | 2,4 | %52 | −25,1 | %38 |
+| YEKDEM, USD sınırları nominal | 0,8 | %48 | −24,9 | %25 |
+| **YEKDEM, sınırlar endeksli** | **5,5** | **%61** | **−20,1** | **%22** |
+
+7189 sayılı karar 2030 sonuna kadar devreye giren karasal RES'lere 10 yıl, 4,95–6,05 ¢/kWh koridorlu TL fiyat veriyor.
+Koridorun endekslenip endekslenmediği resmî metinden doğrulanamadı ve sonucu belirliyor.
+
+![Gelir yapıları](../outputs/07/gelir_yapilari.png)
+
+**Karbon ve çevresel etki.**
+- Türkiye ETS'si 2026–27 pilot döneminde ücretsiz tahsisatla başladı; fiyat 2027'de. Gaz marjda iken €30–35/t ya da
+  kömür marjda iken ~€15/t, yüksek fiyat senaryosunun (+14 $/MWh) gerekçesi.
+- Yeni projeler için gönüllü karbon kredisi geliri yok: Verra ve Gold Standard LDC dışı ülkelerdeki şebeke bağlantılı
+  yeni yenilenebilir projeleri kabul etmiyor.
+- **Önlenen emisyon:** yılda ~111 bin t CO2 (ETKB 2024 faktörü 0,6345 t/MWh); 30 yılda 2,4–3,3 milyon t; ~62 bin
+  hanenin tüketimi.
+
+**Takvim riski (CPM + 10.000 Monte Carlo).**
+- **Aktivite ağı:** 18 aktivite (ön lisans devri, ornitoloji, ÇED, imar, TEİAŞ anlaşması, lisans, PPA, finansman,
+  türbin ve batarya tedariki, şebeke, montaj, devreye alma, SFK testleri).
+- **Kritik yol:** ornitoloji → ÇED → imar → lisans → FID → türbin → montaj → COD (58 ay).
+- **COD:** P50 Ocak 2032, P80 Nisan 2032 (geliştirme); inşaata hazır projede P50 Mart 2030, P80 Mayıs 2030.
+- **Gecikmeye en çok katkı:** ÇED ve imar (Spearman 0,50), türbin tedariki (0,42).
+- **Batarya zamanlaması:** Bataryayı 12 ay geç sipariş etmek SFK başlangıcını ~10 ay geciktirip ~0,8–0,9 M$
+  kaybettiriyor. Erken/bağımsız batarya yalnız ~0,1–0,2 M$ kazandırıyor. Aşama 6'daki "12 ay sonra sipariş" koşulu
+  kaldırıldı; gerçekçi takvimde FID'e kadar doyum zaten gözlenmiş olacak.
+
+![Gantt](../outputs/07/takvim_gantt.png)
+
+![COD](../outputs/07/takvim_cod_kritiklik.png)
+
+**Risk kaydı.** 20 risk. En yüksek beşi: fiyat seviyesi (20), SFK doyumu (16), ÇED/imar gecikmesi (16), YEKDEM
+sınırlarının nominal kalması (12), YEKDEM için 2030 COD sınırını kaçırma (12). Modelde olmayanlardan en önemlisi
+ornitoloji: Çanakkale Boğazı süzülen kuş göç yolu (`outputs/07/risk_kaydi.xlsx`).
+
+![Risk ısı haritası](../outputs/07/risk_isi_haritasi.png)
+
+## 10. Öneri
+
+| | Aşama 6 | Aşama 7 (nihai) |
+|---|---|---|
+| Karar | Koşullu onay | Geliştirme aşamasındaki proje için **ret**; **inşaata hazır proje + endeksli YEKDEM için koşullu onay** |
+| Tasarım | RES 58,8 + 30 MW aşamalı batarya | Aynı |
+| Gelir yapısı | PPA | YEKDEM (endeksliyse), değilse PPA |
+| Batarya siparişi | RES FID'inden 12 ay sonra | RES ile birlikte, FID'de, gözlenen doyumla |
+| Beklenen NPV | +4,5 M$ | +2,1 M$ (takvim + kesinti dahil); edinim primi ≤ ~2 M$ |
+
+**Koşullar (FID öncesi):** (1) inşaata hazır proje, COD ≤ 31.12.2030; (2) YEKDEM endekslemesinin hukuki teyidi (değilse
+PPA ≥ ~52 $/MWh); (3) teşvik belgesi; (4) TEİAŞ SFK ön yeterliliği; (5) SFK'sız ve 45 $/MWh ile boyutlanan borç +
+DSRA; (6) batarya kararı FID'de.
 
 **Tetikleyiciler:**
 
 | Gösterge | Eşik | Karar değişikliği |
 |---|---|---|
-| İşletmedeki depolama (EPDK/TEİAŞ) | Batarya siparişinden önce > ~1,5 GW | Doyum başlıyor: 30 MW'ta kal, büyütme yok |
-| Aylık SFK fiyatı (EPİAŞ) | İki çeyrek üst üste < ~24 $/MW-saat | Büyütme opsiyonu kullanılmaz |
+| İşletmedeki depolama (EPDK/TEİAŞ) | FID'de > ~1,5 GW | Doyum başlamış: 30 MW'ta kal, büyütme yok |
+| Aylık SFK fiyatı (EPİAŞ) | İki çeyrek üst üste < ~24 $/MW-saat | Büyütme yok |
 | SFK fiyatı, 3. işletme yılı | ≥ 2026 seviyesinin %50'si | 40 MW'a büyüt |
-| TEİAŞ hibrit SFK kabulü | Red | Batarya yok, FID yok |
-| PPA teklifleri / uzun vadeli fiyat | < ~52 $/MWh | FID ertelenir |
-| Batarya CAPEX | > +%20 | 30 MW yeniden değerlendirilir |
-| SFK ihtiyacının büyümesi | > %10/yıl | Doyum gecikir, büyütme erkene çekilebilir |
+| TEİAŞ hibrit SFK kabulü | Red | Batarya yok |
+| RES'lere YAT/kesinti | 2027'de de > %8 | Gelir tahminini düşür; PPA'da "deemed generation" şart |
+| YEKDEM mevzuatı | 2030 sonrasına uzatılır | Geliştirme senaryosu yeniden değerlendirilir |
+| İnşaata hazır proje primi | > ~2 M$ (YEKDEM) / > 0 (PPA) | Edinme |
+| Türbin teslim süresi | > 18 ay | 2030 COD ve YEKDEM riski |
+| Uzun vadeli fiyat / PPA teklifleri | < ~52 $/MWh | FID ertelenir |
 
-## 10. Sınırlamalar ve sonraki adımlar
+## 11. Sınırlamalar ve sonraki adımlar
 
 **Sınırlamalar:**
 - **Kaynak verisi:** Rüzgâr kaynağı ERA5 + üç santrale kalibrasyona dayanıyor; saha ölçümü yok. İz kaybı (wake) toplam
@@ -330,6 +399,7 @@ Hız için dispatch LP'leri önceden bir ızgarada çözülüp ara değerlemeyle
 3. PPA alıcı teklifleri ve tedarikçi CAPEX teklifleriyle varsayımların güncellenmesi.
 4. Gün öncesi tahmin hatalı dispatch simülasyonu ve SFK/PFK birlikte optimizasyonu.
 5. Batarya sipariş zamanlamasının gerçek opsiyon modeli.
+6. Santral bazında talimat verisi (TEİAŞ/EPİAŞ) ile kesinti tahmininin doğrulanması; YEKDEM endekslemesi için hukuki görüş.
 
 ---
 *Ekler: tüm formülasyonlar ve ayrıntılı tablolar `docs/00_isinma_modeli.md` – `docs/05_risk_ve_gelir_yigini.md`;

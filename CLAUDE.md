@@ -80,3 +80,9 @@ başvuru için hazırlanıyor. Sonuçlar, varsayımlar ve formülasyonlar mülak
    (yalnızca `results/` + `config.yaml`, pyomo gerektirmez; gezgin motoru `src/risk/gezgin.py`, ızgara
    `src/06_gezgin_tablolari.py`); `src/06_sonuclari_paketle.py` → `results/`; rapor `docs/RAPOR.md` →
    `src/06_rapor_pdf.py` → `outputs/RAPOR.pdf` (Chrome headless). README İngilizce, README.tr.md Türkçe.
+7. **Tamamlayıcı analizler (gerçek dünya):** ✅ Bkz. `docs/07_tamamlayici_analizler.md`. Sistem kaynaklı kesinti
+   (`src/07_sistem_kesintisi.py`, EPİAŞ DGP talimat özetleri + ERA5 2024-26 ile referans santral analizi),
+   gelir yapıları tüccar/PPA/YEKDEM + teşvik + CO2 (`src/07_gelir_yapilari.py`; değerleyicide `phi`, `ppa_fiyat`,
+   `kesinti_gelir/enerji` kancaları), CPM + Monte Carlo takvim (`src/07_takvim.py`), risk kaydı (`src/07_risk_kaydi.py`).
+   Parametreler `kesinti`, `yekdem`, `tesvik`, `karbon`, `takvim`. Öneri değişti: inşaata hazır proje + (endeksli) YEKDEM,
+   batarya kararı FID'de.

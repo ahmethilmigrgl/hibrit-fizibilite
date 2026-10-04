@@ -230,3 +230,54 @@ stres_testi:
       asamali: {ilk_mw: 30, ilk_mwh: 52.5, karar_yili: 3, esik: 0.5}
     kaynak: "Kullanıcı tanımı"
     not: "uzun_sureli: 4 saat, SFK düşünce arbitraja kayar. asamali: SFK'ya giriş için asgari 30 MW ile başla; 3. işletme yılı sonunda SFK çarpanı ≥ esik ise 4. yıldan itibaren 40 MW / 70 MWh'e büyüt (ek CAPEX o yılın batarya maliyetiyle)"
+# Aşama 7 — Sistem kaynaklı kesinti (TEİAŞ/DGP YAT talimatları) — src/07_sistem_kesintisi.py, docs/07
+kesinti:
+  value:
+    oran_2026: 0.05
+    oran_ucgen: [0.01, 0.05, 0.12]
+    yil_sd: 0.5
+    gunes_buyume: 0.04
+    senaryo_carpani: {yavas: 1.3, baz: 1.0, hizli: 0.7, katilamama: 1.0}
+    tazmin_orani: [0.0, 1.0]
+  birim: "RES enerjisinin talimatla kesilen payı (yıllık); tazmin: kesilen enerji değerinin ekonomik olarak telafi edilen payı"
+  kaynak: "EPİAŞ DGP talimat özetleri 2023-2026 (sistem YAT: 2,5 / 2,8 / 2,9 TWh, 2026 ilk 9 ay 9,5 TWh); Ezine referans RES'lerinde eşzamanlı düşüş analizi: 2016-2025 taban üstü %0-1, 2026 ilk 9 ay ~%9,5 (Mar-Haz yoğun)"
+  not: "TAHMİN — 2026 sıçraması yüksek hidroloji + 25 GW güneş + düşük talep yılına denk geldi. Merkez %5: 2026 yıllıklandırılmış ~%7 ile 2023-25 ~%0-1 arası. Güneş büyümesiyle yılda +%4 artar; batarya kurulumu hızlıysa (hızlı doyum) azalır. Tazmin: DGP'de RES YAT teklifini ~0'dan verirse PTF satışını korur (kayıp yok); talimat DGP dışı/YEKDEM kapsamında ise kayıp tamdır — belirsiz, düzgün dağılım"
+yekdem:
+  value: {taban_usd_sent: 4.95, tavan_usd_sent: 6.05, tepe_usd_sent: 5.8, sure_yil: 10, dscr: 1.20, borc_vadesi: 12}
+  birim: "nominal ABD doları sent/kWh (TL fiyat, ABD doları taban/tavanla sınırlı); süre yıl"
+  kaynak: "Cumhurbaşkanı Kararı 7189 (RG 01.05.2023): 01.07.2021-31.12.2030 arasında işletmeye girecek YEK belgeli tesisler; karasal RES 106 TL kr/kWh, taban 4,95, tavan 6,05 USD sent/kWh, 10 yıl. Aralık 2025 uygulanan fiyat 245,06 kr/kWh ≈ 5,8 USD sent (Enerji Ajansı). Değişiklik: RG 29.12.2025 (depolama ve uzlaştırma kuralları)"
+  not: "TAHMİN: simülasyon başına nominal USD fiyat üçgen(4,95; 5,8; 6,05), 10 yıl sabit nominal (reel olarak ABD enflasyonuyla aşınır). Dispatch tablosu PPA (φ=0,66) noktasından alınır (yaklaşım). Banka koşulları (DSCR 1,20, 12 yıl vade) TAHMİN. Tatillerde KGÜP üstü üretime YEKDEM ödemesi yapılmaz (ihmal edildi)"
+tesvik:
+  value: {kdv_orani: 0.20, kdv_kapsami: 0.85, kdv_reel_asinma: 0.20, gumruk_batarya: [0.0, 0.05, 0.10], batarya_ekipman_payi: 0.70}
+  birim: "oran"
+  kaynak: "Cumhurbaşkanı Kararı 9903 (RG 30.05.2025) ve 2025/1 Tebliğ: RES ve depolama yatırımlarında teşvik belgesiyle KDV istisnası ve gümrük vergisi muafiyeti; ticari elektrik üretiminde vergi indirimi uygulanmaz"
+  not: "TAHMİN: CAPEX'in %85'i KDV'ye tabi ekipman/hizmet; teşvik belgesi olmazsa ödenen KDV devreden KDV olarak çıkış KDV'siyle mahsup edilir ve TL bakiyenin USD değeri yılda ~%20 aşınır. Çin menşeli batarya için gümrük + ilave gümrük vergisi belirsiz (%0-10 ekipman bedeli). Model baştan beri KDV/gümrüğü içermiyordu = zımnen teşvik belgesi varsayımı"
+karbon:
+  value: {sebeke_ef_2024: 0.6345, sebeke_ef_2023: 0.6242, ef_yillik_azalma: 0.02, hane_tuketimi_kwh: 2824, gonullu_kredi_usd_t: 0.0, ets_fiyat_eur_t_2035: [5, 20, 40], marjinal_yogunluk_gaz: 0.37, marjinal_yogunluk_komur: 0.95}
+  birim: "tCO2/MWh; kWh/hane-yıl; USD/tCO2; EUR/tCO2"
+  kaynak: "ETKB Türkiye Ulusal Elektrik Şebekesi Emisyon Faktörü Bilgi Formu (ETKB-EVÇED-FRM-039): 2024 birleşik marj (RES/GES) 0,6345, 2023 0,6242 tCO2/MWh; hane tüketimi: EPDK 2024 mesken 75,09 TWh / TÜİK 26,6 milyon hane; ETS: İklim Kanunu 7552 (2025), pilot 2026-27 %100 ücretsiz tahsisat, fiyat 2027'de; gönüllü piyasa: Verra/Gold Standard 2019'dan beri LDC dışı şebeke bağlantılı yeni yenilenebilir projeleri kabul etmiyor"
+  not: "TAHMİN: şebeke emisyon faktörünün yılda %2 azalması (dekarbonizasyon); ETS fiyat aralığı; gönüllü kredi geliri yeni proje için 0"
+takvim:
+  value:
+    aktiviteler:
+      ONL: {ad: "Ön lisans devri (EPDK onayı)",            a: 3,  m: 5,  b: 9,  onc: []}
+      OLC: {ad: "Rüzgâr ölçümü (met direği/LiDAR)",         a: 12, m: 12, b: 15, onc: []}
+      KUS: {ad: "Ornitoloji temel çalışması (2 göç dönemi)", a: 9,  m: 12, b: 14, onc: []}
+      CED: {ad: "ÇED raporu ve ÇED olumlu kararı",          a: 6,  m: 9,  b: 15, onc: [ONL, KUS]}
+      IMR: {ad: "İmar planı, arazi ve izinler",              a: 6,  m: 9,  b: 15, onc: [CED]}
+      TBA: {ad: "TEİAŞ bağlantı ve sistem kullanım anlaşması", a: 3, m: 6, b: 12, onc: [ONL]}
+      LIS: {ad: "Üretim lisansı",                            a: 2,  m: 3,  b: 6,  onc: [CED, IMR]}
+      PPA: {ad: "PPA müzakeresi",                            a: 3,  m: 6,  b: 10, onc: [ONL]}
+      FIN: {ad: "Finansman kapanışı (FID)",                  a: 3,  m: 4,  b: 8,  onc: [LIS, OLC, TBA, PPA]}
+      TUR: {ad: "Türbin tedariki (sipariş → teslim)",        a: 12, m: 15, b: 20, onc: [FIN]}
+      BOP: {ad: "RES altyapı inşaatı (yol, temel, trafo)",   a: 6,  m: 8,  b: 12, onc: [FIN]}
+      SEB: {ad: "Şebeke bağlantısı (TM/ENH)",                a: 9,  m: 12, b: 20, onc: [TBA, FIN]}
+      MNT: {ad: "Türbin montajı",                            a: 3,  m: 4,  b: 6,  onc: [TUR, BOP]}
+      DRES: {ad: "RES test, devreye alma, geçici kabul (COD)", a: 1, m: 2, b: 4,  onc: [MNT, SEB]}
+      BAT: {ad: "Batarya tedariki",                          a: 6,  m: 8,  b: 12, onc: [FIN]}
+      BIN: {ad: "Batarya inşaat ve montaj",                  a: 2,  m: 3,  b: 5,  onc: [BAT, BOP]}
+      DBAT: {ad: "Batarya devreye alma",                     a: 1,  m: 1.5, b: 3, onc: [BIN, SEB]}
+      SFK: {ad: "SFK ön yeterlilik ve performans testleri",  a: 1,  m: 2,  b: 4,  onc: [DBAT]}
+  birim: "ay; üçgen (iyimser a, olası m, kötümser b); öncüller bitiş-başlangıç"
+  kaynak: "Enerjisa YEKA RES-2 projeleri Teknik Olmayan Özetleri (DFC, 2024): inşaat 12-21 ay; EPDK ön lisans geçerlilik süresi 24 ay; ÇED Yönetmeliği süreleri; Çanakkale Boğazı süzülen kuş göç yolu → ilkbahar (Mar-Haz) ve sonbahar (Ağu-Eki) göç dönemleri; türbin teslim 12-20 ay ve BESS 6-12 ay (sektör raporları, DOE BESS supply chain 2024, IEEFA 2025: BESS projelerinde 9-18 ay gecikmeler)"
+  not: "TAHMİN — Süreler Türkiye'deki örnek projelerden ve sektör kaynaklarından gerekçelendirildi ama projeye özgü değil. Başlangıç Ekim 2026 (geliştirme kararı); mevcut bir ön lisansın devri varsayılır (Ekim 2023'ten beri yeni başvuru kısıtlı)"

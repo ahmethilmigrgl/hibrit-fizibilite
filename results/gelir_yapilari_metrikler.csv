@@ -1,0 +1,9 @@
+﻿Seçenek,Gelir yapısı,Beklenen NPV [M USD],P(NPV > 0) [%],CVaR %5 [M USD],Proje IRR P50 [%],"Borç kapasitesi, baz [M USD]",Borç vadesi [yıl],"P(DSCR < 1), baz borç [%]","Borç kapasitesi, muhafazakâr [M USD]","P(DSCR < 1), muhafazakâr borç [%]","Öz kaynak IRR P50, muhafazakâr [%]",Satılan enerji P50 [GWh/yıl]
+"A: RES 58,8 — tüccar",tüccar,-4.914,34.800,-32.776,6.054,42.577,15,80.060,28.728,47.420,6.473,165.177
+"E: RES 58,8 — PPA",ppa,-7.964,19.320,-25.159,5.639,47.630,18,71.290,40.260,39.160,6.074,173.608
+"AY: RES 58,8 — YEKDEM",yekdem,-12.526,5.910,-28.165,4.994,34.519,12,51.030,32.890,35.390,4.998,173.608
+F2: öneri tasarımı — tüccar,tüccar,3.729,54.920,-30.352,7.373,52.611,15,80.410,32.957,41.380,8.538,170.007
+F2P: öneri tasarımı — PPA (kesintisiz),ppa,4.525,57.800,-23.241,7.444,60.425,18,81.940,43.387,36.930,9.359,181.252
+F2P: öneri tasarımı — PPA,ppa,2.392,52.370,-25.076,7.142,59.011,18,82.860,42.141,37.770,8.777,174.626
+F2Y: öneri tasarımı — YEKDEM,yekdem,0.819,48.490,-24.860,6.903,48.380,12,77.200,36.125,24.770,7.710,174.626
+"F2Ye: öneri tasarımı — YEKDEM, USD sınırları endeksli varsayımı",yekdem_e,5.494,61.270,-20.086,7.612,53.017,12,70.600,41.105,21.810,9.034,174.626

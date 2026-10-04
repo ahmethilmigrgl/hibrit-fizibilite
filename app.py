@@ -39,6 +39,7 @@ def T(tr: str, en: str) -> str:
 
 
 def sayi(x: float, d: int = 1) -> str:
+    x = float(x) + (5e-7 if x >= 0 else -5e-7)      # 2,05 gibi değerlerde ikili gösterim yuvarlamasını önler
     s = f"{x:,.{d}f}"
     return s.replace(",", "X").replace(".", ",").replace("X", ".") if dil == "TR" else s
 
@@ -87,33 +88,40 @@ sekmeler = st.tabs([T("Özet", "Summary"), T("Saha ve üretim", "Site & generati
 # =====================================================================================================================
 with sekmeler[0]:
     st.subheader(T("Yatırım önerisi", "Investment recommendation"))
-    st.success(T(
-        "**Koşullu onay: RES 58,8 MW (14 × 4,2 MW) + 30 MW / 52,5 MWh batarya (40 MW'a büyütme opsiyonu) + P90 üretimin %70'ine 12 yıllık PPA.** "
-        "Koşullar: (1) TEİAŞ'tan hibrit tesisteki bataryanın SFK'ya katılabileceğine dair yazılı ön yeterlilik, (2) PPA fiyatı ≥ ~52 $/MWh, "
-        "(3) borcun SFK geliri olmadan ve 45 $/MWh ile boyutlandırılması (~43 M$), (4) batarya siparişinin RES FID'inden ~12 ay sonra, "
-        "2027 SFK fiyatları ve kurulu depolama görülerek verilmesi.",
-        "**Conditional approval: 58.8 MW wind (14 × 4.2 MW) + 30 MW / 52.5 MWh battery (option to expand to 40 MW) + 12-year PPA on 70% of P90 output.** "
-        "Conditions: (1) written TEİAŞ pre-qualification that the battery inside the hybrid plant may provide secondary reserve (SFK), "
-        "(2) PPA price ≥ ~52 $/MWh, (3) debt sized without SFK revenue at 45 $/MWh (~43 M$), (4) battery order placed ~12 months after the "
-        "wind FID, once 2027 SFK prices and installed storage are known."))
-    st.caption(T("Öneri, SFK doyum stres testinden sonra değişti: Aşama 5'te 40 MW'lık bataryalı tasarım %97 olasılıkla kârlı görünüyordu; "
-                 "doyum hesaba katılınca bu ~%60'a indi ve bataryanın değeri bir opsiyona dönüştü. Tetikleyiciler: Risk sekmesi ve docs/RAPOR.md.",
-                 "The recommendation changed after the SFK saturation stress test: in stage 5 the 40 MW battery design looked profitable with 97% "
-                 "probability; with saturation this falls to ~60% and the battery becomes an option. Triggers: Risk tab and docs/RAPOR.md."))
+    st.warning(T(
+        "**Bugünkü haliyle hayır; inşaata hazır bir proje edinilebilirse koşullu evet.** Tasarım: RES 58,8 MW (14 × 4,2 MW) + 30 MW / 52,5 MWh "
+        "batarya (40 MW'a büyütme opsiyonu). Gelir yapısı: 10 yıllık YEKDEM (USD taban/tavanının endekslendiği hukuken teyit edilirse), değilse "
+        "P90'ın %70'ine 12 yıllık PPA. Geliştirme aşamasından başlayan bir projede COD 2032'ye kayıyor, SFK penceresi ve YEKDEM'in 2030 sonu "
+        "sınırı kaçıyor; beklenen NPV negatif.",
+        "**Not as it stands; conditional yes if a ready-to-build project can be acquired.** Design: 58.8 MW wind (14 × 4.2 MW) + 30 MW / "
+        "52.5 MWh battery (expandable to 40 MW). Revenue: 10-year YEKDEM feed-in (if its USD floor/cap is legally confirmed to be indexed), "
+        "otherwise a 12-year PPA on 70% of P90. Starting from a pre-licence pushes COD to 2032, missing the ancillary-service window and the "
+        "end-2030 YEKDEM deadline; expected NPV is negative."))
+    st.markdown(T(
+        "**FID koşulları:** (1) inşaata hazır proje, COD ≤ 31.12.2030; (2) YEKDEM endekslemesinin hukuki teyidi; (3) yatırım teşvik belgesi "
+        "(KDV istisnası); (4) TEİAŞ'tan bataryanın SFK ön yeterliliği; (5) SFK'sız, 45 $/MWh ile boyutlanan borç + DSRA; (6) batarya kararı FID'de, "
+        "gözlenen doyumla; sipariş RES ile birlikte. **Edinim primi tavanı ~2 M$.**",
+        "**FID conditions:** (1) ready-to-build project with COD ≤ 31 Dec 2030; (2) legal confirmation of YEKDEM indexation; (3) investment "
+        "incentive certificate (VAT exemption); (4) TEİAŞ pre-qualification of the battery for SFK; (5) debt sized without SFK at 45 $/MWh + DSRA; "
+        "(6) battery decision at FID based on observed saturation, ordered together with the wind farm. **Maximum acquisition premium ~2 M$.**"))
+    st.caption(T("Öneri iki kez değişti: SFK doyum stres testi (kâr olasılığı %97 → %59) ve Aşama 7'deki sistem kesintisi, YEKDEM/teşvik ve "
+                 "gerçekçi takvim analizi. Ayrıntılar: Risk sekmesi ve docs/07.",
+                 "The recommendation changed twice: after the SFK saturation stress test (probability of profit 97% → 59%) and after stage 7's "
+                 "curtailment, YEKDEM/incentive and realistic-schedule analysis. Details: Risk tab and docs/07."))
+    tk = oku("takvim_ozet.csv"); gyp = oku("gelir_yapilari_metrikler.csv"); co2 = oku("co2.csv").set_index("Kalem")["Değer"]
+    hazir = tk[(tk["Proje olgunluğu"] == "İnşaata hazır proje") & tk["Politika"].str.startswith("B1")].iloc[0]
+    gel = tk[(tk["Proje olgunluğu"].str.startswith("Geliştirme")) & tk["Politika"].str.startswith("B1")].iloc[0]
     k = st.columns(4)
-    if "F2P" in m_:
-        f = m_["F2P"]
-        k[0].metric(T("Önerilen tasarım: E[NPV]", "Recommended design: E[NPV]"), f"{sayi(f['Beklenen NPV [M USD]'])} M$",
-                    T("doyum senaryolu Monte Carlo", "Monte Carlo with saturation"), delta_color="off")
-        k[1].metric(T("Önerilen tasarım: P(NPV > 0)", "Recommended design: P(NPV > 0)"), yuzde(f["P(NPV > 0) [%]"]),
-                    T(f"CVaR %5: {sayi(f['CVaR %5 [M USD]'])} M$", f"CVaR 5%: {sayi(f['CVaR %5 [M USD]'])} M$"), delta_color="off")
-    if "A" in m_:
-        k[2].metric(T("Karşılaştırma: yalnız RES", "Benchmark: wind only"), f"{sayi(m_['A']['Beklenen NPV [M USD]'])} M$",
-                    T(f"P(NPV > 0) {yuzde(m_['A']['P(NPV > 0) [%]'])}", f"P(NPV > 0) {yuzde(m_['A']['P(NPV > 0) [%]'])}"), delta_color="off")
-    if "C" in e_ and "C" in m_:
-        k[3].metric(T("40 MW batarya: Aşama 5 → doyumlu", "40 MW battery: stage 5 → saturation"),
-                    f"{yuzde(e_['C']['P(NPV > 0) [%]'])} → {yuzde(m_['C']['P(NPV > 0) [%]'])}",
-                    T("kâr olasılığı", "probability of profit"), delta_color="off")
+    k[0].metric(T("Öneri: E[NPV], takvim + kesinti dahil", "Recommendation: E[NPV], schedule + curtailment"),
+                f"{sayi(hazir['E[NPV] YEKDEM, sınırlar endeksli, takvim dahil [M USD]'])} M$",
+                T("inşaata hazır + endeksli YEKDEM", "ready-to-build + indexed YEKDEM"), delta_color="off")
+    k[1].metric(T("COD P50 / P80 (inşaata hazır)", "COD P50 / P80 (ready-to-build)"), f"{hazir['RES COD P50']} / {hazir['RES COD P80']}",
+                T(f"geliştirmeden: {gel['RES COD P50']}", f"from pre-licence: {gel['RES COD P50']}"), delta_color="off")
+    yek = gyp[gyp["Seçenek"].str.startswith("F2Ye")].iloc[0]
+    k[2].metric(T("YEKDEM (endeksli): P(NPV>0) / CVaR", "YEKDEM (indexed): P(NPV>0) / CVaR"),
+                f"{yuzde(yek['P(NPV > 0) [%]'])} / {sayi(yek['CVaR %5 [M USD]'])} M$", T("model takvimi", "model schedule"), delta_color="off")
+    k[3].metric(T("Önlenen CO2", "Avoided CO2"), f"{sayi(co2.iloc[2], 0)} " + T("bin t/yıl", "kt/yr"),
+                T(f"≈ {sayi(co2.iloc[5], 0)} bin hane", f"≈ {sayi(co2.iloc[5], 0)}k households"), delta_color="off")
     st.subheader(T("Tek cümlelik bulgular", "Key findings in one line each"))
     st.markdown(T(
         "- **Ezine neden?** Dört aday saha arasında en güçlü rüzgâr kaynağı (kalibre RES kapasite faktörü %37,7, E-141/120 m) ve en iyi GES–RES tamamlayıcılığı.\n"
@@ -121,13 +129,17 @@ with sekmeler[0]:
         "%14–40'ı kesiliyor; hiçbir optimizasyonda GES tasarıma girmedi.\n"
         "- **Bataryanın değeri nereden?** Neredeyse tamamen SFK (sekonder frekans) kapasite gelirinden (%87); arbitraj tek başına bataryayı ödemiyor.\n"
         "- **En büyük risk?** Elektrik fiyat seviyesi (NPV varyansının %50–85'i) ve bataryalı tasarımda SFK piyasasının doyumu: ~1 GW'lık ihtiyaca "
-        "karşı 28–33 GW depolamalı ön lisans var.",
+        "karşı 28–33 GW depolamalı ön lisans var.\n"
+        "- **Gerçek dünya:** 2026'da RES'lere sistem kaynaklı kesinti başladı (Ezine'de ~%9,5); gerçekçi takvim COD'u 2–4 yıl kaydırıyor; "
+        "YEKDEM 2030 sonuna kadar açık.",
         "- **Why Ezine?** Strongest wind resource of four candidate sites (calibrated wind capacity factor 37.7%, E-141/120 m) and the best solar–wind complementarity.\n"
         "- **Why no solar?** Cannibalisation: Turkish solar capture rates have fallen fast since 2019 and 14–40% of added PV is curtailed behind 50 MW; "
         "solar never entered any optimal design.\n"
         "- **Where does battery value come from?** Almost entirely from secondary-reserve (SFK) capacity payments (87%); arbitrage alone does not pay.\n"
         "- **Biggest risk?** The power price level (50–85% of NPV variance) and, for the battery, saturation of the ~1 GW SFK market against "
-        "28–33 GW of storage pre-licences."))
+        "28–33 GW of storage pre-licences.\n"
+        "- **Real world:** system curtailment of wind started in 2026 (~9.5% at Ezine); a realistic schedule shifts COD by 2–4 years; "
+        "the YEKDEM feed-in remains open until end-2030."))
 
 # =====================================================================================================================
 with sekmeler[1]:
@@ -330,6 +342,57 @@ with sekmeler[4]:
     with c2:
         st.markdown(T("**Doyum senaryosuna göre E[NPV] [M$]**", "**E[NPV] by saturation scenario [M$]**"))
         st.dataframe(oku("s_senaryo_npv.csv").set_index("Tasarım").round(2), width="stretch")
+
+    st.divider()
+    st.subheader(T("Proje takvimi (CPM + Monte Carlo)", "Project schedule (CPM + Monte Carlo)"))
+    akt = oku("takvim_aktiviteler.csv", index_col=0)
+    t0 = pd.Timestamp("2026-10-01")
+    ay = lambda m: t0 + pd.to_timedelta(np.asarray(m, float) * 30.44, unit="D")
+    c1, c2 = st.columns([1.3, 1])
+    with c1:
+        a2 = akt.sort_values("ES", ascending=False)
+        fig = go.Figure(go.Bar(y=a2["Aktivite"], x=(ay(a2["EF"]) - ay(a2["ES"])).days * 86400000, base=ay(a2["ES"]), orientation="h",
+                               marker_color=["#c0392b" if k_ else RES for k_ in a2["Kritik"]],
+                               hovertext=[f"{r.Olası} ay, bolluk {r.Bolluk} ay" for r in a2.itertuples()]))
+        fig.add_vline(x=pd.Timestamp("2028-01-01").timestamp() * 1000, line_dash="dot", line_color="#555")
+        fig.update_xaxes(type="date"); fig.update_layout(hovermode="closest", showlegend=False)
+        st.plotly_chart(sekil(fig, T("Gantt (olası süreler, geliştirme senaryosu; kırmızı: kritik yol)", "Gantt (most likely, from pre-licence; red: critical path)"),
+                              yukseklik=520), width="stretch")
+    with c2:
+        z = np.load(R / "takvim_cod_ornekleri.npz")
+        fig = go.Figure()
+        for anahtar, ad_, renk, tire in [("gelistirme_B1_cod", T("RES COD — geliştirme", "Wind COD — pre-licence"), KOYU, None),
+                                         ("insaata_hazir_B1_cod", T("RES COD — inşaata hazır", "Wind COD — ready-to-build"), HIBRIT, None),
+                                         ("insaata_hazir_B2_sfk", T("SFK — batarya 12 ay geç", "SFK — battery 12 months late"), GES, "dash")]:
+            x = np.sort(z[anahtar]); idx = np.linspace(0, len(x) - 1, 300).astype(int)
+            fig.add_trace(go.Scatter(x=ay(x[idx]), y=(idx + 1) / len(x), name=ad_, line=dict(color=renk, width=2.5, dash=tire)))
+        fig.add_vline(x=pd.Timestamp("2028-01-01").timestamp() * 1000, line_color="#c0392b")
+        fig.add_vline(x=pd.Timestamp("2030-12-31").timestamp() * 1000, line_color=BATARYA, line_dash="dot")
+        st.plotly_chart(sekil(fig, T("COD dağılımı (kırmızı: modelin COD'u; mor: YEKDEM sınırı)", "COD distribution (red: model COD; purple: YEKDEM deadline)"),
+                              T("Olasılık", "Probability"), yukseklik=520), width="stretch")
+    st.dataframe(oku("takvim_ozet.csv").set_index(["Proje olgunluğu", "Politika"]).round(2), width="stretch")
+    st.subheader(T("Gelir yapıları (doyum + sistem kesintisi dahil)", "Revenue structures (saturation + curtailment)"))
+    st.dataframe(oku("gelir_yapilari_metrikler.csv").set_index("Seçenek").round(2), width="stretch")
+    st.subheader(T("Risk kaydı", "Risk register"))
+    rk = oku("risk_kaydi.csv")
+    c1, c2 = st.columns([1, 1.6])
+    with c1:
+        fig = go.Figure()
+        for e in range(1, 6):
+            for o_ in range(1, 6):
+                p_ = o_ * e
+                fig.add_shape(type="rect", x0=o_ - 0.5, x1=o_ + 0.5, y0=e - 0.5, y1=e + 0.5, line_width=0, layer="below",
+                              fillcolor="#e74c3c" if p_ >= 15 else "#f39c12" if p_ >= 10 else "#f7dc6f" if p_ >= 5 else "#a9dfbf", opacity=0.55)
+        jit = rk.groupby(["Olasılık (1-5)", "Etki (1-5)"]).cumcount()
+        fig.add_trace(go.Scatter(x=rk["Olasılık (1-5)"] - 0.3 + 0.2 * (jit % 4), y=rk["Etki (1-5)"] + 0.25 - 0.25 * (jit // 4), mode="text",
+                                 text=rk["No"], hovertext=rk["Risk"], textfont=dict(size=11, color="#0b0b0b")))
+        fig.update_layout(hovermode="closest", showlegend=False)
+        fig.update_xaxes(range=[0.5, 5.5], dtick=1); fig.update_yaxes(range=[0.5, 5.5], dtick=1)
+        st.plotly_chart(sekil(fig, T("Isı haritası (azaltım öncesi)", "Heat map (before mitigation)"), T("Etki", "Impact"), T("Olasılık", "Likelihood"), 420),
+                        width="stretch")
+    with c2:
+        st.dataframe(rk[["No", "Kategori", "Risk", "Puan", "Sayısal etki", "Azaltım önlemi", "Kalıntı puan"]].sort_values("Puan", ascending=False),
+                     width="stretch", hide_index=True, height=420)
 
 # =====================================================================================================================
 with sekmeler[5]:

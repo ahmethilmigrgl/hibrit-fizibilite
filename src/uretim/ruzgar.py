@@ -45,7 +45,8 @@ def era5_indir(kod: str, enlem: float, boylam: float, yil: int, cfg_ruzgar: dict
         istek = {
             "variable": deger(cfg_ruzgar["degiskenler"]),
             "location": {"longitude": boylam, "latitude": enlem},
-            "date": [f"{yil}-01-01/{yil}-12-31"],
+            # İçinde bulunulan yıl: ERA5 ~5 gün gecikmeli yayımlanır → bitiş bugünden 10 gün önce
+            "date": [f"{yil}-01-01/{min(pd.Timestamp(f'{yil}-12-31'), pd.Timestamp.today().normalize() - pd.Timedelta(days=10)):%Y-%m-%d}"],
             "data_format": "csv",
         }
         gecici = yol.with_suffix(".zip")

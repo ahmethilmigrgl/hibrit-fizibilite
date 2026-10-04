@@ -23,16 +23,18 @@ mathematically in `docs/`.
 | 3 | **Battery value comes almost entirely from secondary-reserve (SFK) capacity payments**, not arbitrage. | 87% of battery revenue; NPV −1.6 → +26 M$ in the no-saturation case |
 | 4 | **The saturation stress test changed the recommendation.** The SFK market needs ~1 GW against 28–33 GW of storage pre-licences. A supply–demand model calibrated on GB, Germany and Australia turns the battery into an *option*. | P(NPV > 0) for the 40 MW battery design: 97% → 59%; CVaR 5%: −2.5 → −30 M$ |
 | 5 | **The valuable flexibility is deferring battery scale, not adding duration.** A 30 MW battery (the SFK entry threshold) with a conditional expansion beats both a 40 MW and a 4-hour battery. Waiting to learn costs more than the information is worth. | E[NPV] +6.3 M$ (staged) vs −0.4 M$ (4-hour); 1-year delay −2.1 M$ |
+| 6 | **Real-world frictions change the answer.** System curtailment of wind started in 2026, the incentive certificate (VAT exemption) is essential, and a CPM + Monte Carlo schedule pushes COD from the assumed 2028 to 2030 (ready-to-build) or 2032 (from a pre-licence). The YEKDEM feed-in (open until end-2030) is the best revenue structure if its USD floor/cap is indexed. | Curtailment −2.1 M$; COD P50 Mar 2030 / Jan 2032; YEKDEM E[NPV] 5.5 M$, CVaR −20 M$ |
 
-**Recommendation (conditional):** 58.8 MW wind + 30 MW / 52.5 MWh battery (expandable to 40 MW) + a 12-year PPA on
-70% of P90 output. E[NPV] +4.5 M$, P(NPV > 0) 58%, CVaR −23 M$. Conditions:
+**Recommendation:** **not as it stands; conditional yes if a ready-to-build project can be acquired.**
 
-1. Written TEİAŞ pre-qualification for the battery.
-2. PPA price ≥ ~52 $/MWh.
-3. Debt sized without ancillary revenue.
-4. Battery ordered ~12 months after the wind FID.
+- **Design:** 58.8 MW wind + 30 MW / 52.5 MWh battery (expandable to 40 MW).
+- **Revenue:** 10-year YEKDEM if its USD floor/cap is legally confirmed to be indexed, otherwise a 12-year PPA.
+- **Value:** expected NPV including schedule and curtailment +2.1 M$, which caps the acquisition premium at ~2 M$.
+- **Starting from a pre-licence:** COD slips to 2032 and misses both the ancillary-service window and the end-2030
+  YEKDEM deadline.
 
-Monitoring triggers are listed in the [report](docs/RAPOR.md#9-öneri).
+FID conditions and monitoring triggers are listed in the [report](docs/RAPOR.md#10-öneri) and in
+[docs/07](docs/07_tamamlayici_analizler.md).
 
 <p align="center">
   <img src="outputs/05_risk/s_risk_getiri.png" width="85%"><br>
@@ -69,9 +71,10 @@ flowchart LR
 | 4 Optimisation | Battery arbitrage LP → hybrid dispatch LP with grid shadow prices → capacity MILP (integer turbines, binary build decision, full year 2 × 8,760 h, ~35 s); representative days vs full year; regret analysis | [docs/04](docs/04_optimizasyon.md) |
 | 5 Revenue stack & risk | Ancillary services (binary participation ≥ 30 MW), PPA, storage licence. Monte Carlo with block-bootstrapped weather, mean-reverting log prices with crisis/price-cap events, Gaussian copula. Dispatch pre-computed on a grid + trilinear interpolation (error ~1%). EVPI/EVPPI, Sobol indices | [docs/05](docs/05_risk_ve_gelir_yigini.md) |
 | 6 Stress test | SFK supply–demand saturation model (GB/DE/AU calibration), opportunity window, delay & wait-and-see, flexible battery designs, conservative debt | [docs/05 §9](docs/05_risk_ve_gelir_yigini.md#9-stres-testi-sfk-piyasasının-doyumu-aşama-6) |
+| 7 Real-world frictions | System curtailment detected from EPİAŞ instructions + co-located wind farms; incentives (VAT); merchant vs PPA vs YEKDEM in one Monte Carlo; avoided CO2; CPM + Monte Carlo project schedule (COD P50/P80, criticality index); 20-item risk register | [docs/07](docs/07_tamamlayici_analizler.md) |
 
 ## Tech stack
-Python 3.11 · Pyomo + HiGHS (`highspy`) · pandas / NumPy / SciPy · pvlib · windpowerlib · xarray / ERA5 (cdsapi) ·
+Python 3.11 · Pyomo + HiGHS (`highspy`) · CPM / schedule Monte Carlo · pandas / NumPy / SciPy · pvlib · windpowerlib · xarray / ERA5 (cdsapi) ·
 EPİAŞ Transparency API · matplotlib / Plotly · Streamlit · pytest
 
 ## How to run

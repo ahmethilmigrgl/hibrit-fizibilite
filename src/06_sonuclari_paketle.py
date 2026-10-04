@@ -45,7 +45,7 @@ def varsayim_tablosu(cfg: dict) -> pd.DataFrame:
             for k, v in d.items():
                 gez(v, yol + [k])
     for k in ["proje", "saha", "uretim", "finans", "borc", "teknoloji", "fiyat_senaryolari", "duzenleme", "gelir_yigini",
-              "monte_carlo", "stres_testi"]:
+              "monte_carlo", "stres_testi", "kesinti", "yekdem", "tesvik", "karbon", "takvim"]:
         gez(cfg[k], [k])
     df = pd.DataFrame(satir)
     df["Değer"] = df["Değer"].astype(str)
@@ -101,6 +101,9 @@ def main():
         kopyala(CIKTILAR / "05_risk" / f)
     kopyala(CIKTILAR / "05_risk" / "revizyon_oncesi" / "b_metrikler.csv", "b_metrikler_revizyon_oncesi.csv")
     kopyala(CIKTILAR / "05_risk" / "revizyon_oncesi" / "b_varyans_katkisi.csv", "b_varyans_katkisi_revizyon_oncesi.csv")
+    for f in ["takvim_ozet.csv", "takvim_aktiviteler.csv", "takvim_cod_ornekleri.npz", "gelir_yapilari_metrikler.csv",
+              "kesinti_sistem_yat_yillik.csv", "kesinti_referans_santraller.csv", "co2.csv", "tesvik_etkisi.csv", "risk_kaydi.csv"]:
+        kopyala(CIKTILAR / "07" / f)
     varsayim_tablosu(cfg).to_csv(R / "varsayimlar.csv", encoding="utf-8-sig", index=False)
 
     # --- Gezgin meta + yaklaşım hatası (Aşama 5 tam model ile karşılaştırma)

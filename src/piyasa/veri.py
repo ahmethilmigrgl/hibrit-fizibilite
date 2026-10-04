@@ -170,3 +170,22 @@ def yekg_fiyat_cek(istemci: EpiasIstemcisi, bas: str, son: str) -> pd.DataFrame:
                                      {"startDate": tarih_metni(b), "endDate": tarih_metni(s)})
         kayit += r.get("items", [])
     return pd.DataFrame(kayit).drop_duplicates()
+
+
+def talimat_ozeti_cek(istemci: EpiasIstemcisi, bas: str, son: str) -> pd.DataFrame:
+    """
+    Dengeleme Güç Piyasası saatlik YAL/YAT talimat özetleri [MWh] (sistem geneli; kaynak/santral kırılımı yayımlanmıyor).
+    Kodlar: 0 = dengeleme, 1 = sistem kısıtı (iletim/güvenlik), 2 = yan hizmet. Pozitif değerlere çevrilir.
+    """
+    parcalar = []
+    for yon, yol in [("yat", "/v1/markets/bpm/data/order-summary-down"), ("yal", "/v1/markets/bpm/data/order-summary-up")]:
+        kayit = []
+        for b, s in _parcalar(pd.Timestamp(bas), pd.Timestamp(son) + pd.Timedelta(hours=23), "MS"):
+            kayit += istemci.onbellekli_istek(f"talimat_{yon}", yol, {"startDate": tarih_metni(b), "endDate": tarih_metni(s)})["items"]
+        df = pd.DataFrame(kayit)
+        df["zaman_utc"] = pd.to_datetime(df["date"], utc=True)
+        df = df.drop_duplicates("zaman_utc").set_index("zaman_utc").sort_index()
+        ad = "downRegulation" if yon == "yat" else "upRegulation"
+        parcalar.append(pd.DataFrame({f"{yon}_0": df[f"{ad}ZeroCoded"].abs(), f"{yon}_1": df[f"{ad}OneCoded"].abs(),
+                                      f"{yon}_2": df[f"{ad}TwoCoded"].abs()}).astype(float))
+    return pd.concat(parcalar, axis=1)
