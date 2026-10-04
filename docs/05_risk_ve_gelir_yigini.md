@@ -479,12 +479,12 @@ Devreye alma 1–3 yıl ertelenirse (fiyat ve doyum yolları takvime göre kayar
 
 ### 9.7 Nihai öneri (güncellendi)
 
-> **Aşama 7 güncellemesi:** Sistem kaynaklı kesinti, YEKDEM, teşvikler ve gerçekçi proje takvimi eklendi; öneri yeniden
-> değişti. Güncel öneri: [docs/07 §6](07_tamamlayici_analizler.md#6-nihai-öneri-aşama-7). Özet:
-> - Geliştirme aşamasındaki projeye yatırım önerilmiyor; COD 2032'ye kayıyor.
-> - İnşaata hazır proje + endeksli YEKDEM için koşullu onay; edinim primi ≤ ~2 M$.
-> - Aşağıdaki "batarya siparişi FID'den ~12 ay sonra" koşulu **kaldırıldı**. Gerçekçi takvimde batarya kararı FID'de,
->   o ana kadar gözlenen doyumla verilir.
+> **Güncel öneri (Aşama 7 + Ö1–Ö2 tutarlılık düzeltmeleri): yatırım önerilmez.** Ayrıntı:
+> [docs/07, "Güncelleme (Ö1–Ö2)"](07_tamamlayici_analizler.md).
+> - **Nihai baz vaka:** inşaata hazır proje, COD 2030; RES 58,8 MW + 30 MW / 60 MWh; nominal YEKDEM, sonra tüccar.
+>   Beklenen NPV −11,4 M$, P(NPV>0) %13, azami edinim primi 0.
+> - **En iyi alternatif, tüccar yapı:** +0,8 M$, P %49.
+> - Aşağıdaki "batarya siparişi FID'den ~12 ay sonra" koşulu da Aşama 7'de kaldırılmıştı.
 > Aşağıdaki metin Aşama 6 önerisi olarak saklandı.
 
 **Öneri değişti.** Aşama 5'te D tasarımını (RES 58,8 + BESS ~40 MW / 63 MWh + PPA), %99 başarı olasılığıyla

@@ -9,7 +9,77 @@ sonunda o adımın nihai öneriye etkisi ayrıca raporlandı.
 
 ---
 
-## Özet: önce / sonra
+## Güncelleme (Ö1–Ö2): tutarlılık düzeltmeleri, nihai baz vaka ve yeni öneri
+
+**Ne düzeltildi (Ö1):**
+
+1. **YEKDEM'de batarya.**
+   - Mevzuata göre santralde üretilip depolandıktan sonra verilen enerji de YEKDEM fiyatından ödeniyor (§2.3a).
+     Saatten bağımsız sabit fiyatta arbitrajın değeri yok.
+   - Önceki hesap batarya deşarjını spot fiyattan değerliyordu; dispatch da PPA noktasından alınıp arbitraj yapıyordu.
+     YEKDEM sonuçları bu yüzden şişmişti.
+   - Artık YEKDEM'e özgü dispatch kullanılıyor: batarya yalnız kesilecek enerjiyi saklıyor, SFK rezervi ve dengesizlik
+     azaltımı sağlıyor.
+   - Sistem kesintisi YEKDEM kuralıyla: kesilen enerjiye YEK farkı ödenmiyor, kurtarılan enerji tam YEK fiyatından
+     ödeniyor.
+2. **PPA'da batarya.**
+   - Aynı kontrol PPA'da da bir tutarsızlık gösterdi: φ = 0,66 dispatch'i santral enerjisini PPA teslimatından spot
+     zirvelere kaydırıyordu. Batarya deşarj geliri yılda 4,5 M$ (tüccarda 1,4 M$).
+   - "Üretildiği kadar" PPA'da bu sözleşme ihlali olur. PPA finansal bir fark sözleşmesi olarak modellendi; batarya
+     tüccar dispatch'iyle çalışıyor.
+3. **YEKDEM altında batarya boyutu.**
+
+   | YEKDEM, COD 2028 | Nominal | Endeksli |
+   |---|---|---|
+   | 30 MW / 52,5 MWh | −6,9 M$ | +0,1 M$ |
+   | 30 MW / 60 MWh | −6,5 M$ | +0,5 M$ |
+   | 40 MW / 70 MWh | −7,4 M$ | −0,3 M$ |
+
+   Tam 30 MW SFK rezervi için 2 saatlik enerji gerekiyor (h·r ≤ s ≤ E − h·r), bu yüzden 30 MW / 60 MWh en iyisi.
+   Aşamalı büyütmenin değeri ~0,1 M$; tasarımdan çıkarıldı.
+   **Nihai tasarım: RES 58,8 MW + 30 MW / 60 MWh batarya.**
+4. **10 yıl sonrası doğrulandı:** YEKDEM'de φ ilk 10 işletme yılında 1, sonra 0. Dispatch ve gelir 11. yıldan itibaren
+   tüccar.
+
+**Gelir yapıları, önce / sonra** (önerilen tasarım; model takvimi COD 2028; doyum + kesinti dahil):
+
+| | Ö1 öncesi | Ö1 sonrası (nihai tasarım) |
+|---|---|---|
+| Tüccar | +3,7 | **+4,3** |
+| PPA | +2,4 | **−1,2** |
+| YEKDEM nominal | +0,8 | **−6,5** |
+| YEKDEM endeksli | +5,5 | **+0,5** |
+
+**Nihai baz vaka (Ö2)** (`config.yaml → nihai_baz_vaka`, `outputs/07/baz_vaka.csv`):
+- İnşaata hazır proje, COD 2030 (takvim P50: Mart 2030).
+- Nihai tasarım; YEKDEM nominal koridor, 10 yıl sonra tüccar.
+- Edinim primi parametre (0).
+
+| COD 2030, nihai tasarım | E[NPV] | P(NPV>0) | CVaR %5 | NPV P10 / P90 | Azami edinim primi |
+|---|---|---|---|---|---|
+| **YEKDEM nominal (baz vaka)** | **−11,4** | **%13** | −28,6 | −22,8 / 1,9 | **0** |
+| YEKDEM endeksli | −3,2 | %33 | −20,4 | −14,7 / 9,9 | 0 |
+| PPA | −4,3 | %33 | −24,2 | −17,8 / 10,5 | 0 |
+| Tüccar | +0,8 | %49 | −27,6 | −18,6 / 21,4 | 0,8 |
+
+Neden bu kadar kötüleşti? Üç etki üst üste biniyor:
+- **Sistem kesintisi** (−2 ile −3 M$).
+- **2 yıllık takvim kayması:** SFK penceresi ve kesinti büyümesi nedeniyle, tüccarda −3,5 M$.
+- **Düzeltilmiş YEKDEM.** Nominal koridorda reel fiyat 10 yılda ~%22 aşınıyor (ortalama ~48 $/MWh). YEKDEM tesisi
+  kesintide YEK farkını kaybediyor. Arbitraj imkânı da yok.
+
+Batarya her yapıda değer katıyor (YEKDEM nominalde yalnız RES'e göre ~+2,6 M$), ama projeyi pozitife çevirmeye yetmiyor.
+
+**Öneri esaslı şekilde değişti:**
+- Muhafazakâr baz vakada (nominal YEKDEM) yatırım **önerilmez**: beklenen NPV −11,4 M$, kâr olasılığı %13.
+- En iyi yapı olan tüccarda bile inşaata hazır projenin beklenen NPV'si +0,8 M$; kâr olasılığı yarı yarıya, kuyruk
+  riski yüksek (CVaR −27,6 M$). Bu, ancak sembolik bir edinim primini haklı çıkarıyor.
+- Aşama 7'deki "inşaata hazır proje + YEKDEM için koşullu onay" önerisi geçersiz. Aşağıdaki bölümler Ö1 öncesi analiz
+  olarak saklandı.
+
+---
+
+## Özet: önce / sonra (Ö1 öncesi — geçersiz)
 
 | | Aşama 6 önerisi | Aşama 7 sonrası |
 |---|---|---|
@@ -183,6 +253,56 @@ Aynı Monte Carlo (10.000; doyum + sistem kesintisi dahil; model takvimi), `geli
 **Öneriye etkisi:** YEKDEM yeni tercih edilen gelir yapısı oldu, ama iki koşula bağlı: hukuki endeksleme teyidi ve
 2030 sonu COD. İkincisi takvim analizinde belirleyici çıktı (§4).
 
+### 2.3a YEKDEM ile batarya uyumu (Ö1 — tutarlılık kontrolü)
+
+**Sorun:** İlk YEKDEM hesabında batarya deşarjı spot fiyattan (L·q) değerleniyordu. Dispatch da PPA noktasındaki
+(φ = 0,66) tablodan geldiği için batarya arbitraj yapıyordu. YEKDEM'de enerji saatten bağımsız sabit fiyattan
+ödendiği için bu tutarlı değil.
+
+**Mevzuat bulguları:** Kaynak: YEK Belgelendirme ve Desteklenme Yönetmeliği, güncel konsolide metin
+([mevzuat.gov.tr](https://www.mevzuat.gov.tr/MevzuatMetin/yonetmelik/7.5.18907.pdf)); Elektrik Piyasasında Depolama
+Faaliyetleri Yönetmeliği ([Lexpera](https://www.lexpera.com.tr/mevzuat/yonetmelikler/elektrik-piyasasinda-depolama-faaliyetleri-yonetmeligi-2)).
+
+- **(a) Dengesizlik kimde?**
+  - "YEKDEM katılımcıları üretmiş oldukları enerjinin serbest piyasaya arzını gerçekleştirir" (değişiklik RG 28.10.2016).
+  - YEKDEM portföy dengesizliği maddeleri (md. 16–17) 29.04.2016'da mülga.
+  - YEK bedeli (md. 18), santralin uzlaştırmaya esas veriş miktarı (UEVM) üzerinden YEK fiyatı ile PTF arasındaki fark
+    olarak ödeniyor (fark sözleşmesi benzeri; formülde Kurul'un belirlediği bir tolerans katsayısı var).
+  - **Sonuç:** Dengesizlik maliyeti YEKDEM'de de **tesisin kendisine** ait. Bataryanın dengesizlik azaltımı geçerli bir
+    gelir kalemi olarak kalıyor. *Belirsiz:* tolerans katsayısının dengesizlik uzlaştırmasındaki tam rolü.
+- **(b) Entegre batarya SFK'ya katılabilir mi? YEKDEM ile nasıl uzlaştırılır?**
+  - Lisanslı üretim tesisine **bütünleşik elektrik depolama ünitesi** kurulabiliyor ve **ayrı bir uzlaştırmaya esas
+    veriş-çekiş birimi** olarak kaydediliyor (Depolama Faaliyetleri Yönetmeliği).
+  - Yan Hizmetler Yönetmeliği'ne göre SFK, belgelendirilmiş lisanslı üretim tesisleri ve depolama tesislerince
+    sağlanabiliyor; TEİAŞ'ın depolama katılım esasları ≥30 MW, iletime bağlı birim istiyor (Aşama 5).
+  - YEK Yönetmeliği md. 4/7:
+    - Santralde üretilip **depolandıktan sonra şebekeye verilen enerji YEKDEM kapsamında.**
+    - Depolama ünitesine **şebekeden** çekilen miktar kadar enerji YEKDEM'e tabi olmadan verilir; fazlası YEKDEM kapsamında.
+    - Kabul edilen kurulu gücün üzerindeki veriş uzlaştırmada dikkate alınmaz (md. 4/8).
+  - SFK kapasite ödemesi TEİAŞ/yan hizmet uzlaştırmasından, YEKDEM'den ayrı geliyor.
+  - *Belirsiz:* YEKDEM'deki bir tesisin bütünleşik bataryası için SFK aktivasyon enerjisinin YEK bedeline etkisi ve
+    TEİAŞ'ın bu birimi SFK'ya fiilen belgelendirip belgelendirmeyeceği. Bu, zaten FID koşulu olan TEİAŞ ön yeterlilik
+    görüşünün kapsamına eklendi.
+- **(c) Depolamalı/bataryalı tesislerin YEKDEM koşulları:**
+  - Depolamalı elektrik üretim tesisleri (ayrı lisans türü; 01.05.2023 sonrası işletme) için depolanıp verilen enerjiye
+    özel fiyat var: 7189 sayılı kararda 125 kr/kWh, 5,85–7,15 ¢ koridor. Doğrudan verilen enerjiye RES fiyatı uygulanıyor.
+  - Bizim tasarımımız **depolamalı lisans değil**, YEKDEM'deki bir RES'e bütünleşik batarya. Bu yüzden depolanıp verilen
+    santral enerjisi **RES fiyatından** (4,95–6,05 ¢) ödenir.
+  - Resmî tatillerde KGÜP üstü üretime ödeme yapılmaz (RG 29.12.2025). Model bunu ihmal ediyor (küçük).
+  - TEİAŞ talimatlarına uymak zorunlu; YAT talimatıyla verilmeyen enerjiye YEK bedeli ödenmiyor (md. 5/6 ve md. 18'in
+    UEVM tanımı).
+
+**Model düzeltmeleri:**
+1. YEKDEM'e özgü dispatch tabloları (φ = 1; deşarj da YEKDEM fiyatından, `IsletmeLP(desarj_sozlesmeli=True)`). Bu
+   haliyle batarya arbitraj yapmıyor; yalnız kesilecek enerjiyi saklıyor, SFK rezervi ve dengesizlik azaltımı sağlıyor.
+2. Değerlemede batarya deşarjı φ·YEKDEM + (1 − φ)·PTF ile değerleniyor (`desarj_sozlesmeli`).
+3. Sistem kesintisi YEKDEM kuralıyla:
+   - Kesilen enerjiye YEK farkı ödenmiyor; DGP'de tazmin yalnız PTF kadar → kayıp = κ·(1 − tazmin·PTF/YEKF).
+   - Bataryanın kurtardığı enerji tam YEKDEM fiyatından ödendiği için kurtarma payı gelir değil enerji payı: %35
+     (tüccarda %16).
+4. **10 yıl sonra geçiş doğrulandı:** φ ilk 10 işletme yılında 1, sonra 0. İşletme tablosu PPA boyutu 11. yıldan
+   itibaren φ = 0 dispatch'ine geçiyor; tesis tüccar olarak devam ediyor.
+
 ### 2.4 Karbon
 - **Türkiye ETS:** İklim Kanunu (7552, 2025) ile kuruldu. Pilot dönem 2026–2027'de elektrik üretimi dahil, %100
   ücretsiz tahsisat, 2026'da yalnız raporlama, karbon fiyatı 2027'de fiyat koridoruyla başlıyor
@@ -331,7 +451,7 @@ montaj %98; şebeke bağlantısı %60; batarya montajı %40.
 
 ---
 
-## 6. Nihai öneri (Aşama 7)
+## 6. Nihai öneri (Aşama 7, Ö1 öncesi — geçersiz; güncel öneri en üstte)
 
 **Karar:**
 - **Geliştirme aşamasındaki bir proje (ön lisans devri) için yatırım önerilmez.** Beklenen NPV tüm gelir yapılarında

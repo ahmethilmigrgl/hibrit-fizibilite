@@ -11,20 +11,20 @@ Kod ve veri hattı: proje deposu (`calistir.py`); ayrıntılı formülasyonlar `
 **Soru.** Türkiye'de 50 MW'lık bir şebeke bağlantısına güneş (GES), rüzgâr (RES) ve batarya (BESS) kapasitelerinden
 hangi bileşim kurulmalı ve bu yatırım belirsizlik altında yapılmalı mı?
 
-**Cevap.** **Bugünkü haliyle hayır; inşaata hazır bir proje edinilebilirse koşullu evet.**
+**Cevap.** **Hayır, mevcut varsayımlarla yatırım önerilmez.**
 
-- **Tasarım:** RES 58,8 MW (14 × 4,2 MW) + 30 MW / 52,5 MWh batarya (SFK fiyatı yüksek kalırsa 40 MW'a büyütme
-  opsiyonuyla).
-- **Gelir yapısı:** 10 yıllık YEKDEM; USD taban/tavanının endekslendiği hukuken teyit edilirse. Değilse P90'ın %70'ine
-  12 yıllık PPA.
-- **Geliştirme aşamasından başlanırsa** (ön lisans devri) COD P50 Ocak 2032'ye kayıyor: SFK penceresi kaçıyor, YEKDEM'in
-  31.12.2030 sınırına yetişilemiyor. Beklenen NPV tüm gelir yapılarında negatif (−0,9 ile −1,5 M$).
-- **İnşaata hazır bir proje** (ÇED, imar, lisans tamam) ile COD P50 Mart 2030 ve beklenen NPV **+2,1 M$** (endeksli
-  YEKDEM, sistem kesintisi ve takvim dahil). Bu, edinim primine ~2 M$'lık bir tavan koyuyor.
+- **Nihai baz vaka** (`config.yaml → nihai_baz_vaka`): inşaata hazır proje, COD 2030 (takvim P50); RES 58,8 MW +
+  30 MW / 60 MWh batarya; nominal koridorlu YEKDEM (endeksleme teyit edilmediği için muhafazakâr seçim), 10 yıl sonra
+  tüccar. **Sonuç:** beklenen NPV **−11,4 M$**, kâr olasılığı **%13**, azami edinim primi **0**.
+- **En iyi alternatif, tüccar yapı:** +0,8 M$, kâr olasılığı %49, en kötü %5'in ortalaması −27,6 M$. Bu, ancak
+  sembolik bir edinim primini (~0,8 M$) haklı çıkarıyor.
+- **Batarya:** her gelir yapısında değer katıyor (SFK), ama projeyi pozitife çevirmeye yetmiyor.
 
-**FID koşulları:** (1) inşaata hazır proje ve COD ≤ 31.12.2030 güvencesi; (2) YEKDEM endekslemesinin hukuki teyidi,
-değilse PPA ≥ ~52 $/MWh; (3) yatırım teşvik belgesi (yoksa −5,8 M$); (4) TEİAŞ'tan bataryanın SFK ön yeterliliği;
-(5) SFK'sız ve düşük fiyatla boyutlanan borç + 6 ay DSRA; (6) batarya kararı FID'de, gözlenen doyumla.
+**Kararı ne değiştirir?**
+
+- Uzun vadeli fiyat beklentisinin belirgin yükselmesi (NPV varyansının yarısından fazlası fiyattan).
+- YEKDEM koridorunun endeksli olduğunun teyidi ile primsiz bir proje.
+- Sistem kesintisinin 2026 seviyesinden kalıcı olarak gerilemesi.
 
 **Ana bulgular**
 
@@ -33,12 +33,13 @@ değilse PPA ≥ ~52 $/MWh; (3) yatırım teşvik belgesi (yoksa −5,8 M$); (4)
 | 1 | GES hiçbir optimal tasarıma girmedi (kanibalizasyon + şebeke çakışması) | Güneş yakalanma oranı 2016: 1,21 → 2026: 0,71 |
 | 2 | Yalnız RES yatırım yapılabilir değil | NPV −1,6 M$, başabaş 59 $/MWh |
 | 3 | Bataryanın değeri SFK'dan geliyor ve SFK piyasası doyma riskinde | Gelirin %87'si; doyumla P(NPV>0) %97 → %59 |
-| 4 | 2026'da sistem kaynaklı kesinti başladı | Sistem YAT 2,9 → 9,5 TWh; Ezine'de ~%9,5; E[NPV] −2,1 M$ |
+| 4 | 2026'da sistem kaynaklı kesinti başladı | Sistem YAT 2,9 → 9,5 TWh; Ezine'de ~%9,5 |
 | 5 | Gerçekçi takvim COD'u 2–4 yıl kaydırıyor | COD P50 2030 (inşaata hazır) / 2032 (geliştirme) |
-| 6 | YEKDEM 2030 sonuna kadar açık; endeksliyse en iyi risk-getiri | E[NPV] 5,5 M$, CVaR −20 M$ (model takvimi) |
+| 6 | YEKDEM'de arbitraj yok, nominal koridor reel olarak aşınıyor | Baz vaka E[NPV] −11,4 M$; tüccar +0,8 M$ |
 
-**Öneri nasıl evrildi?** SFK doyum stres testi 40 MW bataryanın kâr olasılığını %97'den %59'a indirdi (Aşama 6).
-Kesinti, mevzuat ve gerçekçi takvim ise öneriyi "projeyi geliştir"den "inşaata hazır projeyi uygun primle al"a çevirdi (§9–§10).
+**Öneri nasıl evrildi?** Aşama 6'da koşullu onay (PPA), Aşama 7'de "inşaata hazır proje + YEKDEM" vardı. Tutarlılık
+kontrolü (YEKDEM ve PPA'da bataryanın arbitraj gelirinin yanlış sayılması) ve muhafazakâr baz vaka öneriyi "hayır"a
+çevirdi (§9–§10).
 
 <div class="sayfa-sonu"></div>
 
@@ -311,17 +312,21 @@ Ayrıntılar ve kaynaklar: `docs/07_tamamlayici_analizler.md`.
 indirimi yok. Model KDV'yi içermediği için zımnen belgeyi varsayıyordu. Belge olmazsa 14 M$ KDV'nin ön finansmanı ve
 TL bakiyenin aşınması net **−5,8 M$**. Bu yüzden belge FID koşulu.
 
-**YEKDEM, PPA, tüccar** (model takvimi, kesinti ve doyum dahil):
+**YEKDEM ile batarya uyumu (tutarlılık düzeltmesi).**
+- YEK Yönetmeliği'ne göre santralde üretilip depolanan enerji de YEKDEM fiyatından ödeniyor. Dengesizlik tesiste
+  kalıyor. Bütünleşik batarya ayrı uzlaştırma birimi olarak SFK'ya katılabiliyor (TEİAŞ teyidi gerekli).
+- Bu yüzden YEKDEM'de arbitraj değeri yok. Model artık YEKDEM'e özgü dispatch kullanıyor. PPA ise finansal fark
+  sözleşmesi olarak modellendi (batarya tüccar dispatch'i).
+- YEKDEM altında en iyi batarya 30 MW / 60 MWh (tam SFK rezervi).
 
-| Önerilen tasarım | E[NPV] | P(NPV>0) | CVaR %5 | P(DSCR<1), muhafazakâr borç |
+**Gelir yapıları — nihai tasarım** (RES 58,8 + 30/60; doyum + kesinti dahil):
+
+| | COD 2028 (model) E[NPV] | **COD 2030 (baz vaka) E[NPV]** | P(NPV>0), COD 2030 | CVaR %5, COD 2030 |
 |---|---|---|---|---|
-| Tüccar | 3,7 | %55 | −30,4 | %41 |
-| PPA | 2,4 | %52 | −25,1 | %38 |
-| YEKDEM, USD sınırları nominal | 0,8 | %48 | −24,9 | %25 |
-| **YEKDEM, sınırlar endeksli** | **5,5** | **%61** | **−20,1** | **%22** |
-
-7189 sayılı karar 2030 sonuna kadar devreye giren karasal RES'lere 10 yıl, 4,95–6,05 ¢/kWh koridorlu TL fiyat veriyor.
-Koridorun endekslenip endekslenmediği resmî metinden doğrulanamadı ve sonucu belirliyor.
+| **YEKDEM nominal (baz vaka)** | −6,5 | **−11,4** | %13 | −28,6 |
+| YEKDEM endeksli | +0,5 | −3,2 | %33 | −20,4 |
+| PPA | −1,2 | −4,3 | %33 | −24,2 |
+| Tüccar | +4,3 | +0,8 | %49 | −27,6 |
 
 ![Gelir yapıları](../outputs/07/gelir_yapilari.png)
 
@@ -342,6 +347,8 @@ Koridorun endekslenip endekslenmediği resmî metinden doğrulanamadı ve sonucu
 - **Batarya zamanlaması:** Bataryayı 12 ay geç sipariş etmek SFK başlangıcını ~10 ay geciktirip ~0,8–0,9 M$
   kaybettiriyor. Erken/bağımsız batarya yalnız ~0,1–0,2 M$ kazandırıyor. Aşama 6'daki "12 ay sonra sipariş" koşulu
   kaldırıldı; gerçekçi takvimde FID'e kadar doyum zaten gözlenmiş olacak.
+- **Takvim → NPV:** 2 yıllık kayma, tüccar yapıda beklenen NPV'yi 4,3'ten 0,8 M$'a indiriyor. Bunun nedeni SFK
+  penceresinin kapanması ve kesintinin büyümesi.
 
 ![Gantt](../outputs/07/takvim_gantt.png)
 
@@ -355,31 +362,26 @@ ornitoloji: Çanakkale Boğazı süzülen kuş göç yolu (`outputs/07/risk_kayd
 
 ## 10. Öneri
 
-| | Aşama 6 | Aşama 7 (nihai) |
+| | Aşama 6 | Aşama 7 | **Nihai (Ö1–Ö2 sonrası)** |
+|---|---|---|---|
+| Karar | Koşullu onay | İnşaata hazır proje + YEKDEM için koşullu onay | **Yatırım önerilmez** |
+| Tasarım | RES 58,8 + 30 MW aşamalı batarya | Aynı | RES 58,8 + 30 MW / 60 MWh (büyütmesiz) |
+| Gelir yapısı | PPA | YEKDEM (endeksliyse) | Baz vaka YEKDEM nominal; en iyi alternatif tüccar |
+| Beklenen NPV | +4,5 M$ | +2,1 M$ | **−11,4 M$** (baz vaka) / +0,8 M$ (tüccar) |
+| Azami edinim primi | — | ~2 M$ | **0** (baz vaka) / ~0,8 M$ (tüccar) |
+
+**Neden?** Kesinti, takvim kayması ve düzeltilmiş YEKDEM ekonomisi üst üste biniyor. Batarya değer katıyor, ama tek
+başına SFK gelirine dayalı bir değer ve doyuyor.
+
+**Kararı tersine çevirecek tetikleyiciler:**
+
+| Gösterge | Eşik | Yeni değerlendirme |
 |---|---|---|
-| Karar | Koşullu onay | Geliştirme aşamasındaki proje için **ret**; **inşaata hazır proje + endeksli YEKDEM için koşullu onay** |
-| Tasarım | RES 58,8 + 30 MW aşamalı batarya | Aynı |
-| Gelir yapısı | PPA | YEKDEM (endeksliyse), değilse PPA |
-| Batarya siparişi | RES FID'inden 12 ay sonra | RES ile birlikte, FID'de, gözlenen doyumla |
-| Beklenen NPV | +4,5 M$ | +2,1 M$ (takvim + kesinti dahil); edinim primi ≤ ~2 M$ |
-
-**Koşullar (FID öncesi):** (1) inşaata hazır proje, COD ≤ 31.12.2030; (2) YEKDEM endekslemesinin hukuki teyidi (değilse
-PPA ≥ ~52 $/MWh); (3) teşvik belgesi; (4) TEİAŞ SFK ön yeterliliği; (5) SFK'sız ve 45 $/MWh ile boyutlanan borç +
-DSRA; (6) batarya kararı FID'de.
-
-**Tetikleyiciler:**
-
-| Gösterge | Eşik | Karar değişikliği |
-|---|---|---|
-| İşletmedeki depolama (EPDK/TEİAŞ) | FID'de > ~1,5 GW | Doyum başlamış: 30 MW'ta kal, büyütme yok |
-| Aylık SFK fiyatı (EPİAŞ) | İki çeyrek üst üste < ~24 $/MW-saat | Büyütme yok |
-| SFK fiyatı, 3. işletme yılı | ≥ 2026 seviyesinin %50'si | 40 MW'a büyüt |
-| TEİAŞ hibrit SFK kabulü | Red | Batarya yok |
-| RES'lere YAT/kesinti | 2027'de de > %8 | Gelir tahminini düşür; PPA'da "deemed generation" şart |
-| YEKDEM mevzuatı | 2030 sonrasına uzatılır | Geliştirme senaryosu yeniden değerlendirilir |
-| İnşaata hazır proje primi | > ~2 M$ (YEKDEM) / > 0 (PPA) | Edinme |
-| Türbin teslim süresi | > 18 ay | 2030 COD ve YEKDEM riski |
-| Uzun vadeli fiyat / PPA teklifleri | < ~52 $/MWh | FID ertelenir |
+| Uzun vadeli fiyat beklentisi / PPA teklifleri | Belirgin yükseliş (ör. yüksek senaryo 72 $/MWh, ETS etkisi) | Tüccar/PPA yapı yeniden değerlendirilir |
+| YEKDEM koridorunun endekslendiğinin teyidi | Teyit + primsiz inşaata hazır proje | Endeksli YEKDEM yeniden hesaplanır |
+| RES'lere sistem kesintisi | 2027–28'de %2'nin altına inerse | Kesinti varsayımı düşürülür |
+| İnşaata hazır proje fiyatı | Primsiz ya da negatif (sıkıntılı satış) | Tüccar yapıda yeniden incelenir |
+| SFK doyumu | Yavaş doyum gözlenirse (2028'de < 1 GW SFK'ya uygun batarya) | Bataryanın değeri artar |
 
 ## 11. Sınırlamalar ve sonraki adımlar
 

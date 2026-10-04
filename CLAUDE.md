@@ -86,3 +86,7 @@ başvuru için hazırlanıyor. Sonuçlar, varsayımlar ve formülasyonlar mülak
    `kesinti_gelir/enerji` kancaları), CPM + Monte Carlo takvim (`src/07_takvim.py`), risk kaydı (`src/07_risk_kaydi.py`).
    Parametreler `kesinti`, `yekdem`, `tesvik`, `karbon`, `takvim`. Öneri değişti: inşaata hazır proje + (endeksli) YEKDEM,
    batarya kararı FID'de.
+   **Ö1–Ö2 (tutarlılık):** YEKDEM'de batarya deşarjı da YEKDEM fiyatından (`IsletmeLP(desarj_sozlesmeli=True)`,
+   `src/risk/yekdem_tablo.py`); PPA finansal fark sözleşmesi (`tuccar_dispatch`). Nihai baz vaka `config.yaml →
+   nihai_baz_vaka` (`src/07_baz_vaka.py` → `outputs/07/baz_vaka.csv`): yatırım önerilmez (E[NPV] −11,4 M$). Ana sayılar
+   bu dosyadan okunmalı.

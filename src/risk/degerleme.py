@@ -101,6 +101,8 @@ def nakit_akislari(t: Tasarim, tablo: dict, c: Sabitler, girdi: dict) -> dict:
     if "phi" in girdi:              # sözleşmeli pay yolu dışarıdan (ör. YEKDEM: ilk 10 yıl %100)
         phi = np.asarray(girdi["phi"], float)
     ip = (k <= c.ppa_vade).astype(int) if (t.ppa and len(tablo["ppa"]) > 1) else np.zeros(N, int)
+    if girdi.get("tuccar_dispatch"):   # finansal PPA (fark sözleşmesi): batarya tüccar gibi çalışır, PPA'yı "oyunlamaz"
+        ip = np.zeros(N, int)
     deg_g = (1 - v.degr_ges) ** (k - 1)
     deg_r = (1 - v.degr_res) ** (k - 1)
     # RES degradasyonu tablonun RES çarpanı boyutundan geçer → kesinti degrade üretimle doğru hesaplanır
@@ -131,6 +133,8 @@ def nakit_akislari(t: Tasarim, tablo: dict, c: Sabitler, girdi: dict) -> dict:
         gelir_res = gelir_res * (1 - girdi["kesinti_gelir"])
         E_res = E_res * (1 - girdi["kesinti_enerji"])
     gelir_bess = L * q_d
+    if girdi.get("desarj_sozlesmeli"):   # YEKDEM: depolanıp verilen santral enerjisi de sözleşmeli fiyattan (YEK Yön. md. 4/7-a)
+        gelir_bess = (1 - phi) * L * q_d + phi * ppa_fiyat_t * E_d
     gelir_yh = girdi["a"] * g("yh_a") if t.yan_hizmet else 0.0 * L
     gelir_yekg = c.yekg * (E_ges + E_res + E_d) if t.yekg else 0.0 * L
     # Dengesizlik: RES maliyeti batarya gücüyle doygunlaşarak azalır (yan hizmete ayrılmayan güç)

@@ -43,3 +43,17 @@ def test_isletme_lp_kisitlari():
     assert (c + rr <= t.bess_mw + TOL).all() and (d + rr <= t.bess_mw + TOL).all()
     assert (s >= h * rr - TOL).all() and (s + h * rr <= t.bess_mwh + TOL).all()  # rezerv için enerji payı
     assert (s >= -TOL).all() and (s <= t.bess_mwh + TOL).all()
+
+
+def test_yekdem_modunda_arbitraj_yok():
+    """YEKDEM (φ = 1, deşarj da sözleşmeli fiyattan): kesinti yoksa batarya döngü yapmamalı; kesinti varsa saklamalı."""
+    n = 96
+    t = Tasarim("test", res_mw=40.0, ges_mw=0.0, bess_mw=10.0, bess_mwh=20.0, sebeke_mw=50.0)
+    lp = IsletmeLP(t, eta=np.sqrt(0.88), yipranma=2.0, teias_e=3.8, yekg=0.0, rezerv_tavan=0.0, enerji_saat=1.0,
+                   ppa_fiyat=55.0, n=n, desarj_sozlesmeli=True)
+    p = 50 + 40 * np.sin(2 * np.pi * np.arange(n) / 24)          # güçlü spot salınımı
+    r = lp.coz(np.full(n, 30.0), p, np.zeros(n), 1.0)               # üretim < bağlantı: kesinti yok
+    assert r["d"].sum() < 1e-6                                      # arbitraj teşviki yok
+    A = np.where(np.arange(n) % 24 < 6, 60.0, 30.0)                  # günde 6 saat bağlantı aşımı
+    r2 = lp.coz(A, p, np.zeros(n), 1.0)
+    assert r2["d"].sum() > 1.0                                      # kesilecek enerji saklanıp sonra veriliyor

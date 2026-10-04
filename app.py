@@ -88,40 +88,36 @@ sekmeler = st.tabs([T("Özet", "Summary"), T("Saha ve üretim", "Site & generati
 # =====================================================================================================================
 with sekmeler[0]:
     st.subheader(T("Yatırım önerisi", "Investment recommendation"))
-    st.warning(T(
-        "**Bugünkü haliyle hayır; inşaata hazır bir proje edinilebilirse koşullu evet.** Tasarım: RES 58,8 MW (14 × 4,2 MW) + 30 MW / 52,5 MWh "
-        "batarya (40 MW'a büyütme opsiyonu). Gelir yapısı: 10 yıllık YEKDEM (USD taban/tavanının endekslendiği hukuken teyit edilirse), değilse "
-        "P90'ın %70'ine 12 yıllık PPA. Geliştirme aşamasından başlayan bir projede COD 2032'ye kayıyor, SFK penceresi ve YEKDEM'in 2030 sonu "
-        "sınırı kaçıyor; beklenen NPV negatif.",
-        "**Not as it stands; conditional yes if a ready-to-build project can be acquired.** Design: 58.8 MW wind (14 × 4.2 MW) + 30 MW / "
-        "52.5 MWh battery (expandable to 40 MW). Revenue: 10-year YEKDEM feed-in (if its USD floor/cap is legally confirmed to be indexed), "
-        "otherwise a 12-year PPA on 70% of P90. Starting from a pre-licence pushes COD to 2032, missing the ancillary-service window and the "
-        "end-2030 YEKDEM deadline; expected NPV is negative."))
-    st.markdown(T(
-        "**FID koşulları:** (1) inşaata hazır proje, COD ≤ 31.12.2030; (2) YEKDEM endekslemesinin hukuki teyidi; (3) yatırım teşvik belgesi "
-        "(KDV istisnası); (4) TEİAŞ'tan bataryanın SFK ön yeterliliği; (5) SFK'sız, 45 $/MWh ile boyutlanan borç + DSRA; (6) batarya kararı FID'de, "
-        "gözlenen doyumla; sipariş RES ile birlikte. **Edinim primi tavanı ~2 M$.**",
-        "**FID conditions:** (1) ready-to-build project with COD ≤ 31 Dec 2030; (2) legal confirmation of YEKDEM indexation; (3) investment "
-        "incentive certificate (VAT exemption); (4) TEİAŞ pre-qualification of the battery for SFK; (5) debt sized without SFK at 45 $/MWh + DSRA; "
-        "(6) battery decision at FID based on observed saturation, ordered together with the wind farm. **Maximum acquisition premium ~2 M$.**"))
-    st.caption(T("Öneri iki kez değişti: SFK doyum stres testi (kâr olasılığı %97 → %59) ve Aşama 7'deki sistem kesintisi, YEKDEM/teşvik ve "
-                 "gerçekçi takvim analizi. Ayrıntılar: Risk sekmesi ve docs/07.",
-                 "The recommendation changed twice: after the SFK saturation stress test (probability of profit 97% → 59%) and after stage 7's "
-                 "curtailment, YEKDEM/incentive and realistic-schedule analysis. Details: Risk tab and docs/07."))
-    tk = oku("takvim_ozet.csv"); gyp = oku("gelir_yapilari_metrikler.csv"); co2 = oku("co2.csv").set_index("Kalem")["Değer"]
+    bv = oku("baz_vaka.csv"); b0 = bv[bv["Baz vaka"]].iloc[0]; tuc = bv[bv["Senaryo"] == "Tüccar"].iloc[0]
+    st.error(T(
+        f"**Mevcut varsayımlarla yatırım önerilmez.** Nihai baz vaka: inşaata hazır proje, COD {b0['COD']}, RES 58,8 MW + 30 MW / 60 MWh "
+        f"batarya, nominal koridorlu YEKDEM (sonra tüccar) → beklenen NPV {sayi(b0['Beklenen NPV [M USD]'])} M$, kâr olasılığı "
+        f"{yuzde(b0['P(NPV > 0) [%]'])}, azami edinim primi {sayi(b0['Azami edinim primi [M USD]'])} M$. En iyi alternatif (tüccar) "
+        f"{sayi(tuc['Beklenen NPV [M USD]'])} M$, kâr olasılığı {yuzde(tuc['P(NPV > 0) [%]'])}: ancak sembolik bir edinim primini haklı çıkarıyor.",
+        f"**Do not invest under current assumptions.** Final base case: ready-to-build project, COD {b0['COD']}, 58.8 MW wind + 30 MW / "
+        f"60 MWh battery, YEKDEM with nominal corridor (then merchant) → expected NPV {sayi(b0['Beklenen NPV [M USD]'])} M$, probability "
+        f"of profit {yuzde(b0['P(NPV > 0) [%]'])}, maximum acquisition premium {sayi(b0['Azami edinim primi [M USD]'])} M$. Best "
+        f"alternative (merchant) {sayi(tuc['Beklenen NPV [M USD]'])} M$, {yuzde(tuc['P(NPV > 0) [%]'])} chance of profit: worth at most a "
+        "token acquisition premium."))
+    st.caption(T("Öneri üç kez değişti: SFK doyum stres testi (kâr olasılığı %97 → %59), Aşama 7'nin gerçek dünya analizleri (kesinti, "
+                 "takvim, YEKDEM) ve tutarlılık kontrolü (YEKDEM/PPA'da bataryanın arbitraj geliri yanlış sayılıyordu). Tetikleyiciler: docs/RAPOR.md §10.",
+                 "The recommendation changed three times: the SFK saturation stress test (97% → 59%), stage 7's real-world analysis "
+                 "(curtailment, schedule, YEKDEM) and a consistency check (battery arbitrage was miscounted under YEKDEM/PPA). Triggers: docs/RAPOR.md §10."))
+    tk = oku("takvim_ozet.csv"); co2 = oku("co2.csv").set_index("Kalem")["Değer"]
     hazir = tk[(tk["Proje olgunluğu"] == "İnşaata hazır proje") & tk["Politika"].str.startswith("B1")].iloc[0]
     gel = tk[(tk["Proje olgunluğu"].str.startswith("Geliştirme")) & tk["Politika"].str.startswith("B1")].iloc[0]
     k = st.columns(4)
-    k[0].metric(T("Öneri: E[NPV], takvim + kesinti dahil", "Recommendation: E[NPV], schedule + curtailment"),
-                f"{sayi(hazir['E[NPV] YEKDEM, sınırlar endeksli, takvim dahil [M USD]'])} M$",
-                T("inşaata hazır + endeksli YEKDEM", "ready-to-build + indexed YEKDEM"), delta_color="off")
-    k[1].metric(T("COD P50 / P80 (inşaata hazır)", "COD P50 / P80 (ready-to-build)"), f"{hazir['RES COD P50']} / {hazir['RES COD P80']}",
+    k[0].metric(T("Baz vaka: E[NPV]", "Base case: E[NPV]"), f"{sayi(b0['Beklenen NPV [M USD]'])} M$",
+                T(f"P(NPV>0) {yuzde(b0['P(NPV > 0) [%]'])}, CVaR {sayi(b0['CVaR %5 [M USD]'])} M$",
+                  f"P(NPV>0) {yuzde(b0['P(NPV > 0) [%]'])}, CVaR {sayi(b0['CVaR %5 [M USD]'])} M$"), delta_color="off")
+    k[1].metric(T("En iyi alternatif: tüccar", "Best alternative: merchant"), f"{sayi(tuc['Beklenen NPV [M USD]'])} M$",
+                T(f"P(NPV>0) {yuzde(tuc['P(NPV > 0) [%]'])}", f"P(NPV>0) {yuzde(tuc['P(NPV > 0) [%]'])}"), delta_color="off")
+    k[2].metric(T("COD P50 / P80 (inşaata hazır)", "COD P50 / P80 (ready-to-build)"), f"{hazir['RES COD P50']} / {hazir['RES COD P80']}",
                 T(f"geliştirmeden: {gel['RES COD P50']}", f"from pre-licence: {gel['RES COD P50']}"), delta_color="off")
-    yek = gyp[gyp["Seçenek"].str.startswith("F2Ye")].iloc[0]
-    k[2].metric(T("YEKDEM (endeksli): P(NPV>0) / CVaR", "YEKDEM (indexed): P(NPV>0) / CVaR"),
-                f"{yuzde(yek['P(NPV > 0) [%]'])} / {sayi(yek['CVaR %5 [M USD]'])} M$", T("model takvimi", "model schedule"), delta_color="off")
-    k[3].metric(T("Önlenen CO2", "Avoided CO2"), f"{sayi(co2.iloc[2], 0)} " + T("bin t/yıl", "kt/yr"),
+    k[3].metric(T("Önlenen CO2 (kurulsaydı)", "Avoided CO2 (if built)"), f"{sayi(co2.iloc[2], 0)} " + T("bin t/yıl", "kt/yr"),
                 T(f"≈ {sayi(co2.iloc[5], 0)} bin hane", f"≈ {sayi(co2.iloc[5], 0)}k households"), delta_color="off")
+    st.dataframe(bv.set_index("Senaryo")[["Beklenen NPV [M USD]", "P(NPV > 0) [%]", "CVaR %5 [M USD]", "NPV P10 [M USD]", "NPV P90 [M USD]",
+                                          "Azami edinim primi [M USD]", "E[NPV], COD 2028 (model takvimi) [M USD]"]].round(2), width="stretch")
     st.subheader(T("Tek cümlelik bulgular", "Key findings in one line each"))
     st.markdown(T(
         "- **Ezine neden?** Dört aday saha arasında en güçlü rüzgâr kaynağı (kalibre RES kapasite faktörü %37,7, E-141/120 m) ve en iyi GES–RES tamamlayıcılığı.\n"
@@ -131,7 +127,7 @@ with sekmeler[0]:
         "- **En büyük risk?** Elektrik fiyat seviyesi (NPV varyansının %50–85'i) ve bataryalı tasarımda SFK piyasasının doyumu: ~1 GW'lık ihtiyaca "
         "karşı 28–33 GW depolamalı ön lisans var.\n"
         "- **Gerçek dünya:** 2026'da RES'lere sistem kaynaklı kesinti başladı (Ezine'de ~%9,5); gerçekçi takvim COD'u 2–4 yıl kaydırıyor; "
-        "YEKDEM 2030 sonuna kadar açık.",
+        "YEKDEM 2030 sonuna kadar açık ama bataryaya arbitraj imkânı vermiyor ve nominal koridor reel olarak aşınıyor.",
         "- **Why Ezine?** Strongest wind resource of four candidate sites (calibrated wind capacity factor 37.7%, E-141/120 m) and the best solar–wind complementarity.\n"
         "- **Why no solar?** Cannibalisation: Turkish solar capture rates have fallen fast since 2019 and 14–40% of added PV is curtailed behind 50 MW; "
         "solar never entered any optimal design.\n"
@@ -139,7 +135,7 @@ with sekmeler[0]:
         "- **Biggest risk?** The power price level (50–85% of NPV variance) and, for the battery, saturation of the ~1 GW SFK market against "
         "28–33 GW of storage pre-licences.\n"
         "- **Real world:** system curtailment of wind started in 2026 (~9.5% at Ezine); a realistic schedule shifts COD by 2–4 years; "
-        "the YEKDEM feed-in remains open until end-2030."))
+        "the YEKDEM feed-in is open until end-2030 but gives the battery no arbitrage and its nominal corridor erodes in real terms."))
 
 # =====================================================================================================================
 with sekmeler[1]:

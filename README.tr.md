@@ -25,16 +25,16 @@ formülasyonları `docs/` altında.
 | 3 | **Bataryanın değeri neredeyse tamamen SFK kapasite ödemesinden geliyor**, arbitrajdan değil. | Batarya gelirinin %87'si; doyumsuz durumda NPV −1,6 → +26 M$ |
 | 4 | **Doyum stres testi öneriyi değiştirdi.** SFK ihtiyacı ~1 GW, depolamalı ön lisans 28–33 GW. İngiltere, Almanya ve Avustralya ile kalibre edilen arz-talep modeli bataryayı bir *opsiyona* dönüştürüyor. | 40 MW bataryalı tasarımın P(NPV>0) değeri %97 → %59; CVaR %5: −2,5 → −30 M$ |
 | 5 | **Değerli esneklik, süre eklemek değil ölçeği ertelemek.** 30 MW (SFK eşiği) + koşullu büyütme, hem 40 MW'lık hem 4 saatlik bataryadan iyi. Beklemenin maliyeti, kazandırdığı bilgiden büyük. | E[NPV] +6,3 M$ (aşamalı) vs −0,4 M$ (4 saatlik); 1 yıl erteleme −2,1 M$ |
-| 6 | **Gerçek dünya sürtünmeleri cevabı değiştiriyor.** 2026'da RES'lere sistem kaynaklı kesinti başladı, teşvik belgesi (KDV istisnası) şart, CPM + Monte Carlo takvimi COD'u varsayılan 2028'den 2030'a (inşaata hazır) ya da 2032'ye (ön lisanstan) kaydırıyor. YEKDEM (2030 sonuna kadar açık), USD sınırları endeksliyse en iyi gelir yapısı. | Kesinti −2,1 M$; COD P50 Mar 2030 / Oca 2032; YEKDEM E[NPV] 5,5 M$, CVaR −20 M$ |
+| 6 | **Gerçek dünya sürtünmeleri ve tutarlılık kontrolü cevabı "hayır"a çeviriyor.** 2026'da sistem kesintisi başladı; CPM + Monte Carlo takvimi COD'u 2030'a (inşaata hazır) ya da 2032'ye kaydırıyor; YEKDEM'de batarya arbitraj yapamıyor (depolanan santral enerjisi aynı sabit fiyattan ödeniyor) ve nominal USD koridoru reel olarak aşınıyor. | Baz vaka E[NPV] −11,4 M$, P(NPV>0) %13; en iyi alternatif (tüccar) +0,8 M$ |
 
-**Öneri:** **Bugünkü haliyle hayır; inşaata hazır bir proje edinilebilirse koşullu evet.**
+**Öneri: mevcut varsayımlarla yatırım önerilmez.**
 
-- **Tasarım:** RES 58,8 MW + 30 MW / 52,5 MWh batarya (40 MW'a büyütülebilir).
-- **Gelir yapısı:** 10 yıllık YEKDEM, USD taban/tavanının endekslendiği hukuken teyit edilirse; değilse 12 yıllık PPA.
-- **Değer:** Takvim ve kesinti dahil beklenen NPV +2,1 M$; bu, edinim primine ~2 M$'lık bir tavan koyuyor.
-- **Ön lisanstan başlanırsa:** COD 2032'ye kayıyor; SFK penceresi ve YEKDEM'in 2030 sonu sınırı kaçıyor.
-
-Koşullar ve tetikleyiciler: [rapor §10](docs/RAPOR.md#10-öneri), [docs/07](docs/07_tamamlayici_analizler.md).
+- **Nihai baz vaka** (`config.yaml → nihai_baz_vaka`): inşaata hazır proje, COD 2030, RES 58,8 MW + 30 MW / 60 MWh
+  batarya, nominal koridorlu YEKDEM, sonra tüccar.
+- **Baz vaka sonucu:** beklenen NPV **−11,4 M$**, kâr olasılığı **%13**, azami edinim primi **0**.
+- **En iyi alternatif (tüccar):** +0,8 M$, kâr olasılığı %49, kalın sol kuyruk.
+- **Kararı tersine çevirecek tetikleyiciler** ([rapor §10](docs/RAPOR.md#10-öneri)): fiyat beklentisinin yükselmesi,
+  YEKDEM koridorunun endeksli olduğunun teyidi ile primsiz bir proje, kesintinin gerilemesi.
 
 <p align="center">
   <img src="outputs/05_risk/s_risk_getiri.png" width="85%"><br>

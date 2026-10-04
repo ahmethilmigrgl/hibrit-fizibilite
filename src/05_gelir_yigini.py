@@ -88,7 +88,7 @@ class Ortam:
         r.pop("model", None)
         return r
 
-    def tablo(self, t: Tasarim, A_ozel=None):
+    def tablo(self, t: Tasarim, A_ozel=None, pp_ozel=None, sabit_ek=None):
         """
         İşletme tablosu (diskte önbellekli: data/processed/isletme_tablolari/). Bataryasız tasarım kapalı formla
         ince ızgarada; bataryalı tasarım LP ile daha seyrek ızgarada hesaplanır (hata Bölüm B'de ölçülür).
@@ -101,15 +101,16 @@ class Ortam:
             A = (A_ozel or [0.25, 0.6, 1.0]) if t.yan_hizmet else [1.0]
         else:
             H, M, A = self.H, [0.78, 0.82, 0.86, 0.90, 0.94, 0.98, 1.02, 1.06, 1.10], [1.0]
-        pp = [0.0, self.c.ppa_pay] if t.ppa else [0.0]
+        pp = (pp_ozel or [0.0, self.c.ppa_pay]) if t.ppa else [0.0]
+        sabit = {**self.sabit, **(sabit_ek or {})}
         anahtar = hashlib.md5(json.dumps([t.res_mw, t.ges_mw, round(t.bess_mw, 3), round(t.bess_mwh, 3), t.sebeke_mw,
-                                          t.yan_hizmet, t.yekg, t.ppa, H, M, A, pp, self.sabit], default=float).encode()).hexdigest()[:12]
+                                          t.yan_hizmet, t.yekg, t.ppa, H, M, A, pp, sabit], default=float).encode()).hexdigest()[:12]
         klasor = ISLENMIS_VERI / "isletme_tablolari"; klasor.mkdir(exist_ok=True)
         dosya = klasor / f"{anahtar}.pkl"
         if dosya.exists():
             return pickle.loads(dosya.read_bytes())
         sek = self.sekiller if not pil else birim_sekiller(self.cfg, self.u, H)[0]
-        tb = tablo_uret(t, self.u.ges, self.u.res, sek, self.yan, H, M, A, pp, 58.0, 1.0, self.sabit, log=log)
+        tb = tablo_uret(t, self.u.ges, self.u.res, sek, self.yan, H, M, A, pp, 58.0, 1.0, sabit, log=log)
         dosya.write_bytes(pickle.dumps(tb))
         return tb
 

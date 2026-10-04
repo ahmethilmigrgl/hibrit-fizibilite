@@ -1,9 +1,20 @@
 ﻿,0,1,2,3
 "A: RES 58,8 — tüccar",-4.914,-4.547,-4.290,-4.089
-"E: RES 58,8 — PPA",-7.964,-7.493,-7.090,-6.722
-"AY: RES 58,8 — YEKDEM",-12.526,-12.900,-13.157,-13.308
+"E: RES 58,8 — PPA",-9.527,-8.988,-8.515,-8.074
+"AY: RES 58,8 — YEKDEM",-13.424,-13.762,-13.983,-14.101
+"AYe: RES 58,8 — YEKDEM, sınırlar endeksli",-6.385,-6.097,-5.829,-5.580
 F2: öneri tasarımı — tüccar,3.729,1.714,0.514,-0.205
-F2P: öneri tasarımı — PPA (kesintisiz),4.525,2.528,1.364,0.705
-F2P: öneri tasarımı — PPA,2.392,0.470,-0.626,-1.219
-F2Y: öneri tasarımı — YEKDEM,0.819,-1.673,-3.254,-4.236
-"F2Ye: öneri tasarımı — YEKDEM, USD sınırları endeksli varsayımı",5.494,3.398,2.138,1.388
+F2P: öneri tasarımı — PPA (kesintisiz),0.757,-1.154,-2.175,-2.679
+F2P: öneri tasarımı — PPA,-1.744,-3.590,-4.542,-4.978
+F2Y: öneri tasarımı — YEKDEM,-6.807,-9.615,-11.298,-12.298
+"F2Ye: öneri tasarımı — YEKDEM, USD sınırları endeksli varsayımı",0.211,-1.905,-3.037,-3.619
+G: nihai tasarım — tüccar,4.267,2.059,0.776,0.002
+GP: nihai tasarım — PPA,-1.192,-3.251,-4.318,-4.827
+GY: nihai tasarım — YEKDEM nominal,-6.467,-9.529,-11.369,-12.458
+GYe: nihai tasarım — YEKDEM endeksli,0.516,-1.863,-3.156,-3.829
+"BY1: YEKDEM, batarya 30/52,5 (büyütmesiz)",-6.901,-9.651,-11.314,-12.303
+"BY2: YEKDEM, batarya 30/60 (büyütmesiz)",-6.467,-9.529,-11.369,-12.458
+"BY3: YEKDEM, batarya 40/70 (büyütmesiz)",-7.440,-10.371,-12.091,-13.072
+"BY1e: YEKDEM endeksli, batarya 30/52,5 (büyütmesiz)",0.122,-1.940,-3.053,-3.625
+"BY2e: YEKDEM endeksli, batarya 30/60 (büyütmesiz)",0.516,-1.863,-3.156,-3.829
+"BY3e: YEKDEM endeksli, batarya 40/70 (büyütmesiz)",-0.324,-2.559,-3.725,-4.284

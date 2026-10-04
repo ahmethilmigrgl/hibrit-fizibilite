@@ -281,3 +281,15 @@ takvim:
   birim: "ay; üçgen (iyimser a, olası m, kötümser b); öncüller bitiş-başlangıç"
   kaynak: "Enerjisa YEKA RES-2 projeleri Teknik Olmayan Özetleri (DFC, 2024): inşaat 12-21 ay; EPDK ön lisans geçerlilik süresi 24 ay; ÇED Yönetmeliği süreleri; Çanakkale Boğazı süzülen kuş göç yolu → ilkbahar (Mar-Haz) ve sonbahar (Ağu-Eki) göç dönemleri; türbin teslim 12-20 ay ve BESS 6-12 ay (sektör raporları, DOE BESS supply chain 2024, IEEFA 2025: BESS projelerinde 9-18 ay gecikmeler)"
   not: "TAHMİN — Süreler Türkiye'deki örnek projelerden ve sektör kaynaklarından gerekçelendirildi ama projeye özgü değil. Başlangıç Ekim 2026 (geliştirme kararı); mevcut bir ön lisansın devri varsayılır (Ekim 2023'ten beri yeni başvuru kısıtlı)"
+nihai_baz_vaka:
+  value:
+    proje_olgunlugu: insaata_hazir
+    cod: "2030-01"
+    erteleme_yil: 2
+    tasarim: {res_mw: 58.8, turbin: 14, ges_mw: 0, bess_mw: 30, bess_mwh: 60, sebeke_mw: 50, buyutme: false}
+    gelir_yapisi: yekdem_nominal
+    karsilastirma: [yekdem_endeksli, ppa, tuccar]
+    edinim_primi_musd: 0.0
+  birim: "COD yıl-ay; erteleme = finansal modelin COD'una (Oca 2028) göre yıl; edinim primi M USD (bugünkü değer, t = 0)"
+  kaynak: "Aşama 7 takvimi: inşaata hazır proje COD P50 Mart 2030 (yıllık modelde Ocak 2030, 2 yıl erteleme); Ö1 sonrası tasarım: YEKDEM altında tam 30 MW SFK rezervi için 2 saatlik batarya (30 MW / 60 MWh) en iyisi, aşamalı büyütmenin değeri ~0,1 M$ → kaldırıldı"
+  not: "Gelir yapısı: YEKDEM nominal koridor (endeksleme teyit edilmediği için muhafazakâr), 10 yıl sonra tüccar. Karşılaştırma senaryoları aynı tasarımla. Sonuçlar: src/07_baz_vaka.py → outputs/07/baz_vaka.csv"

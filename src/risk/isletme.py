@@ -33,7 +33,10 @@ class IsletmeLP:
     """Persistent (parametreleri güncellenebilir) 8760 saatlik dispatch modeli."""
 
     def __init__(self, t: Tasarim, eta: float, yipranma: float, teias_e: float, yekg: float,
-                 rezerv_tavan: float, enerji_saat: float, ppa_fiyat: float, n: int = 8760):
+                 rezerv_tavan: float, enerji_saat: float, ppa_fiyat: float, n: int = 8760,
+                 desarj_sozlesmeli: bool = False):
+        """desarj_sozlesmeli: YEKDEM gibi, santralde üretilip depolandıktan sonra verilen enerji de sözleşmeli
+        fiyattan ödenir (YEK Yönetmeliği md. 4/7-a) → batarya deşarjı da (1 − φ)·p + φ·fiyat ile değerlenir."""
         self.n = n
         m = pyo.ConcreteModel()
         m.T = pyo.RangeSet(0, n - 1)
@@ -50,9 +53,10 @@ class IsletmeLP:
         m.r = pyo.Var(m.T, bounds=(0, R))
         m.s = pyo.Var(m.T, bounds=(0, E))
         yk = yekg if t.yekg else 0.0
+        pd_ = (lambda i: (1 - m.phi) * m.p[i] + m.phi * ppa_fiyat) if desarj_sozlesmeli else (lambda i: m.p[i])
         m.amac = pyo.Objective(expr=sum(
             ((1 - m.phi) * m.p[i] + m.phi * ppa_fiyat + yk - teias_e) * m.y[i]
-            + (m.p[i] + yk - teias_e - yipranma) * m.d[i] + m.a[i] * m.r[i] for i in m.T), sense=pyo.maximize)
+            + (pd_(i) + yk - teias_e - yipranma) * m.d[i] + m.a[i] * m.r[i] for i in m.T), sense=pyo.maximize)
         m.k_ur = pyo.Constraint(m.T, rule=lambda m, i: m.y[i] + m.k[i] + m.c[i] == m.A[i])
         m.k_seb = pyo.Constraint(m.T, rule=lambda m, i: m.y[i] + m.d[i] <= L)
         m.k_c = pyo.Constraint(m.T, rule=lambda m, i: m.c[i] + m.r[i] <= P)

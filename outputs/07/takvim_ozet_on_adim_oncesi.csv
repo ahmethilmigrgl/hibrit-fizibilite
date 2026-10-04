@@ -1,0 +1,7 @@
+﻿Proje olgunluğu,Politika,CPM RES COD,CPM SFK başlangıcı,RES COD P50,RES COD P80,RES COD P90,SFK başlangıcı P50,SFK başlangıcı P80,RES gecikmesi P50 [ay],SFK gecikmesi P50 [ay],"Batarya, RES'ten önce SFK'da [%]","Beklenen NPV, takvim dahil [M USD]","Beklenen NPV, model takvimi (gecikmesiz) [M USD]","P(COD ≤ 31.12.2030, YEKDEM'e erişim) [%]","E[NPV] YEKDEM, sınırlar endeksli, takvim dahil [M USD]","E[NPV] YEKDEM, sınırlar nominal, takvim dahil [M USD]","E[NPV] tüccar, takvim dahil [M USD]"
+Geliştirme (ön lisans devri),B1: batarya RES ile birlikte sipariş,2031-08,2031-02,2032-01,2032-04,2032-06,2031-09,2031-12,47.57,43.69,91.48,-1.49,2.39,0.01,-0.9,-0.9,-0.9
+Geliştirme (ön lisans devri),B2: batarya FID+12 ay sipariş,2031-08,2032-02,2032-01,2032-04,2032-06,2032-06,2032-10,47.57,53.41,0.7,-2.26,2.39,0.01,-0.9,-0.9,-0.9
+Geliştirme (ön lisans devri),B3: erken / bağımsız batarya,2031-08,2031-02,2032-01,2032-04,2032-06,2031-07,2031-10,47.56,42.12,98.26,-1.36,2.39,0.01,-0.9,-0.9,-0.9
+İnşaata hazır proje,B1: batarya RES ile birlikte sipariş,2029-10,2029-04,2030-03,2030-05,2030-07,2029-11,2030-01,25.59,21.68,91.67,-0.28,2.39,100.0,2.05,-3.37,0.43
+İnşaata hazır proje,B2: batarya FID+12 ay sipariş,2029-10,2030-04,2030-03,2030-05,2030-07,2030-08,2030-11,25.59,31.43,0.65,-1.18,2.39,100.0,2.05,-3.37,0.43
+İnşaata hazır proje,B3: erken / bağımsız batarya,2029-10,2029-04,2030-03,2030-05,2030-07,2029-09,2029-11,25.58,20.0,98.57,-0.08,2.39,100.0,2.06,-3.36,0.43

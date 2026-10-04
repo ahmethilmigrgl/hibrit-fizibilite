@@ -43,6 +43,7 @@ ADIMLAR = [
     ("7", "07_sistem_kesintisi.py", "EPİAŞ", "Sistem kaynaklı kesinti (YAT talimatları; ERA5 2024-26 gerekir)"),
     ("7", "07_gelir_yapilari.py", None, "Tüccar / PPA / YEKDEM + kesinti Monte Carlo, teşvik, CO2"),
     ("7", "07_takvim.py", None, "Proje takvimi: CPM + Monte Carlo, COD dağılımı, kritiklik"),
+    ("7", "07_baz_vaka.py", None, "Nihai baz vaka metrikleri (config.yaml → nihai_baz_vaka)"),
     ("7", "07_risk_kaydi.py", None, "Risk kaydı (Excel) ve ısı haritası"),
     ("6", "06_gezgin_tablolari.py", None, "Dashboard tasarım gezgini işletme tabloları"),
     ("6", "06_sonuclari_paketle.py", None, "Dashboard/rapor için results/ klasörü (küçük, toplulaştırılmış)"),
