@@ -28,7 +28,7 @@ from src.risk.tasarim import Tasarim
 TURBIN = [8, 11, 14, 17, 20]
 GES = [0.0, 25.0, 50.0]
 BESS_MW = [0.0, 15.0, 30.0, 45.0]
-SURE = [1.0, 1.5, 2.0, 3.0, 4.0]   # 1,5-2 saat: SFK rezervi için E ≥ 2·h·r kırılması (r ≤ 30 MW)
+SURE = [1.0, 1.5, 2.0, 3.0, 4.0]  # 1,5-2 saat: SFK rezervi için E ≥ 2·h·r kırılması (r ≤ 30 MW)
 A_IZGARA = [0.0, 0.05, 0.25, 1.0]
 SFK_ASGARI = 30.0
 _O = None
@@ -38,16 +38,19 @@ def _ortam():
     global _O
     if _O is None:
         spec = importlib.util.spec_from_file_location("gy", Path(__file__).parent / "05_gelir_yigini.py")
-        gy = importlib.util.module_from_spec(spec); spec.loader.exec_module(gy)
+        gy = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(gy)
         _O = gy.Ortam()
         _O.H2 = [0.60, round(_O.oran0, 4)]
         from src.risk.senaryo import birim_sekiller
+
         _O.sek2 = birim_sekiller(_O.cfg, _O.u, _O.H2)[0]
     return _O
 
 
 def tasarim_tablosu(arg):
     from src.risk.isletme import tablo_uret
+
     nt, ges, p, sure = arg
     o = _ortam()
     t = Tasarim("gezgin", nt * 4.2, ges, p, p * sure, yan_hizmet=p >= SFK_ASGARI, dengesizlik_azaltim=True, yekg=True, ppa=True)
@@ -58,23 +61,24 @@ def tasarim_tablosu(arg):
         sifir = tablo_uret(replace(t, yan_hizmet=False), G, R, o.sek2, o.yan, a_izgara=[0.0], **kw)["T"]
         ust = tablo_uret(t, G, R, o.sek2, o.yan, a_izgara=A_IZGARA[1:], **kw)["T"]
         T = np.concatenate([sifir, ust], axis=4)
-    else:   # SFK'ya katılamaz: tüm A değerlerinde aynı işletme
+    else:  # SFK'ya katılamaz: tüm A değerlerinde aynı işletme
         T = tablo_uret(replace(t, yan_hizmet=False), G, R, o.sek2, o.yan, a_izgara=[0.0], **kw)["T"]
         T = np.repeat(T, len(A_IZGARA), axis=4)
-    return arg, T[0].astype(np.float32)          # (S, H, M, A, PP, alan)
+    return arg, T[0].astype(np.float32)  # (S, H, M, A, PP, alan)
 
 
 def main():
     t0 = time.time()
     isler = [(nt, g_, p, s) for nt, g_, p, s in itertools.product(TURBIN, GES, BESS_MW, SURE) if not (p == 0 and s != SURE[0])]
-    isler.sort(key=lambda x: -x[2])     # büyük bataryalar önce (en uzun işler)
+    isler.sort(key=lambda x: -x[2])  # büyük bataryalar önce (en uzun işler)
     sonuc = {}
     # Önceki çalıştırmanın sonuçlarını yeniden kullan (ızgara genişletildiğinde yalnız yeni tasarımlar çözülür)
     eski_dosya = KOK / "results" / "gezgin_tablolari.npz"
     if eski_dosya.exists():
         z = np.load(eski_dosya)
-        for (i, nt), (j, g_), (k, p), (l_, s) in itertools.product(enumerate(z["turbin"]), enumerate(z["ges"]),
-                                                                   enumerate(z["bess_mw"]), enumerate(z["sure"])):
+        for (i, nt), (j, g_), (k, p), (l_, s) in itertools.product(
+            enumerate(z["turbin"]), enumerate(z["ges"]), enumerate(z["bess_mw"]), enumerate(z["sure"])
+        ):
             arg = (int(nt), float(g_), float(p), float(s))
             if arg in isler:
                 sonuc[arg] = z["T"][i, j, k, l_]
@@ -94,10 +98,21 @@ def main():
         else:
             T[i, j, k, SURE.index(s)] = v
     o = _ortam()
-    hedef = KOK / "results"; hedef.mkdir(exist_ok=True)
-    np.savez_compressed(hedef / "gezgin_tablolari.npz", T=T, turbin=np.array(TURBIN, float), ges=np.array(GES), bess_mw=np.array(BESS_MW),
-                        sure=np.array(SURE), h=np.array(o.H2), m=np.array([0.90, 1.00]), a=np.array(A_IZGARA),
-                        ppa=np.array([0.0, o.c.ppa_pay]), sfk_asgari=SFK_ASGARI)
+    hedef = KOK / "results"
+    hedef.mkdir(exist_ok=True)
+    np.savez_compressed(
+        hedef / "gezgin_tablolari.npz",
+        T=T,
+        turbin=np.array(TURBIN, float),
+        ges=np.array(GES),
+        bess_mw=np.array(BESS_MW),
+        sure=np.array(SURE),
+        h=np.array(o.H2),
+        m=np.array([0.90, 1.00]),
+        a=np.array(A_IZGARA),
+        ppa=np.array([0.0, o.c.ppa_pay]),
+        sfk_asgari=SFK_ASGARI,
+    )
     print(f"Kaydedildi: results/gezgin_tablolari.npz, şekil {T.shape}, {(time.time() - t0) / 60:.1f} dk")
 
 

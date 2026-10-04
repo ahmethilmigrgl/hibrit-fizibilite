@@ -1,14 +1,18 @@
 """YEKDEM moduna özgü işletme tabloları (deşarj da sözleşmeli fiyattan; φ ızgarası 0 / 1)."""
+
 from dataclasses import replace
+from typing import Any
 
 import numpy as np
+
+from src.risk.tasarim import Tasarim
 
 YEKDEM_PP = [0.0, 1.0]
 YEKDEM_SABIT = {"desarj_sozlesmeli": True, "ppa_fiyat": 55.0}
 A_DUSUK = [0.02, 0.05, 0.10]
 
 
-def yekdem_tablosu(o, t):
+def yekdem_tablosu(o: Any, t: Tasarim) -> dict:
     """Doyum ızgaralı (a = 0 … 1) YEKDEM tablosu; t.ppa True olmalı."""
     t = replace(t, ppa=True)
     kw = dict(pp_ozel=YEKDEM_PP, sabit_ek=YEKDEM_SABIT)

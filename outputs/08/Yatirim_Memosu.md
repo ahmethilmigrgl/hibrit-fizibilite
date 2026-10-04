@@ -126,3 +126,6 @@ baz varsayımın ~4 $/MWh üstündeydi. Düzeltilmiş baz vaka −1,7 M$, kâr o
 ≈ 59 $/MWh), bu yüzden proje kalıcı olarak reddedilmiyor. Fiyat, SFK doyumu ve YEKDEM endekslemesi gibi gözlenebilir
 göstergelerden biri lehte dönerse yeniden değerlendirilecek. **Geliştirme aşamasındaki (ön lisans devri) projelere hiçbir
 koşulda teklif önermiyoruz:** COD 2032'ye kayıyor ve YEKDEM hakkı kayboluyor.
+
+---
+*Veri atıfları:* ERA5 — Contains modified Copernicus Climate Change Service information 2026. Neither the European Commission nor ECMWF is responsible for any use that may be made of the Copernicus information or data it contains. PVGIS — PVGIS © European Communities, 2001-2026. EPİAŞ — Kaynak: EPİAŞ Şeffaflık Platformu (seffaflik.epias.com.tr). Ayrıntı: `DATA_SOURCES.md`.

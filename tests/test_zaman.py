@@ -1,4 +1,5 @@
 """Saat dilimi dönüşümleri: EPİAŞ yerel zaman damgaları → UTC (2016 öncesi yaz saati dahil)."""
+
 import pandas as pd
 
 from src.piyasa.veri import _tam_saatlik, _utc_cevir
@@ -16,7 +17,7 @@ def test_ilkbahar_2016_yer_tutucu_atilir():
         if h < 3:
             kay.append(_kayit(f"2016-03-27T{h:02d}:00:00+02:00", h, 100 + h))
         elif h == 3:
-            kay.append(_kayit("2016-03-27T04:00:00+03:00", 3, 0))     # yaşanmamış saat
+            kay.append(_kayit("2016-03-27T04:00:00+03:00", 3, 0))  # yaşanmamış saat
         else:
             kay.append(_kayit(f"2016-03-27T{h:02d}:00:00+03:00", h, 100 + h))
     df = _utc_cevir(kay, ["price"])

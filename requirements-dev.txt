@@ -1,0 +1,3 @@
+# Geliştirme ve CI: ana bağımlılıklar + lint/format
+-r requirements.txt
+ruff==0.16.10

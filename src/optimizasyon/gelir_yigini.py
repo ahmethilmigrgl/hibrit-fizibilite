@@ -19,8 +19,9 @@ from src.finans.model import Varsayimlar
 from src.optimizasyon.kapasite import Ekonomi
 
 
-def gelir_parametreleri(cfg: dict, v: Varsayimlar, eko: Ekonomi, f: FiyatSenaryosu, kalemler: set[str],
-                        baz_seviye: float | None = None) -> tuple[dict, list[np.ndarray] | None]:
+def gelir_parametreleri(
+    cfg: dict, v: Varsayimlar, eko: Ekonomi, f: FiyatSenaryosu, kalemler: set[str], baz_seviye: float | None = None
+) -> tuple[dict, list[np.ndarray] | None]:
     """
     kalemler ⊆ {"yh", "dz", "yekg", "ppa", "dl"}. Döndürür: (MILP 'gelir' sözlüğü, segment yan hizmet fiyatları).
     """
@@ -30,7 +31,7 @@ def gelir_parametreleri(cfg: dict, v: Varsayimlar, eko: Ekonomi, f: FiyatSenaryo
     if "yh" in kalemler:
         y = gy["yan_hizmet"]
         gelir["yh"] = {"azami": deger(y["azami_rezerv"]), "asgari": deger(y["asgari_guc"]), "h": deger(y["enerji_saat"])}
-        yan_lev = (f.yan_hizmet * DF[:, None, None]).sum(0) / DF.sum()          # (S, 8760)
+        yan_lev = (f.yan_hizmet * DF[:, None, None]).sum(0) / DF.sum()  # (S, 8760)
         yanlar = [yan_lev[0], yan_lev[1]]
     if "dz" in kalemler:
         d = gy["dengesizlik_azaltim"]
@@ -43,8 +44,7 @@ def gelir_parametreleri(cfg: dict, v: Varsayimlar, eko: Ekonomi, f: FiyatSenaryo
         L0 = baz_seviye if baz_seviye is not None else deger(cfg["fiyat_senaryolari"]["seviye"])["baz"]
         # P90/P50 ≈ 0,93-0,95 (Aşama 3) → saatlik pay ≈ 0,70 × 0,94
         phi = deger(pp["pay"]) * 0.94
-        gelir["ppa"] = {"phi": phi * DF[:vade].sum() / DF.sum(), "fiyat": L0 * (1 - deger(pp["iskonto"])),
-                        "phi_saatlik": phi, "vade": vade}
+        gelir["ppa"] = {"phi": phi * DF[:vade].sum() / DF.sum(), "fiyat": L0 * (1 - deger(pp["iskonto"])), "phi_saatlik": phi, "vade": vade}
     if "dl" in kalemler:
         gelir["dl"] = {"edinme_yillik": deger(gy["depolamali_lisans"]["edinme_maliyeti"]) * eko.a_cap}
     return gelir, yanlar

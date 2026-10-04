@@ -48,27 +48,28 @@ class Segment:
     fiyat: np.ndarray
     ges: np.ndarray
     res: np.ndarray
-    agirlik: float          # yıl payı (bir saatin yıllık ağırlığı)
-    yan: np.ndarray | None = None   # yan hizmet kapasite fiyatı [USD/MW-saat] (seviyelendirilmiş)
+    agirlik: float  # yıl payı (bir saatin yıllık ağırlığı)
+    yan: np.ndarray | None = None  # yan hizmet kapasite fiyatı [USD/MW-saat] (seviyelendirilmiş)
 
 
 @dataclass
 class Ekonomi:
     S_isl: float
-    a_cap: float            # 1 USD CAPEX → yıllık eşdeğer (vergi öncesi eşdeğer)
-    vergi_carpani: float    # (1 − t) · S_isl : yıllık eşdeğer → NPV
-    f_ges: float            # seviyelendirilmiş degradasyon çarpanları
+    a_cap: float  # 1 USD CAPEX → yıllık eşdeğer (vergi öncesi eşdeğer)
+    vergi_carpani: float  # (1 − t) · S_isl : yıllık eşdeğer → NPV
+    f_ges: float  # seviyelendirilmiş degradasyon çarpanları
     f_res: float
-    a_res: float            # USD/MW-yıl (CAPEX + sabit gider + sigorta)
+    a_res: float  # USD/MW-yıl (CAPEX + sabit gider + sigorta)
     a_ges: float
-    a_bess_p: float         # USD/MW-yıl
-    a_bess_e: float         # USD/MWh-yıl (CAPEX + augmentation + yenileme + söküm + O&M)
-    a_sebeke: float         # USD/MW-yıl (bağlantı CAPEX + TEİAŞ kapasite + sigorta)
+    a_bess_p: float  # USD/MW-yıl
+    a_bess_e: float  # USD/MWh-yıl (CAPEX + augmentation + yenileme + söküm + O&M)
+    a_sebeke: float  # USD/MW-yıl (bağlantı CAPEX + TEİAŞ kapasite + sigorta)
     teias_e: float
-    p_ort: float            # seviyelendirilmiş ortalama fiyat (eşzamanlılık düzeltmesi için)
+    p_ort: float  # seviyelendirilmiş ortalama fiyat (eşzamanlılık düzeltmesi için)
 
 
 def ekonomi_hesapla(v: Varsayimlar, p_ort: float) -> Ekonomi:
+    """Kapasite MILP'inin amaç katsayıları: yıllıklandırma, vergi düzeltmesi ve seviyelendirilmiş fiyat."""
     r, t, nb, N = v.wacc, v.vergi, v.insaat_suresi, v.omur
     DF = lambda y: (1 + r) ** -y
     k = np.arange(1, N + 1)
@@ -80,24 +81,37 @@ def ekonomi_hesapla(v: Varsayimlar, p_ort: float) -> Ekonomi:
     f_res = float(((1 - v.degr_res) ** (k - 1) * DF(nb + k)).sum() / S_isl)
     son = DF(nb + N) / S_isl
     # Batarya: augmentation (8, 16, 28. yıllar) + 20. yılda yenileme + söküm (vergiden düşülür → vergi öncesi gider)
-    aug_pv_e = sum(v.augmentation["oran"] * (1 - v.augmentation["maliyet_dususu_yillik"]) ** y * DF(nb + y)
-                   for y in list(v.augmentation["yillar"]) + [y + v.omur_bess for y in v.augmentation["yillar"]]
-                   if y <= N and y != v.omur_bess)
+    aug_pv_e = sum(
+        v.augmentation["oran"] * (1 - v.augmentation["maliyet_dususu_yillik"]) ** y * DF(nb + y)
+        for y in list(v.augmentation["yillar"]) + [y + v.omur_bess for y in v.augmentation["yillar"]]
+        if y <= N and y != v.omur_bess
+    )
     yen = (1 - v.bess_yenileme["maliyet_dususu_yillik"]) ** v.omur_bess * DF(nb + v.omur_bess) if v.bess_yenileme["aktif"] else 0.0
     cc = v.capex_carpani
-    a_bess_e = (v.capex_bess_enerji * cc * (a_cap + v.sigorta_oran + v.opex_bess_oran)
-                + v.capex_bess_enerji * cc * (aug_pv_e + yen) / S_isl + v.sokum["bess"] * son)
+    a_bess_e = (
+        v.capex_bess_enerji * cc * (a_cap + v.sigorta_oran + v.opex_bess_oran)
+        + v.capex_bess_enerji * cc * (aug_pv_e + yen) / S_isl
+        + v.sokum["bess"] * son
+    )
     a_bess_p = v.capex_bess_guc * cc * (a_cap + v.sigorta_oran + v.opex_bess_oran) + v.capex_bess_guc * cc * yen / S_isl
     a_res = v.capex_res * cc * (a_cap + v.sigorta_oran) + v.opex_res + v.arazi_res + v.sokum["res"] * son
     a_ges = v.capex_ges * cc * (a_cap + v.sigorta_oran) + v.opex_ges + v.arazi_ges + v.sokum["ges"] * son
     a_sebeke = v.capex_sebeke * cc * (a_cap + v.sigorta_oran) + v.teias_kapasite
-    return Ekonomi(S_isl, a_cap, (1 - t) * S_isl, f_ges, f_res, a_res, a_ges, a_bess_p, a_bess_e, a_sebeke,
-                   v.teias_enerji, p_ort)
+    return Ekonomi(S_isl, a_cap, (1 - t) * S_isl, f_ges, f_res, a_res, a_ges, a_bess_p, a_bess_e, a_sebeke, v.teias_enerji, p_ort)
 
 
-def kapasite_coz(segmentler: list[Segment], v: Varsayimlar, eko: Ekonomi, L: float, opt: dict,
-                 duzen: dict, sabit: dict | None = None, zaman_siniri: float = 600, yatirim: str = "zorunlu",
-                 gelir: dict | None = None) -> dict:
+def kapasite_coz(
+    segmentler: list[Segment],
+    v: Varsayimlar,
+    eko: Ekonomi,
+    L: float,
+    opt: dict,
+    duzen: dict,
+    sabit: dict | None = None,
+    zaman_siniri: float = 600,
+    yatirim: str = "zorunlu",
+    gelir: dict | None = None,
+) -> dict:
     """
     MILP'i kurar ve çözer. sabit: {"N","G","P","E", ("N2","G2")} verilirse ilgili kapasite sabitlenir.
     yatirim: "zorunlu" → b = 1; "serbest" → ikili b ile "hiç kurmamak" da seçenek.
@@ -126,28 +140,28 @@ def kapasite_coz(segmentler: list[Segment], v: Varsayimlar, eko: Ekonomi, L: flo
     m.G = pyo.Var(bounds=(0, opt["ges_azami_mw"]))
     m.P = pyo.Var(bounds=(0, None))
     m.E = pyo.Var(bounds=(0, None))
-    m.b = pyo.Var(within=pyo.Binary)                  # yatırım kararı (1 = proje kurulur)
+    m.b = pyo.Var(within=pyo.Binary)  # yatırım kararı (1 = proje kurulur)
     if yatirim == "zorunlu":
         m.b.fix(1)
     # --- Saatlik değişkenler
-    m.y = pyo.Var(m.I, within=pyo.NonNegativeReals)   # santralden doğrudan şebekeye
-    m.k = pyo.Var(m.I, within=pyo.NonNegativeReals)   # kesinti
-    m.c = pyo.Var(m.I, within=pyo.NonNegativeReals)   # ana santralden şarj
-    m.d = pyo.Var(m.I, within=pyo.NonNegativeReals)   # deşarj
-    m.s = pyo.Var(m.I, within=pyo.NonNegativeReals)   # şarj durumu
+    m.y = pyo.Var(m.I, within=pyo.NonNegativeReals)  # santralden doğrudan şebekeye
+    m.k = pyo.Var(m.I, within=pyo.NonNegativeReals)  # kesinti
+    m.c = pyo.Var(m.I, within=pyo.NonNegativeReals)  # ana santralden şarj
+    m.d = pyo.Var(m.I, within=pyo.NonNegativeReals)  # deşarj
+    m.s = pyo.Var(m.I, within=pyo.NonNegativeReals)  # şarj durumu
 
     g = {(s, h): float(seg.ges[h]) * eko.f_ges for s, seg in enumerate(segmentler) for h in range(len(seg.fiyat))}
     r = {(s, h): float(seg.res[h]) * eko.f_res for s, seg in enumerate(segmentler) for h in range(len(seg.fiyat))}
     p = {(s, h): float(seg.fiyat[h]) for s, seg in enumerate(segmentler) for h in range(len(seg.fiyat))}
     w = {s: seg.agirlik for s, seg in enumerate(segmentler)}
-    saat_top = sum(w[s] for s, h in idx)                                 # = 8760
+    saat_top = sum(w[s] for s, h in idx)  # = 8760
 
     # Doğrusal gelir düzeltmeleri (kapasite başına, yıllık): dengesizlik ve RES eşzamanlılık (PPA payı hariç)
     phi = ppa["phi"] if ppa else 0.0
     gelir_ges_mw = sum(w[s] * p[s, h] * g[s, h] for s, h in idx)
     gelir_res_mw = sum(w[s] * p[s, h] * r[s, h] for s, h in idx)
     uretim_res_mw = sum(w[s] * r[s, h] for s, h in idx)
-    dengesizlik_res_mw = v.dengesizlik["res"] * gelir_res_mw            # 1 MW RES'in yıllık dengesizlik maliyeti
+    dengesizlik_res_mw = v.dengesizlik["res"] * gelir_res_mw  # 1 MW RES'in yıllık dengesizlik maliyeti
     duz_ges = v.dengesizlik["ges"] * gelir_ges_mw
     duz_res = dengesizlik_res_mw + (1 - phi) * v.eszamanlilik_res * eko.p_ort * uretim_res_mw
 
@@ -155,10 +169,10 @@ def kapasite_coz(segmentler: list[Segment], v: Varsayimlar, eko: Ekonomi, L: flo
     p_y = {i: (1 - phi) * p[i] + (phi * ppa["fiyat"] if ppa else 0.0) + yekg for i in idx}
     p_d = {i: p[i] + yekg for i in idx}
 
-    gelir_ifade = sum(w[s] * ((p_y[s, h] - eko.teias_e) * m.y[s, h] + (p_d[s, h] - eko.teias_e - yip) * m.d[s, h])
-                      for s, h in idx)
-    maliyet = ((eko.a_res + duz_res) * m_t * m.N + (eko.a_ges + duz_ges) * m.G
-               + eko.a_bess_p * m.P + eko.a_bess_e * m.E + eko.a_sebeke * L * m.b)
+    gelir_ifade = sum(w[s] * ((p_y[s, h] - eko.teias_e) * m.y[s, h] + (p_d[s, h] - eko.teias_e - yip) * m.d[s, h]) for s, h in idx)
+    maliyet = (
+        (eko.a_res + duz_res) * m_t * m.N + (eko.a_ges + duz_ges) * m.G + eko.a_bess_p * m.P + eko.a_bess_e * m.E + eko.a_sebeke * L * m.b
+    )
 
     # --- Yan hizmet: rezerv r_t, ikili z (asgari güç şartı)
     if yh:
@@ -184,11 +198,10 @@ def kapasite_coz(segmentler: list[Segment], v: Varsayimlar, eko: Ekonomi, L: flo
         m.c2 = pyo.Var(m.I, within=pyo.NonNegativeReals)
         m.k2 = pyo.Var(m.I, within=pyo.NonNegativeReals)
         m.k_blok_uretim = pyo.Constraint(m.I, rule=lambda m, s, h: m.c2[s, h] + m.k2[s, h] == m.G2 * g[s, h] + m_t * m.N2 * r[s, h])
-        m.L2 = pyo.Var(within=pyo.NonNegativeReals)                          # depolamalı lisansla gelen ek bağlantı
-        m.k_L2 = pyo.Constraint(expr=m.L2 <= m.P)                             # ek bağlantı ≤ depolama gücü
-        m.k_blok_oran = pyo.Constraint(expr=m_t * m.N2 + m.G2 <= m.L2)       # RES/GES ≤ depolama gücü (oran ≤ 1)
-        maliyet = maliyet + (eko.a_res + duz_res) * m_t * m.N2 + (eko.a_ges + duz_ges) * m.G2 \
-            + (eko.a_sebeke + dl["edinme_yillik"]) * m.L2
+        m.L2 = pyo.Var(within=pyo.NonNegativeReals)  # depolamalı lisansla gelen ek bağlantı
+        m.k_L2 = pyo.Constraint(expr=m.L2 <= m.P)  # ek bağlantı ≤ depolama gücü
+        m.k_blok_oran = pyo.Constraint(expr=m_t * m.N2 + m.G2 <= m.L2)  # RES/GES ≤ depolama gücü (oran ≤ 1)
+        maliyet = maliyet + (eko.a_res + duz_res) * m_t * m.N2 + (eko.a_ges + duz_ges) * m.G2 + (eko.a_sebeke + dl["edinme_yillik"]) * m.L2
     m.amac = pyo.Objective(expr=gelir_ifade - maliyet, sense=pyo.maximize)
 
     # --- Kısıtlar
@@ -197,7 +210,7 @@ def kapasite_coz(segmentler: list[Segment], v: Varsayimlar, eko: Ekonomi, L: flo
     m.k_uretim = pyo.Constraint(m.I, rule=lambda m, s, h: m.y[s, h] + m.k[s, h] + m.c[s, h] == m.G * g[s, h] + m_t * m.N * r[s, h])
     # Yan hizmet rezervi şebeke kısıtına girmez: yukarı yönlü aktivasyon anında santralin doğrudan
     # çıkışı rezerv kadar kısılarak yer açılır (aktivasyon enerjisi küçük; bkz. docs/05).
-    if dl:   # santral doğrudan L'yi aşamaz; bataryanın deşarjı ek bağlantı L2 üzerinden de verilebilir
+    if dl:  # santral doğrudan L'yi aşamaz; bataryanın deşarjı ek bağlantı L2 üzerinden de verilebilir
         m.k_sebeke_ana = pyo.Constraint(m.I, rule=lambda m, s, h: m.y[s, h] <= L)
         m.k_sebeke = pyo.Constraint(m.I, rule=lambda m, s, h: m.y[s, h] + m.d[s, h] <= L + m.L2)
     else:
@@ -209,8 +222,9 @@ def kapasite_coz(segmentler: list[Segment], v: Varsayimlar, eko: Ekonomi, L: flo
     if yh:
         m.k_enerji_alt = pyo.Constraint(m.I, rule=lambda m, s, h: m.s[s, h] >= hh * m.r[s, h])
     son = {s: len(seg.fiyat) - 1 for s, seg in enumerate(segmentler)}
-    m.k_soc = pyo.Constraint(m.I, rule=lambda m, s, h: m.s[s, h] == m.s[s, (h - 1) if h > 0 else son[s]]
-                             + eta * sarj(m, s, h) - m.d[s, h] / eta)
+    m.k_soc = pyo.Constraint(
+        m.I, rule=lambda m, s, h: m.s[s, h] == m.s[s, (h - 1) if h > 0 else son[s]] + eta * sarj(m, s, h) - m.d[s, h] / eta
+    )
     m.k_sure_alt = pyo.Constraint(expr=m.E >= sure_min * m.P)
     m.k_sure_ust = pyo.Constraint(expr=m.E <= sure_max * m.P)
     m.k_b_N = pyo.Constraint(expr=m.N <= opt["turbin_azami"] * m.b)
@@ -225,6 +239,7 @@ def kapasite_coz(segmentler: list[Segment], v: Varsayimlar, eko: Ekonomi, L: flo
             getattr(m, ad).fix(deg_)
 
     from pyomo.contrib import appsi
+
     coz = appsi.solvers.Highs()
     coz.config.time_limit = zaman_siniri
     coz.config.mip_gap = opt.get("mip_bosluk", 1e-3)
@@ -236,9 +251,10 @@ def kapasite_coz(segmentler: list[Segment], v: Varsayimlar, eko: Ekonomi, L: flo
 
     val = lambda x: float(pyo.value(x))
     E_val, P_val = val(m.E), val(m.P)
-    W = np.array([w[s] for s, h in idx]); P_ = np.array([p[i] for i in idx])
+    W = np.array([w[s] for s, h in idx])
+    P_ = np.array([p[i] for i in idx])
     hv = lambda var: np.array([var[i].value for i in idx])
-    y_, d_, c_, k_ = hv(m.y), hv(m.d), hv(m.c), hv(m.k)
+    d_, c_, k_ = hv(m.d), hv(m.c), hv(m.k)
     r_ = hv(m.r) if yh else np.zeros(len(idx))
     A_ = np.array([val(m.G) * g[i] + m_t * val(m.N) * r[i] for i in idx])
     # Bataryasız karşı olgu: aynı üretim, kesinti = max(A − L, 0) + ekonomik kesinti (p < τ)
@@ -246,13 +262,20 @@ def kapasite_coz(segmentler: list[Segment], v: Varsayimlar, eko: Ekonomi, L: flo
     k0 = A_ - sat0
     kurtar = np.minimum(c_, k0)
     oz = {
-        "Yatırım": int(round(val(m.b))), "N": int(round(val(m.N))), "RES [MW]": m_t * round(val(m.N)),
-        "GES [MWac]": val(m.G), "BESS [MW]": P_val, "BESS [MWh]": E_val,
+        "Yatırım": int(round(val(m.b))),
+        "N": int(round(val(m.N))),
+        "RES [MW]": m_t * round(val(m.N)),
+        "GES [MWac]": val(m.G),
+        "BESS [MW]": P_val,
+        "BESS [MWh]": E_val,
         "BESS süresi [h]": E_val / P_val if P_val > 1e-6 else 0.0,
-        "Amaç (yıllık eşdeğer) [M USD]": amac / 1e6, "NPV tahmini [M USD]": amac * eko.vergi_carpani / 1e6,
+        "Amaç (yıllık eşdeğer) [M USD]": amac / 1e6,
+        "NPV tahmini [M USD]": amac * eko.vergi_carpani / 1e6,
         "Kesinti [%]": 100 * float((W * k_).sum()) / max(float((W * A_).sum()), 1e-9),
         "BESS döngü/yıl": float((W * d_).sum()) / E_val if E_val > 1e-6 else 0.0,
-        "Çözüm süresi [s]": sure, "MIP boşluğu": bosluk, "Çözücü durumu": str(sonuc.termination_condition),
+        "Çözüm süresi [s]": sure,
+        "MIP boşluğu": bosluk,
+        "Çözücü durumu": str(sonuc.termination_condition),
         # Batarya gelir ayrıştırması (yıllık, USD): deşarj geliri − yıpranma, kaynağına göre
         "BESS deşarj geliri [USD/yıl]": float((W * d_ * (P_ - eko.teias_e - yip)).sum()),
         "BESS şarj fırsat maliyeti [USD/yıl]": float((W * (c_ - kurtar) * (P_ - eko.teias_e)).sum()),
@@ -261,8 +284,10 @@ def kapasite_coz(segmentler: list[Segment], v: Varsayimlar, eko: Ekonomi, L: flo
         "Ort. rezerv [MW]": float((W * r_).sum() / saat_top),
         "Yan hizmete katılım": int(round(val(m.z))) if yh else 0,
         "Dengesizlik azaltımı [USD/yıl]": val(m.u) if dz else 0.0,
-        "Blok RES [MW]": m_t * round(val(m.N2)) if dl else 0.0, "Blok GES [MWac]": val(m.G2) if dl else 0.0,
-        "Ek bağlantı L2 [MW]": val(m.L2) if dl else 0.0, "N2": int(round(val(m.N2))) if dl else 0,
+        "Blok RES [MW]": m_t * round(val(m.N2)) if dl else 0.0,
+        "Blok GES [MWac]": val(m.G2) if dl else 0.0,
+        "Ek bağlantı L2 [MW]": val(m.L2) if dl else 0.0,
+        "N2": int(round(val(m.N2))) if dl else 0,
         "model": m,
     }
     # Deşarj gelirinin kesinti / arbitraj ayrımı: şarjın kesintiden gelen payıyla orantılı

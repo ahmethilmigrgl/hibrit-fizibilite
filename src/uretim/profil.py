@@ -14,8 +14,7 @@ from src.ayarlar import KOK, deger
 from src.uretim import gunes, ruzgar
 
 
-def saha_profilleri(kod: str, enlem: float, boylam: float, y1: int, y2: int,
-                    cfg: dict) -> tuple[pd.DataFrame, dict]:
+def saha_profilleri(kod: str, enlem: float, boylam: float, y1: int, y2: int, cfg: dict) -> tuple[pd.DataFrame, dict]:
     """
     Döndürür:
         df   — indeks zaman_utc (saat başı, UTC); sütunlar:
@@ -40,21 +39,25 @@ def saha_profilleri(kod: str, enlem: float, boylam: float, y1: int, y2: int,
     res_kf, ara = ruzgar.ruzgar_kapasite_faktoru(era5, cr, k_matris=k_matris)
     res_alt, _ = ruzgar.ruzgar_kapasite_faktoru(era5, cr, deger(cr["turbin_duyarlilik"]), k_matris=k_matris)
 
-    df = pd.concat([
-        ges_kf.rename("ges_kf"),
-        res_kf.rename("res_kf"),
-        res_alt.rename("res_kf_e126"),
-        ara["v100"].rename("v100_ham"),
-        ara["v_gobek"].rename("v_gobek_ham"),
-        ara["yogunluk"].rename("hava_yogunlugu"),
-    ], axis=1, join="inner")
+    df = pd.concat(
+        [
+            ges_kf.rename("ges_kf"),
+            res_kf.rename("res_kf"),
+            res_alt.rename("res_kf_e126"),
+            ara["v100"].rename("v100_ham"),
+            ara["v_gobek"].rename("v_gobek_ham"),
+            ara["yogunluk"].rename("hava_yogunlugu"),
+        ],
+        axis=1,
+        join="inner",
+    )
     df.index.name = "zaman_utc"
 
     beklenen = pd.date_range(f"{y1}-01-01", f"{y2}-12-31 23:00", freq="h", tz="UTC")
     bilgi = {
         "meta": meta,
         "era5_grid": (float(era5["latitude"].iloc[0]), float(era5["longitude"].iloc[0])),
-        "eksik_saat": int(len(beklenen.difference(df.index))),
+        "eksik_saat": len(beklenen.difference(df.index)),
         "tekrar_eden_saat": int(df.index.duplicated().sum()),
     }
     return df, bilgi

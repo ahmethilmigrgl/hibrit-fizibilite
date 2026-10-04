@@ -11,14 +11,15 @@ from src.finans.fiyat_senaryosu import _derinlik, _gunes_orani
 from src.finans.veri import UretimProfili, fiyat_sekil_yillari, yan_hizmet_sekil_yillari
 
 
-def birim_sekiller(cfg: dict, u: UretimProfili, h_izgara) -> tuple[dict, float]:
+def birim_sekiller(cfg: dict, u: UretimProfili, h_izgara: np.ndarray) -> tuple[dict, float]:
     """
     Her şekil yılı s ve güneş yakalanma hedefi h için birim fiyat şekli q (ortalama 1).
     Aşama 3 ile aynı kural: her şekil yılı kendi başlangıç oranından (oran0 − h) kadar düşürülür.
     Döndürür: ({(s, h): q}, oran0)
     """
     sekil, _ = fiyat_sekil_yillari(*deger(cfg["fiyat_senaryolari"]["sekil_donemi"]))
-    g = u.ges.mean(axis=0); g = g / g.max()
+    g = u.ges.mean(axis=0)
+    g = g / g.max()
     oran0 = float(np.mean([_gunes_orani(s_, g, 0.0) for s_ in sekil]))
     out = {}
     for s, sh in enumerate(sekil):

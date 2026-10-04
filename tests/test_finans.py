@@ -1,4 +1,5 @@
 """Finansal hesaplar: IRR, vergi zararı mahsubu, LCOE ve vektörize nakit akışı — elle hesaplanmış küçük örneklerle."""
+
 from dataclasses import replace
 
 import numpy as np
@@ -41,9 +42,20 @@ def test_lcoe_el_hesabi():
 def sade_varsayimlar():
     """Vergi, işletme gideri, bozunma ve dengesizlik sıfır → NPV elle hesaplanabilir."""
     v = Varsayimlar.configten(config_oku())
-    return replace(v, vergi=0.0, capex_sebeke=0.0, opex_res=0.0, arazi_res=0.0, sigorta_oran=0.0, teias_kapasite=0.0,
-                   teias_enerji=0.0, dengesizlik={"ges": 0.0, "res": 0.0}, degr_res=0.0, eszamanlilik_res=0.0,
-                   sokum={"ges": 0.0, "res": 0.0, "bess": 0.0})
+    return replace(
+        v,
+        vergi=0.0,
+        capex_sebeke=0.0,
+        opex_res=0.0,
+        arazi_res=0.0,
+        sigorta_oran=0.0,
+        teias_kapasite=0.0,
+        teias_enerji=0.0,
+        dengesizlik={"ges": 0.0, "res": 0.0},
+        degr_res=0.0,
+        eszamanlilik_res=0.0,
+        sokum={"ges": 0.0, "res": 0.0, "bess": 0.0},
+    )
 
 
 def test_nakit_akisi_npv_el_hesabi(sade_varsayimlar):
@@ -51,16 +63,24 @@ def test_nakit_akisi_npv_el_hesabi(sade_varsayimlar):
     c = Sabitler(v=v, yekg=0.0, ppa_fiyat=0.0, ppa_pay=0.0, ppa_vade=0, dz_azami=0.0, dz_doyum=1.0, tavan_carpan=0.7, pi=0.025)
     t = Tasarim("test", res_mw=10.0, ges_mw=0.0)
     T = np.zeros((1, 1, 1, 1, 1, 1, len(ALANLAR)))
-    T[..., ALANLAR.index("gelir_res_q")] = 1000.0      # Σ y·q (birim fiyat şekliyle) → gelir = L × 1000
+    T[..., ALANLAR.index("gelir_res_q")] = 1000.0  # Σ y·q (birim fiyat şekliyle) → gelir = L × 1000
     T[..., ALANLAR.index("E_res")] = 1000.0
     tablo = {"T": T, "h": np.array([0.6]), "m": np.array([1.0]), "a": np.array([1.0]), "ppa": np.array([0.0])}
     N, nb = v.omur, v.insaat_suresi
-    girdi = {"w": np.zeros((1, N), int), "s": np.zeros((1, N), int), "h": np.full((1, N), 0.6), "m": np.ones((1, N)),
-             "a": np.ones((1, N)), "L": np.full((1, N), 50.0), "tavan": np.zeros((1, N), bool),
-             **{k: np.ones(1) for k in ["capex_res", "capex_ges", "capex_bess", "opex", "bozunma"]}}
+    girdi = {
+        "w": np.zeros((1, N), int),
+        "s": np.zeros((1, N), int),
+        "h": np.full((1, N), 0.6),
+        "m": np.ones((1, N)),
+        "a": np.ones((1, N)),
+        "L": np.full((1, N), 50.0),
+        "tavan": np.zeros((1, N), bool),
+        **{k: np.ones(1) for k in ["capex_res", "capex_ges", "capex_bess", "opex", "bozunma"]},
+    }
     r = nakit_akislari(t, tablo, c, girdi)
     capex = 10.0 * v.capex_res
-    beklenen = (-capex * sum(p / (1 + v.wacc) ** (j + 1) for j, p in enumerate(v.capex_takvimi))
-                + 50.0 * 1000.0 * sum((1 + v.wacc) ** -(nb + k) for k in range(1, N + 1)))
+    beklenen = -capex * sum(p / (1 + v.wacc) ** (j + 1) for j, p in enumerate(v.capex_takvimi)) + 50.0 * 1000.0 * sum(
+        (1 + v.wacc) ** -(nb + k) for k in range(1, N + 1)
+    )
     assert r["npv"][0] == pytest.approx(beklenen, rel=1e-9)
     assert r["cfads"][0] == pytest.approx(np.full(N, 50_000.0))

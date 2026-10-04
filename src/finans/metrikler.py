@@ -14,10 +14,20 @@ from src.finans.model import BessDispatch, Varsayimlar, proje_degerle
 from src.finans.veri import UretimProfili
 
 
-def basabas_fiyat(konfig: dict, cfg: dict, uretim: UretimProfili, v: Varsayimlar,
-                  kanibalizasyon: str = "devam", bess_dispatch: BessDispatch | None = None,
-                  alt: float = 5.0, ust: float = 250.0) -> float:
+def basabas_fiyat(
+    konfig: dict,
+    cfg: dict,
+    uretim: UretimProfili,
+    v: Varsayimlar,
+    kanibalizasyon: str = "devam",
+    bess_dispatch: BessDispatch | None = None,
+    alt: float = 5.0,
+    ust: float = 250.0,
+) -> float:
+    """NPV'yi sıfır yapan reel yıllık ortalama fiyat seviyesi (USD/MWh); kök bulma ile."""
+
     def npv(L: float) -> float:
         f = fiyat_senaryosu_uret(cfg, uretim, L, kanibalizasyon)
         return proje_degerle(konfig, v, f, uretim, bess_dispatch=bess_dispatch).npv
+
     return brentq(npv, alt, ust, xtol=0.01)

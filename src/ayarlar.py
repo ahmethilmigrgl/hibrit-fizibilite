@@ -4,11 +4,15 @@ Ortak yardımcılar: proje yolları, config.yaml okuma ve kimlik bilgileri.
 Kimlik bilgileri yalnızca .env dosyasından okunur ve hiçbir zaman yazdırılmaz.
 """
 
-from pathlib import Path
 import os
+from pathlib import Path
+from typing import TYPE_CHECKING, Any
 
 import yaml
 from dotenv import load_dotenv
+
+if TYPE_CHECKING:
+    import cdsapi
 
 KOK = Path(__file__).resolve().parents[1]
 HAM_VERI = KOK / "data" / "raw"
@@ -22,12 +26,12 @@ def config_oku() -> dict:
         return yaml.safe_load(f)
 
 
-def deger(d: dict):
+def deger(d: dict | object) -> Any:
     """config'teki {value, birim, kaynak, not} sözlüğünden sadece değeri döndürür."""
     return d["value"] if isinstance(d, dict) and "value" in d else d
 
 
-def cds_istemcisi():
+def cds_istemcisi() -> "cdsapi.Client":
     """CDS API istemcisini .env'deki bilgilerle açıkça oluşturur."""
     import cdsapi
 

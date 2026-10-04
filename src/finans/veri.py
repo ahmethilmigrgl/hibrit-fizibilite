@@ -29,12 +29,14 @@ def _standart_yil(seri: pd.Series) -> np.ndarray:
 @dataclass
 class UretimProfili:
     """1 MW başına saatlik kapasite faktörleri: (hava_yili, 8760)."""
+
     ges: np.ndarray
     res: np.ndarray
     hava_yillari: list[int]
 
 
 def uretim_profili(dosya: str = "ezine_profiller_2014_2023.parquet") -> UretimProfili:
+    """İşlenmiş saatlik üretim profillerini (UTC, MW başına KF) yükler."""
     df = pd.read_parquet(ISLENMIS_VERI / dosya).set_index("zaman_utc")
     yillar = sorted(set(df.index.year))
     ges = np.vstack([_standart_yil(df.loc[str(y), "ges_kf"]) for y in yillar])

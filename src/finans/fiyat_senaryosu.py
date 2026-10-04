@@ -30,13 +30,13 @@ from src.finans.veri import UretimProfili, fiyat_sekil_yillari, yan_hizmet_sekil
 
 @dataclass
 class FiyatSenaryosu:
-    fiyatlar: np.ndarray          # (işletme_yılı, şekil_yılı, 8760) reel USD/MWh
-    yillar: list[int]             # takvim yılları
-    seviye: float                 # L
+    fiyatlar: np.ndarray  # (işletme_yılı, şekil_yılı, 8760) reel USD/MWh
+    yillar: list[int]  # takvim yılları
+    seviye: float  # L
     ad: str
     gunes_hedef_oran: np.ndarray  # yıl başına Ezine GES yakalanma oranı hedefi
     bilgi: dict = field(default_factory=dict)
-    yan_hizmet: np.ndarray | None = None   # (işletme_yılı, şekil_yılı, 8760) USD/MW-saat kapasite fiyatı
+    yan_hizmet: np.ndarray | None = None  # (işletme_yılı, şekil_yılı, 8760) USD/MW-saat kapasite fiyatı
 
 
 def _gunes_orani(sekil: np.ndarray, g: np.ndarray, d: float) -> float:
@@ -51,9 +51,16 @@ def _derinlik(sekil: np.ndarray, g: np.ndarray, hedef: float) -> float:
     return brentq(lambda d: _gunes_orani(sekil, g, d) - hedef, 0.0, 0.999, xtol=1e-6)
 
 
-def fiyat_senaryosu_uret(cfg: dict, uretim: UretimProfili, seviye: str | float = "baz",
-                         kanibalizasyon: str | None = None, duzenleyici: bool | None = None,
-                         taban_oran: float | None = None, yh_azalma: float | None = None) -> FiyatSenaryosu:
+def fiyat_senaryosu_uret(
+    cfg: dict,
+    uretim: UretimProfili,
+    seviye: str | float = "baz",
+    kanibalizasyon: str | None = None,
+    duzenleyici: bool | None = None,
+    taban_oran: float | None = None,
+    yh_azalma: float | None = None,
+) -> FiyatSenaryosu:
+    """Seviye ve kanibalizasyon varyantına göre (yıl × şekil yılı × 8760) reel saatlik fiyat senaryosu üretir."""
     fs = cfg["fiyat_senaryolari"]
     bas_yil = deger(cfg["proje"]["baslangic_yili"])
     omur = deger(cfg["proje"]["omur"])
@@ -106,6 +113,12 @@ def fiyat_senaryosu_uret(cfg: dict, uretim: UretimProfili, seviye: str | float =
         carpan = np.maximum((1 - azalma) ** (np.array(yillar) - 2026), deger(yh_cfg["taban_oran"]))
         yan = carpan[:, None, None] * yan_hizmet_sekil_yillari(deger(yh_cfg["urun"]))[None]
     ad = f"{seviye if isinstance(seviye, str) else L} / kanibalizasyon {varyant}" + (" / tavan" if duz_aktif else "")
-    return FiyatSenaryosu(fiyatlar=fiyatlar, yillar=yillar, seviye=L, ad=ad, gunes_hedef_oran=hedef, yan_hizmet=yan,
-                          bilgi={"sekil_yillari": sekil_adlari, "baslangic_gunes_orani": oran0,
-                                 "varyant": varyant, "duzenleyici": duz_aktif})
+    return FiyatSenaryosu(
+        fiyatlar=fiyatlar,
+        yillar=yillar,
+        seviye=L,
+        ad=ad,
+        gunes_hedef_oran=hedef,
+        yan_hizmet=yan,
+        bilgi={"sekil_yillari": sekil_adlari, "baslangic_gunes_orani": oran0, "varyant": varyant, "duzenleyici": duz_aktif},
+    )

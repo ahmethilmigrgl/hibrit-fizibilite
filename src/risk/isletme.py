@@ -21,29 +21,40 @@ from __future__ import annotations
 
 import itertools
 import time
+from collections.abc import Callable
 
 import numpy as np
 import pyomo.environ as pyo
 from pyomo.contrib import appsi
 
-from src.risk.tasarim import ALANLAR, Tasarim  # noqa: F401 (geriye uyumluluk)
+from src.risk.tasarim import ALANLAR, Tasarim
 
 
 class IsletmeLP:
     """Persistent (parametreleri güncellenebilir) 8760 saatlik dispatch modeli."""
 
-    def __init__(self, t: Tasarim, eta: float, yipranma: float, teias_e: float, yekg: float,
-                 rezerv_tavan: float, enerji_saat: float, ppa_fiyat: float, n: int = 8760,
-                 desarj_sozlesmeli: bool = False):
+    def __init__(
+        self,
+        t: Tasarim,
+        eta: float,
+        yipranma: float,
+        teias_e: float,
+        yekg: float,
+        rezerv_tavan: float,
+        enerji_saat: float,
+        ppa_fiyat: float,
+        n: int = 8760,
+        desarj_sozlesmeli: bool = False,
+    ):
         """desarj_sozlesmeli: YEKDEM gibi, santralde üretilip depolandıktan sonra verilen enerji de sözleşmeli
         fiyattan ödenir (YEK Yönetmeliği md. 4/7-a) → batarya deşarjı da (1 − φ)·p + φ·fiyat ile değerlenir."""
         self.n = n
         m = pyo.ConcreteModel()
         m.T = pyo.RangeSet(0, n - 1)
-        m.A = pyo.Param(m.T, mutable=True, initialize=0.0)       # kullanılabilir üretim
-        m.p = pyo.Param(m.T, mutable=True, initialize=0.0)       # spot fiyat
-        m.a = pyo.Param(m.T, mutable=True, initialize=0.0)       # yan hizmet fiyatı
-        m.phi = pyo.Param(mutable=True, initialize=0.0)          # PPA payı
+        m.A = pyo.Param(m.T, mutable=True, initialize=0.0)  # kullanılabilir üretim
+        m.p = pyo.Param(m.T, mutable=True, initialize=0.0)  # spot fiyat
+        m.a = pyo.Param(m.T, mutable=True, initialize=0.0)  # yan hizmet fiyatı
+        m.phi = pyo.Param(mutable=True, initialize=0.0)  # PPA payı
         P, E, L = t.bess_mw, t.bess_mwh, t.sebeke_mw
         R = min(rezerv_tavan, P) if t.yan_hizmet else 0.0
         m.y = pyo.Var(m.T, within=pyo.NonNegativeReals)
@@ -54,9 +65,15 @@ class IsletmeLP:
         m.s = pyo.Var(m.T, bounds=(0, E))
         yk = yekg if t.yekg else 0.0
         pd_ = (lambda i: (1 - m.phi) * m.p[i] + m.phi * ppa_fiyat) if desarj_sozlesmeli else (lambda i: m.p[i])
-        m.amac = pyo.Objective(expr=sum(
-            ((1 - m.phi) * m.p[i] + m.phi * ppa_fiyat + yk - teias_e) * m.y[i]
-            + (pd_(i) + yk - teias_e - yipranma) * m.d[i] + m.a[i] * m.r[i] for i in m.T), sense=pyo.maximize)
+        m.amac = pyo.Objective(
+            expr=sum(
+                ((1 - m.phi) * m.p[i] + m.phi * ppa_fiyat + yk - teias_e) * m.y[i]
+                + (pd_(i) + yk - teias_e - yipranma) * m.d[i]
+                + m.a[i] * m.r[i]
+                for i in m.T
+            ),
+            sense=pyo.maximize,
+        )
         m.k_ur = pyo.Constraint(m.T, rule=lambda m, i: m.y[i] + m.k[i] + m.c[i] == m.A[i])
         m.k_seb = pyo.Constraint(m.T, rule=lambda m, i: m.y[i] + m.d[i] <= L)
         m.k_c = pyo.Constraint(m.T, rule=lambda m, i: m.c[i] + m.r[i] <= P)
@@ -67,10 +84,13 @@ class IsletmeLP:
         self.m = m
         self.cozucu = appsi.solvers.Highs()
 
-    def coz(self, A, p, a, phi):
+    def coz(self, A: np.ndarray, p: np.ndarray, a: float, phi: float) -> tuple[np.ndarray, ...]:
+        """Bir işletme durumu (üretim A, fiyat p, SFK seviyesi a, sözleşmeli pay phi) için dispatch LP'sini çözer."""
         m = self.m
         for i in range(self.n):
-            m.A[i].set_value(float(A[i])); m.p[i].set_value(float(p[i])); m.a[i].set_value(float(a[i]))
+            m.A[i].set_value(float(A[i]))
+            m.p[i].set_value(float(p[i]))
+            m.a[i].set_value(float(a[i]))
         m.phi.set_value(float(phi))
         sonuc = self.cozucu.solve(m)
         assert sonuc.termination_condition == appsi.base.TerminationCondition.optimal
@@ -78,22 +98,57 @@ class IsletmeLP:
         return {k: al(getattr(m, k)) for k in ["y", "k", "c", "d", "r"]}
 
 
-def birim_toplamlar(y, k, c, d, r, A, G, q, a_norm, tavan_q: float) -> np.ndarray:
+def birim_toplamlar(
+    y: np.ndarray,
+    k: np.ndarray,
+    c: np.ndarray,
+    d: np.ndarray,
+    r: np.ndarray,
+    A: np.ndarray,
+    G: np.ndarray,
+    q: np.ndarray,
+    a_norm: float,
+    tavan_q: float,
+) -> np.ndarray:
     """Bir yıllık dispatch'ten saklanan birim toplamlar (fiyat seviyesi 1 ve yan hizmet seviyesi 1 için)."""
     pay_g = np.divide(G, A, out=np.zeros_like(A), where=A > 0)
     yg, yr = y * pay_g, y * (1 - pay_g)
-    return np.array([
-        (yg * q).sum(), (yr * q).sum(), (d * q).sum(),                      # 0-2: spot gelir (L = 1)
-        yg.sum(), yr.sum(), d.sum(), c.sum(), k.sum(), A.sum(),             # 3-8: enerjiler [MWh]
-        (r * a_norm).sum(), r.sum(),                                        # 9-10: yan hizmet (seviye = 1), rezerv MWh
-        (yg * np.minimum(q, tavan_q)).sum(), (yr * np.minimum(q, tavan_q)).sum(),
-        (d * np.minimum(q, tavan_q)).sum(),                                 # 11-13: düzenleyici tavanlı spot gelir
-    ])
+    return np.array(
+        [
+            (yg * q).sum(),
+            (yr * q).sum(),
+            (d * q).sum(),  # 0-2: spot gelir (L = 1)
+            yg.sum(),
+            yr.sum(),
+            d.sum(),
+            c.sum(),
+            k.sum(),
+            A.sum(),  # 3-8: enerjiler [MWh]
+            (r * a_norm).sum(),
+            r.sum(),  # 9-10: yan hizmet (seviye = 1), rezerv MWh
+            (yg * np.minimum(q, tavan_q)).sum(),
+            (yr * np.minimum(q, tavan_q)).sum(),
+            (d * np.minimum(q, tavan_q)).sum(),  # 11-13: düzenleyici tavanlı spot gelir
+        ]
+    )
 
 
-def tablo_uret(t: Tasarim, ges: np.ndarray, res: np.ndarray, sekiller: dict, yan_sekil: np.ndarray,
-               h_izgara, m_izgara, a_izgara, ppa_izgara, L_ref: float, a_ref: float, sabitler: dict,
-               tavan_q: float = 0.70, log=None) -> dict:
+def tablo_uret(
+    t: Tasarim,
+    ges: np.ndarray,
+    res: np.ndarray,
+    sekiller: dict,
+    yan_sekil: np.ndarray,
+    h_izgara: np.ndarray,
+    m_izgara: np.ndarray,
+    a_izgara: np.ndarray,
+    ppa_izgara: np.ndarray,
+    L_ref: float,
+    a_ref: float,
+    sabitler: dict,
+    tavan_q: float = 0.70,
+    log: Callable[[str], None] | None = None,
+) -> dict:
     """
     sekiller[(s, h)] = birim fiyat şekli q (ortalama 1), yan_sekil (2, 8760) yan hizmet şekli (ortalama 1).
     Döndürür: {"T": dizi (W, S, H, M, Aa, Pp, alan), "izgara": ...}
@@ -114,10 +169,11 @@ def tablo_uret(t: Tasarim, ges: np.ndarray, res: np.ndarray, sekiller: dict, yan
         if pil:
             r = lp.coz(A, p, a_ref * a_izgara[ia] * a_n, phi)
             y, k, c, d, rr = r["y"], r["k"], r["c"], r["d"], r["r"]
-        else:   # bataryasız: kapalı form (ekonomik kesinti dahil)
+        else:  # bataryasız: kapalı form (ekonomik kesinti dahil)
             satis = ((1 - phi) * p + phi * sabitler["ppa_fiyat"] + (sabitler["yekg"] if t.yekg else 0)) > sabitler["teias_e"]
             y = np.where(satis, np.minimum(A, t.sebeke_mw), 0.0)
-            k = A - y; c = d = rr = np.zeros_like(A)
+            k = A - y
+            c = d = rr = np.zeros_like(A)
         Tb[w, s, ih, im, ia, ip] = birim_toplamlar(y, k, c, d, rr, A, G, q, a_n, tavan_q)
         sayac += 1
     if log:

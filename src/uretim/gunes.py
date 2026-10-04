@@ -30,8 +30,7 @@ def _dosya_adi(kod: str, y1: int, y2: int, tur: str) -> Path:
     return PVGIS_KLASOR / f"{kod}_{y1}_{y2}_{tur}"
 
 
-def pvgis_isinim_indir(kod: str, enlem: float, boylam: float, y1: int, y2: int,
-                       cfg_gunes: dict) -> tuple[pd.DataFrame, dict]:
+def pvgis_isinim_indir(kod: str, enlem: float, boylam: float, y1: int, y2: int, cfg_gunes: dict) -> tuple[pd.DataFrame, dict]:
     """
     PVGIS seriescalc ile saatlik düzlem ışınımı (POA) bileşenlerini indirir.
     Daha önce indirildiyse data/raw/pvgis altındaki önbellekten okur.
@@ -46,10 +45,13 @@ def pvgis_isinim_indir(kod: str, enlem: float, boylam: float, y1: int, y2: int,
         return pd.read_parquet(veri_yolu), json.loads(meta_yolu.read_text())
 
     veri, meta = pvlib.iotools.get_pvgis_hourly(
-        enlem, boylam, start=y1, end=y2,
+        enlem,
+        boylam,
+        start=y1,
+        end=y2,
         surface_azimuth=deger(cfg_gunes["azimut"]),
-        optimal_surface_tilt=True,          # PVGIS optimum eğimi kendisi bulur
-        components=True,                    # direkt / yaygın / yansıyan ayrı ayrı
+        optimal_surface_tilt=True,  # PVGIS optimum eğimi kendisi bulur
+        components=True,  # direkt / yaygın / yansıyan ayrı ayrı
         url=deger(cfg_gunes["pvgis_url"]),
         timeout=120,
     )
@@ -58,8 +60,7 @@ def pvgis_isinim_indir(kod: str, enlem: float, boylam: float, y1: int, y2: int,
     return veri, meta
 
 
-def pvgis_pv_indir(kod: str, enlem: float, boylam: float, y1: int, y2: int,
-                   cfg_gunes: dict) -> tuple[pd.DataFrame, dict]:
+def pvgis_pv_indir(kod: str, enlem: float, boylam: float, y1: int, y2: int, cfg_gunes: dict) -> tuple[pd.DataFrame, dict]:
     """Doğrulama için PVGIS'in kendi PV hesabı: 1 kWp, crystSi, toplam kayıp %14 (önbellekli)."""
     PVGIS_KLASOR.mkdir(parents=True, exist_ok=True)
     yol = _dosya_adi(kod, y1, y2, "pvcalc")
@@ -69,11 +70,16 @@ def pvgis_pv_indir(kod: str, enlem: float, boylam: float, y1: int, y2: int,
         return pd.read_parquet(veri_yolu), json.loads(meta_yolu.read_text())
 
     veri, meta = pvlib.iotools.get_pvgis_hourly(
-        enlem, boylam, start=y1, end=y2,
+        enlem,
+        boylam,
+        start=y1,
+        end=y2,
         surface_azimuth=deger(cfg_gunes["azimut"]),
         optimal_surface_tilt=True,
-        pvcalculation=True, peakpower=1.0,  # 1 kWp → P sütunu W cinsinden
-        pvtechchoice="crystSi", mountingplace="free",
+        pvcalculation=True,
+        peakpower=1.0,  # 1 kWp → P sütunu W cinsinden
+        pvtechchoice="crystSi",
+        mountingplace="free",
         loss=deger(cfg_gunes["dogrulama_kaybi_pvgis"]) * 100,
         url=deger(cfg_gunes["pvgis_url"]),
         timeout=120,
@@ -88,13 +94,17 @@ def optimum_egim(meta: dict) -> float:
     return float(meta["inputs"]["mounting_system"]["fixed"]["slope"]["value"])
 
 
-def gunes_kapasite_faktoru(veri: pd.DataFrame, meta: dict, cfg_gunes: dict,
-                           dc_ac_orani: float | None = None,
-                           sistem_kaybi: float | None = None,
-                           inverter_yok: bool = False,
-                           dc_dondur: bool = False,
-                           kirpma_kaybi_uygula: bool = True,
-                           zaman_hizasi: str | None = None) -> pd.Series:
+def gunes_kapasite_faktoru(
+    veri: pd.DataFrame,
+    meta: dict,
+    cfg_gunes: dict,
+    dc_ac_orani: float | None = None,
+    sistem_kaybi: float | None = None,
+    inverter_yok: bool = False,
+    dc_dondur: bool = False,
+    kirpma_kaybi_uygula: bool = True,
+    zaman_hizasi: str | None = None,
+) -> pd.Series:
     """
     PVWatts yaklaşımıyla saatlik AC kapasite faktörü hesaplar (1 MW AC başına, 0-1).
 
@@ -120,8 +130,7 @@ def gunes_kapasite_faktoru(veri: pd.DataFrame, meta: dict, cfg_gunes: dict,
     konum = pvlib.solarposition.get_solarposition(veri.index, enlem, boylam, altitude=rakim)
     aoi = pvlib.irradiance.aoi(egim, azimut, konum["apparent_zenith"], konum["azimuth"])
     iam = pvlib.iam.ashrae(aoi, b=0.05)  # aoi ≥ 90° için 0 döner
-    poa_etkin = (veri["poa_direct"] * iam + veri["poa_sky_diffuse"]
-                 + veri["poa_ground_diffuse"]).clip(lower=0)
+    poa_etkin = (veri["poa_direct"] * iam + veri["poa_sky_diffuse"] + veri["poa_ground_diffuse"]).clip(lower=0)
     poa_toplam = veri["poa_direct"] + veri["poa_sky_diffuse"] + veri["poa_ground_diffuse"]
 
     # --- Hücre sıcaklığı (SAPM, açık raf, cam-polimer)

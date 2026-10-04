@@ -1,5 +1,9 @@
 # Hybrid Wind + Solar + Battery Feasibility Model (Türkiye)
 
+[![CI](https://github.com/KULLANICI/hibrit-fizibilite/actions/workflows/ci.yml/badge.svg)](https://github.com/KULLANICI/hibrit-fizibilite/actions/workflows/ci.yml)
+![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)
+[![License: MIT (code)](https://img.shields.io/badge/license-MIT%20(code)-green.svg)](LICENSE)
+
 [Türkçe](README.tr.md) · **Live dashboard:** _link will be added after deployment_
 
 **Documents (Turkish):** [Investment memo (PDF)](outputs/08/Yatirim_Memosu.pdf) · [Presentation (PDF)](outputs/08/Sunum.pdf) ·
@@ -55,6 +59,17 @@ mathematically in `docs/`.
   <em>Opportunity window: NPV if secondary-reserve revenue lasts only N years.</em>
 </p>
 
+## Dashboard
+
+<p align="center"><img src="docs/img/dashboard.gif" width="85%" alt="Dashboard"></p>
+
+| | |
+|---|---|
+| <img src="docs/img/dashboard_ozet.jpg" alt="Summary"> | <img src="docs/img/dashboard_gezgin.jpg" alt="Design explorer"> |
+| <img src="docs/img/dashboard_risk.jpg" alt="Risk"> | <img src="docs/img/dashboard_piyasa.jpg" alt="Market"> |
+
+*Summary, design explorer, risk and market tabs (Turkish UI; an English toggle is built in). The layout also works on a 390 px phone screen.*
+
 ## Method
 
 ```mermaid
@@ -77,6 +92,19 @@ flowchart LR
 | 6 Stress test | SFK supply–demand saturation model (GB/DE/AU calibration), opportunity window, delay & wait-and-see, flexible battery designs, conservative debt | [docs/05 §9](docs/05_risk_ve_gelir_yigini.md#9-stres-testi-sfk-piyasasının-doyumu-aşama-6) |
 | 7 Real-world frictions | System curtailment detected from EPİAŞ instructions + co-located wind farms; incentives (VAT); merchant vs PPA vs YEKDEM in one Monte Carlo; avoided CO2; CPM + Monte Carlo project schedule (COD P50/P80, criticality index); 20-item risk register | [docs/07](docs/07_tamamlayici_analizler.md) |
 | 8 Decision package | Formula-driven Excel model (FAST-style; 48/48 scenarios reconciled to Python), 3-page investment-committee memo, 13-slide deck with a decision-journey chart | [outputs/08](outputs/08) |
+
+## Model validation
+Full write-up (Turkish): [docs/MODEL_DOGRULAMA.md](docs/MODEL_DOGRULAMA.md).
+
+- **Validated:** PV model vs PVGIS (+4.0% annual yield); ERA5 wind calibrated against three wind farms (hourly
+  correlation 0.76 → 0.85, month × hour RMSE 10.6 → 0.9 CF points; cross-validated 2.5–2.8); Excel model reconciles with
+  Python in 48/48 scenarios; representative days vs full-year MILP (−0.7 M$ bias → headline results use the full year);
+  Monte Carlo interpolation error ~1%; deterministic-vs-Monte Carlo gap decomposed component by component (this found
+  the price-median bug).
+- **Not validated (assumptions):** YEKDEM corridor indexation, curtailment compensation share, SFK saturation pace and
+  battery eligibility, PPA discount, CAPEX distributions, ornithology costs; no on-site wind measurement.
+- **Most sensitive to:** long-term price level (break-even ≈ 59 $/MWh vs 58 assumed), SFK saturation pace, CAPEX/WACC,
+  and the schedule (COD after 2030 loses YEKDEM).
 
 ## Tech stack
 Python 3.11 · Pyomo + HiGHS (`highspy`) · CPM / schedule Monte Carlo · pandas / NumPy / SciPy · pvlib · windpowerlib · xarray / ERA5 (cdsapi) ·
@@ -110,17 +138,19 @@ in the repository; the dashboard and report use small aggregated files in `resul
 ├── calistir.py             Single entry point for the whole pipeline
 ├── config.yaml             Every assumption with value, unit, source and note
 ├── src/
-│   ├── 00–06_*.py          Stage scripts
+│   ├── 00–08_*.py          Stage scripts
 │   ├── uretim/             Generation models (PV, wind, calibration)
 │   ├── piyasa/             EPİAŞ client, market analysis
 │   ├── finans/             Price scenarios, cash-flow model, debt
 │   ├── optimizasyon/       Battery/hybrid LPs, representative days, capacity MILP
 │   └── risk/               Dispatch tables, vectorised valuation, Monte Carlo, saturation, design explorer
-├── tests/                  pytest suite
-├── docs/                   Formulations per stage + RAPOR.md (report)
+├── tests/                  pytest suite (CI: .github/workflows/ci.yml)
+├── docs/                   Formulations per stage, RAPOR.md (report), MODEL_DOGRULAMA.md (validation)
 ├── outputs/                Figures and tables per stage, RAPOR.pdf; 08/: memo, deck, Excel model
 ├── results/                Small aggregated results for the dashboard
-└── dashboard/              Streamlit Community Cloud entry point (light requirements)
+├── dashboard/              Streamlit Community Cloud entry point (light requirements)
+├── DATA_SOURCES.md         Data sources, licences, attributions
+└── CHANGELOG.md            Stages, revisions and the decision journey
 ```
 
 ## Limitations
@@ -132,5 +162,17 @@ in the repository; the dashboard and report use small aggregated files in `resul
 - **FX and debt:** FX risk is not modelled separately (real USD). Debt is not restructured within simulations.
 - **Design explorer:** uses one representative weather year plus interpolation (error vs full model ≈ 0.5–0.8 M$).
 
+## Data sources and attribution
+Details, licences and what each source is used for: [DATA_SOURCES.md](DATA_SOURCES.md).
+
+- **ERA5:** Contains modified Copernicus Climate Change Service information 2026. Neither the European Commission nor
+  ECMWF is responsible for any use that may be made of the Copernicus information or data it contains.
+  Dataset: *ERA5 hourly time-series data on single levels from 1940 to present*, DOI [10.24381/1cf1ad76](https://doi.org/10.24381/1cf1ad76).
+- **PVGIS:** PVGIS © European Communities, 2001-2026 (PVGIS-SARAH3 database).
+- **EPİAŞ:** Source: EPİAŞ Transparency Platform (seffaflik.epias.com.tr). Only derived and aggregated results are
+  stored in this repository; raw hourly EPİAŞ data are not redistributed.
+
 ## License
-MIT — see [LICENSE](LICENSE).
+The MIT licence ([LICENSE](LICENSE)) applies **to the code only**. Data and data-derived results remain subject to the
+terms of their sources (Copernicus/C3S licence, PVGIS reuse conditions, EPİAŞ Transparency Platform terms); see
+[DATA_SOURCES.md](DATA_SOURCES.md).

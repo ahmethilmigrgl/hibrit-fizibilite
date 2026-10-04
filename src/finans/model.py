@@ -24,8 +24,8 @@ Tüm tutarlar reel USD (2026).
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Callable
 
 import numpy as np
 import numpy_financial as npf
@@ -45,13 +45,15 @@ class Konfig:
     sebeke_mw: float = 50.0
 
     @classmethod
-    def sozlukten(cls, d: dict) -> "Konfig":
+    def sozlukten(cls, d: dict) -> Konfig:
+        """{ges_mw, res_mw, bess_mw, bess_mwh, ...} sözlüğünden Konfig."""
         return cls(**{k: float(v) for k, v in d.items()})
 
 
 @dataclass
 class Varsayimlar:
     """config.yaml'dan okunan finansal ve teknik varsayımlar (duyarlılık için kopyalanıp değiştirilebilir)."""
+
     insaat_suresi: int
     capex_takvimi: list[float]
     omur: int
@@ -89,25 +91,41 @@ class Varsayimlar:
     ges_uretim_carpani: float = 1.0
 
     @classmethod
-    def configten(cls, cfg: dict) -> "Varsayimlar":
+    def configten(cls, cfg: dict) -> Varsayimlar:
+        """config.yaml'dan proje, finans ve teknoloji varsayımlarını okur."""
         p, f, t = cfg["proje"], cfg["finans"], cfg["teknoloji"]
         return cls(
-            insaat_suresi=deger(p["insaat_suresi"]), capex_takvimi=deger(p["capex_takvimi"]), omur=deger(p["omur"]),
-            wacc=deger(f["wacc_reel"]), vergi=deger(f["kurumlar_vergisi"]), zarar_mahsup=deger(f["zarar_mahsup_suresi"]),
-            amortisman=deger(f["amortisman_suresi"]), sokum=deger(f["sokum_net"]),
-            capex_ges=deger(t["ges"]["capex"]), capex_res=deger(t["res"]["capex"]),
-            capex_bess_enerji=deger(t["bess"]["capex_enerji"]), capex_bess_guc=deger(t["bess"]["capex_guc"]),
+            insaat_suresi=deger(p["insaat_suresi"]),
+            capex_takvimi=deger(p["capex_takvimi"]),
+            omur=deger(p["omur"]),
+            wacc=deger(f["wacc_reel"]),
+            vergi=deger(f["kurumlar_vergisi"]),
+            zarar_mahsup=deger(f["zarar_mahsup_suresi"]),
+            amortisman=deger(f["amortisman_suresi"]),
+            sokum=deger(f["sokum_net"]),
+            capex_ges=deger(t["ges"]["capex"]),
+            capex_res=deger(t["res"]["capex"]),
+            capex_bess_enerji=deger(t["bess"]["capex_enerji"]),
+            capex_bess_guc=deger(t["bess"]["capex_guc"]),
             capex_sebeke=deger(t["sebeke"]["capex"]),
-            opex_ges=deger(t["ges"]["opex_sabit"]), opex_res=deger(t["res"]["opex_sabit"]),
-            arazi_ges=deger(t["ges"]["arazi"]), arazi_res=deger(t["res"]["arazi"]),
-            opex_bess_oran=deger(t["bess"]["opex_oran"]), sigorta_oran=deger(t["ortak"]["sigorta"]),
-            teias_kapasite=deger(t["sebeke"]["teias_kapasite_bedeli"]), teias_enerji=deger(t["sebeke"]["teias_enerji_bedeli"]),
+            opex_ges=deger(t["ges"]["opex_sabit"]),
+            opex_res=deger(t["res"]["opex_sabit"]),
+            arazi_ges=deger(t["ges"]["arazi"]),
+            arazi_res=deger(t["res"]["arazi"]),
+            opex_bess_oran=deger(t["bess"]["opex_oran"]),
+            sigorta_oran=deger(t["ortak"]["sigorta"]),
+            teias_kapasite=deger(t["sebeke"]["teias_kapasite_bedeli"]),
+            teias_enerji=deger(t["sebeke"]["teias_enerji_bedeli"]),
             dengesizlik=deger(t["ortak"]["dengesizlik"]),
-            degr_ges=deger(t["ges"]["degradasyon"]), degr_res=deger(t["res"]["degradasyon"]),
-            omur_ges=deger(t["ges"]["omur"]), omur_res=deger(t["res"]["omur"]), omur_bess=deger(t["bess"]["omur"]),
+            degr_ges=deger(t["ges"]["degradasyon"]),
+            degr_res=deger(t["res"]["degradasyon"]),
+            omur_ges=deger(t["ges"]["omur"]),
+            omur_res=deger(t["res"]["omur"]),
+            omur_bess=deger(t["bess"]["omur"]),
             augmentation=deger(t["bess"]["augmentation"]),
             eszamanlilik_res=deger(cfg["fiyat_senaryolari"]["eszamanlilik_duzeltmesi"])["res"],
-            bess_yenileme=deger(t["bess"]["yenileme"]), bess_yipranma=deger(t["bess"]["yipranma_maliyeti"]),
+            bess_yenileme=deger(t["bess"]["yenileme"]),
+            bess_yipranma=deger(t["bess"]["yipranma_maliyeti"]),
         )
 
 
@@ -128,7 +146,7 @@ BessDispatch = Callable[[np.ndarray, np.ndarray, np.ndarray, Konfig, Varsayimlar
 def _vergi_hesapla(matrah_oncesi: np.ndarray, oran: float, mahsup: int) -> np.ndarray:
     """Yıllık vergi; zararlar 'mahsup' yıl ileri taşınır (FIFO)."""
     vergi = np.zeros_like(matrah_oncesi)
-    zararlar: list[list[float]] = []   # [kalan_tutar, kalan_yil]
+    zararlar: list[list[float]] = []  # [kalan_tutar, kalan_yil]
     for i, m in enumerate(matrah_oncesi):
         zararlar = [[z, y - 1] for z, y in zararlar if y - 1 >= 0 and z > 0]
         if m <= 0:
@@ -153,19 +171,26 @@ def lcoe_hesapla(capex_akisi: np.ndarray, isletme_maliyeti: np.ndarray, enerji: 
     return float(((capex_akisi * df[:nb]).sum() + (isletme_maliyeti * df[nb:]).sum()) / (enerji * df[nb:]).sum())
 
 
-def proje_degerle(konfig: Konfig | dict, v: Varsayimlar, fiyat: FiyatSenaryosu, uretim: UretimProfili,
-                  bess_dispatch: BessDispatch | None = None, gelir_carpani: float = 1.0) -> Sonuc:
+def proje_degerle(
+    konfig: Konfig | dict,
+    v: Varsayimlar,
+    fiyat: FiyatSenaryosu,
+    uretim: UretimProfili,
+    bess_dispatch: BessDispatch | None = None,
+    gelir_carpani: float = 1.0,
+) -> Sonuc:
+    """Konfigürasyonun reel USD nakit akışı, NPV, IRR ve LCOE'si (hava yılları × şekil yılları beklenen değeri)."""
     k = konfig if isinstance(konfig, Konfig) else Konfig.sozlukten(konfig)
     nb, N = v.insaat_suresi, v.omur
-    yil_isl = np.arange(1, N + 1)                                          # işletme yılı k
+    yil_isl = np.arange(1, N + 1)  # işletme yılı k
     takvim = np.array(fiyat.yillar[:N])
 
     # ------------------------------------------------------------- üretim (yıl, hava, saat)
     deg_g = (1 - v.degr_ges) ** (yil_isl - 1) * (yil_isl <= v.omur_ges)
     deg_r = (1 - v.degr_res) ** (yil_isl - 1) * (yil_isl <= v.omur_res)
-    G = k.ges_mw * v.ges_uretim_carpani * deg_g[:, None, None] * uretim.ges[None]          # (N, W, 8760)
+    G = k.ges_mw * v.ges_uretim_carpani * deg_g[:, None, None] * uretim.ges[None]  # (N, W, 8760)
     R = k.res_mw * v.res_uretim_carpani * deg_r[:, None, None] * uretim.res[None]
-    P = fiyat.fiyatlar[:N]                                                                 # (N, S, 8760)
+    P = fiyat.fiyatlar[:N]  # (N, S, 8760)
 
     # Satış ve kesinti. Ekonomik kesinti: fiyat < TEİAŞ enerji bedeli olan saatlerde satılmaz
     # (santral bu saatlerde değişken maliyetinin altında satmak yerine üretimini keser).
@@ -173,7 +198,7 @@ def proje_degerle(konfig: Konfig | dict, v: Varsayimlar, fiyat: FiyatSenaryosu, 
         Gx, Rx = G[:, :, None, :], R[:, :, None, :]
         # Kanca: (şebekeye verilen x, deşarj d, santralden şarj c), şekil (N, W, S, 8760)
         x, d, c = bess_dispatch(Gx, Rx, P[:, None, :, :], k, v)
-        dogrudan = np.clip(x - d, 0, None)                            # santralden doğrudan satılan
+        dogrudan = np.clip(x - d, 0, None)  # santralden doğrudan satılan
         pay_g = np.divide(Gx, Gx + Rx, out=np.zeros_like(x), where=(Gx + Rx) > 0)
         Pb = P[:, None]
         sat_ges = (dogrudan * pay_g).sum(-1).mean(axis=(1, 2))
@@ -187,7 +212,7 @@ def proje_degerle(konfig: Konfig | dict, v: Varsayimlar, fiyat: FiyatSenaryosu, 
         bess_sat = desarj
     else:
         top = G + R
-        tavan = np.minimum(top, k.sebeke_mw)                                               # (N, W, 8760)
+        tavan = np.minimum(top, k.sebeke_mw)  # (N, W, 8760)
         pay_g = np.divide(G, top, out=np.zeros_like(top), where=top > 0)
         S = P.shape[1]
         gelir_ges = gelir_res = sat_ges = sat_res = enerji_sat = kesilen = 0.0
@@ -234,7 +259,7 @@ def proje_degerle(konfig: Konfig | dict, v: Varsayimlar, fiyat: FiyatSenaryosu, 
     opex_bess = v.opex_bess_oran * capex["bess"] * aktif_b
     sigorta = v.sigorta_oran * capex_top * np.ones(N)
     teias = v.teias_kapasite * k.sebeke_mw * np.ones(N) + v.teias_enerji * enerji_sat
-    yipranma = v.bess_yipranma * desarj                                   # kullanıma bağlı batarya yıpranması
+    yipranma = v.bess_yipranma * desarj  # kullanıma bağlı batarya yıpranması
     opex = opex_ges + opex_res + opex_bess + sigorta + teias + yipranma
 
     aug = np.zeros(N)
@@ -244,7 +269,7 @@ def proje_degerle(konfig: Konfig | dict, v: Varsayimlar, fiyat: FiyatSenaryosu, 
         for y in yillar:
             if y <= N and (yenile or y <= v.omur_bess) and y != v.omur_bess:
                 aug[y - 1] += a["oran"] * k.bess_mwh * v.capex_bess_enerji * cc * (1 - a["maliyet_dususu_yillik"]) ** y
-        if yenile:   # ömür sonunda tam yenileme (maliyet düşüşüyle)
+        if yenile:  # ömür sonunda tam yenileme (maliyet düşüşüyle)
             aug[v.omur_bess - 1] += capex["bess"] * (1 - v.bess_yenileme["maliyet_dususu_yillik"]) ** v.omur_bess
     sokum = np.zeros(N)
     sokum[min(N, v.omur_ges) - 1] += v.sokum["ges"] * k.ges_mw
@@ -285,25 +310,43 @@ def proje_degerle(konfig: Konfig | dict, v: Varsayimlar, fiyat: FiyatSenaryosu, 
         sebeke_payi = pay[tek] / top_mw
         maliyet = (capex[tek] + capex["sebeke"] * sebeke_payi) * (capex_akisi[:nb] / max(capex_top, 1e-9) * df[:nb]).sum()
         isl_maliyet = opx + sebeke_payi * v.teias_kapasite * k.sebeke_mw + v.sigorta_oran * (capex[tek] + capex["sebeke"] * sebeke_payi)
-        isl_maliyet = isl_maliyet + v.teias_enerji * ur + (v.sokum[tek] * pay[tek]) * (np.arange(1, N + 1) == min(N, getattr(v, f"omur_{tek}")))
+        isl_maliyet = (
+            isl_maliyet + v.teias_enerji * ur + (v.sokum[tek] * pay[tek]) * (np.arange(1, N + 1) == min(N, getattr(v, f"omur_{tek}")))
+        )
         lcoe[tek] = float((maliyet + (isl_maliyet * df_isl).sum()) / (ur * df_isl).sum())
-    lcoe["hibrit_satilan"] = (lcoe_hesapla(capex_akisi[:nb], opex + aug + sokum, enerji_sat, v.wacc)
-                              if enerji_sat.sum() > 0 else float("nan"))
+    lcoe["hibrit_satilan"] = (
+        lcoe_hesapla(capex_akisi[:nb], opex + aug + sokum, enerji_sat, v.wacc) if enerji_sat.sum() > 0 else float("nan")
+    )
 
-    yillik = pd.DataFrame({
-        "İşletme yılı": yil_isl, "Takvim yılı": takvim,
-        "GES üretim [MWh]": uretim_ges, "RES üretim [MWh]": uretim_res,
-        "Kesilen [MWh]": kesilen, "Satılan [MWh]": enerji_sat,
-        "Ort. PTF [USD/MWh]": ort_fiyat,
-        "GES geliri [USD]": gelir_ges, "RES geliri [USD]": gelir_res, "BESS geliri [USD]": gelir_bess,
-        "BESS deşarj [MWh]": desarj, "BESS'ten satılan [MWh]": bess_sat,
-        "Eşzamanlılık düzeltmesi [USD]": -esz * gelir_carpani, "Toplam gelir [USD]": gelir,
-        "Dengesizlik [USD]": -dengesizlik, "İşletme-bakım + arazi [USD]": -(opex_ges + opex_res + opex_bess),
-        "BESS yıpranma [USD]": -yipranma,
-        "Sigorta [USD]": -sigorta, "TEİAŞ bedelleri [USD]": -teias, "FAVÖK [USD]": favok,
-        "Amortisman [USD]": -amort, "BESS augmentation + yenileme [USD]": -aug, "Söküm [USD]": -sokum,
-        "Vergi [USD]": -vergi, "Serbest nakit akışı [USD]": favok - vergi - aug - sokum,
-    })
+    yillik = pd.DataFrame(
+        {
+            "İşletme yılı": yil_isl,
+            "Takvim yılı": takvim,
+            "GES üretim [MWh]": uretim_ges,
+            "RES üretim [MWh]": uretim_res,
+            "Kesilen [MWh]": kesilen,
+            "Satılan [MWh]": enerji_sat,
+            "Ort. PTF [USD/MWh]": ort_fiyat,
+            "GES geliri [USD]": gelir_ges,
+            "RES geliri [USD]": gelir_res,
+            "BESS geliri [USD]": gelir_bess,
+            "BESS deşarj [MWh]": desarj,
+            "BESS'ten satılan [MWh]": bess_sat,
+            "Eşzamanlılık düzeltmesi [USD]": -esz * gelir_carpani,
+            "Toplam gelir [USD]": gelir,
+            "Dengesizlik [USD]": -dengesizlik,
+            "İşletme-bakım + arazi [USD]": -(opex_ges + opex_res + opex_bess),
+            "BESS yıpranma [USD]": -yipranma,
+            "Sigorta [USD]": -sigorta,
+            "TEİAŞ bedelleri [USD]": -teias,
+            "FAVÖK [USD]": favok,
+            "Amortisman [USD]": -amort,
+            "BESS augmentation + yenileme [USD]": -aug,
+            "Söküm [USD]": -sokum,
+            "Vergi [USD]": -vergi,
+            "Serbest nakit akışı [USD]": favok - vergi - aug - sokum,
+        }
+    )
     sat_top = enerji_sat.sum()
     ozet = {
         "CAPEX [M USD]": capex_top / 1e6,
@@ -314,8 +357,14 @@ def proje_degerle(konfig: Konfig | dict, v: Varsayimlar, fiyat: FiyatSenaryosu, 
         "Ort. PTF [USD/MWh]": float(ort_fiyat.mean()),
         "GES yakalanan [USD/MWh]": gelir_ges.sum() / sat_ges.sum() if sat_ges.sum() > 0 else float("nan"),
         "RES yakalanan [USD/MWh]": gelir_res.sum() / sat_res.sum() if sat_res.sum() > 0 else float("nan"),
-        "nakit_akisi": sna, "capex_akisi": capex_akisi, "favok": favok, "vergi": vergi,
-        "amortisman": amort, "aug": aug, "sokum": sokum, "capex_top": capex_top,
+        "nakit_akisi": sna,
+        "capex_akisi": capex_akisi,
+        "favok": favok,
+        "vergi": vergi,
+        "amortisman": amort,
+        "aug": aug,
+        "sokum": sokum,
+        "capex_top": capex_top,
     }
     return Sonuc(yillik=yillik, npv=npv, irr=irr, lcoe=lcoe, ozet=ozet)
 

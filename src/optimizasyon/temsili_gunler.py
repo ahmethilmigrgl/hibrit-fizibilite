@@ -42,8 +42,7 @@ def _kmeans(X: np.ndarray, k: int, tekrar: int = 10, iter_: int = 100, tohum: in
     return en_iyi
 
 
-def temsili_gunler(fiyatlar: list[np.ndarray], ges: np.ndarray, res: np.ndarray, k: int,
-                   tohum: int = 0) -> dict:
+def temsili_gunler(fiyatlar: list[np.ndarray], ges: np.ndarray, res: np.ndarray, k: int, tohum: int = 0) -> dict:
     """
     fiyatlar: her fiyat-yılı için 8760'lık dizi (ör. iki şekil yılı); ges, res: 8760'lık KF dizileri.
     Döndürür: {"gunler": [(fiyat_yili_indeksi, gun_indeksi)], "agirlik": yıl başına gün sayısı,
@@ -52,9 +51,9 @@ def temsili_gunler(fiyatlar: list[np.ndarray], ges: np.ndarray, res: np.ndarray,
     gun_sayisi = 365
     ozellik, kaynak = [], []
     for i, p in enumerate(fiyatlar):
-        P = p[:gun_sayisi * 24].reshape(gun_sayisi, 24)
-        G = ges[:gun_sayisi * 24].reshape(gun_sayisi, 24)
-        R = res[:gun_sayisi * 24].reshape(gun_sayisi, 24)
+        P = p[: gun_sayisi * 24].reshape(gun_sayisi, 24)
+        G = ges[: gun_sayisi * 24].reshape(gun_sayisi, 24)
+        R = res[: gun_sayisi * 24].reshape(gun_sayisi, 24)
         ozellik.append(np.hstack([P / p.mean(), G, R]))
         kaynak += [(i, d) for d in range(gun_sayisi)]
     X = np.vstack(ozellik)
@@ -66,12 +65,13 @@ def temsili_gunler(fiyatlar: list[np.ndarray], ges: np.ndarray, res: np.ndarray,
             continue
         medoid = uyeler[np.argmin(((X[uyeler] - C[j]) ** 2).sum(1))]
         gunler.append(kaynak[medoid])
-        agirlik.append(len(uyeler) / len(fiyatlar))       # yıl başına eşdeğer gün sayısı
+        agirlik.append(len(uyeler) / len(fiyatlar))  # yıl başına eşdeğer gün sayısı
     return {"gunler": gunler, "agirlik": np.array(agirlik), "etiket": etiket, "sse": sse}
 
 
-def segmentleri_kur(fiyatlar: list[np.ndarray], ges: np.ndarray, res: np.ndarray, k: int | None, Segment,
-                    yanlar: list[np.ndarray] | None = None) -> list:
+def segmentleri_kur(
+    fiyatlar: list[np.ndarray], ges: np.ndarray, res: np.ndarray, k: int | None, Segment: type, yanlar: list[np.ndarray] | None = None
+) -> list:
     """
     Kapasite modeli için segment listesi.
         k = None → tam yıl: her fiyat-yılı bir segment (ağırlık 1/len(fiyatlar))
@@ -83,7 +83,7 @@ def segmentleri_kur(fiyatlar: list[np.ndarray], ges: np.ndarray, res: np.ndarray
     if k is None:
         return [Segment(p, ges, res, 1 / len(fiyatlar), None if yanlar is None else yanlar[i]) for i, p in enumerate(fiyatlar)]
     tg = temsili_gunler(fiyatlar, ges, res, k)
-    dilim = lambda a, d: a[d * 24:(d + 1) * 24]
+    dilim = lambda a, d: a[d * 24 : (d + 1) * 24]
     P = np.array([dilim(fiyatlar[s], d) for s, d in tg["gunler"]])
     G = np.array([dilim(ges, d) for s, d in tg["gunler"]])
     R = np.array([dilim(res, d) for s, d in tg["gunler"]])
@@ -94,6 +94,8 @@ def segmentleri_kur(fiyatlar: list[np.ndarray], ges: np.ndarray, res: np.ndarray
     aR = res.mean() / (w @ R.mean(1))
     Y = None if yanlar is None else [dilim(yanlar[s], d) for s, d in tg["gunler"]]
     # Ağırlık = yıl başına eşdeğer gün sayısı → Σ ağırlık × 24 saat = 8760
-    segs = [Segment(P[i] * aP, np.clip(G[i] * aG, 0, 1), np.clip(R[i] * aR, 0, 1), float(tg["agirlik"][i]),
-                    None if Y is None else Y[i]) for i in range(len(w))]
+    segs = [
+        Segment(P[i] * aP, np.clip(G[i] * aG, 0, 1), np.clip(R[i] * aR, 0, 1), float(tg["agirlik"][i]), None if Y is None else Y[i])
+        for i in range(len(w))
+    ]
     return segs

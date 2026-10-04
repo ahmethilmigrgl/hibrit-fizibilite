@@ -31,10 +31,11 @@ YUMUSATMA_CEKIRDEGI = np.array([[1, 2, 1], [2, 4, 2], [1, 2, 1]], dtype=float) /
 @dataclass
 class ReferansModel:
     """Referans santralin hız/yoğunluk serileri ve güç eğrisi; k verildiğinde KF üretir."""
-    v: np.ndarray          # göbek yüksekliği hızı (kalibrasyonsuz, aralık ortalaması) [m/s]
-    rho: np.ndarray        # hava yoğunluğu [kg/m³]
-    ay: np.ndarray         # TSİ ayı (1-12)
-    saat: np.ndarray       # TSİ saati (0-23)
+
+    v: np.ndarray  # göbek yüksekliği hızı (kalibrasyonsuz, aralık ortalaması) [m/s]
+    rho: np.ndarray  # hava yoğunluğu [kg/m³]
+    ay: np.ndarray  # TSİ ayı (1-12)
+    saat: np.ndarray  # TSİ saati (0-23)
     indeks: pd.DatetimeIndex
     egri_hiz: np.ndarray
     egri_guc: np.ndarray
@@ -49,19 +50,26 @@ class ReferansModel:
         return np.clip(np.asarray(guc) / self.nominal * (1 - self.kayip), 0, 1)
 
     def kf_matris(self, matris: np.ndarray) -> np.ndarray:
+        """Ay × saat hız katsayısı matrisiyle kalibre edilmiş kapasite faktörü."""
         return self.kf(matris[self.ay - 1, self.saat])
 
 
 def referans_model(era5: pd.DataFrame, cfg_ruzgar: dict, turbin_modeli: str, gobek: float) -> ReferansModel:
     """Referans santrali vekil türbin ve göbek yüksekliğiyle, aralık ortalaması zaman tanımında hazırlar."""
-    _, ara = ruzgar.ruzgar_kapasite_faktoru(era5, cfg_ruzgar, turbin_modeli=turbin_modeli, gobek=gobek,
-                                            katsayi=1.0, zaman_hizasi="aralik")
+    _, ara = ruzgar.ruzgar_kapasite_faktoru(era5, cfg_ruzgar, turbin_modeli=turbin_modeli, gobek=gobek, katsayi=1.0, zaman_hizasi="aralik")
     t = ruzgar.turbin(turbin_modeli, cfg_ruzgar, gobek)
     ay, saat = ruzgar.tsi_ay_saat(ara.index)
-    return ReferansModel(v=ara["v_gobek"].to_numpy(), rho=ara["yogunluk"].to_numpy(), ay=ay, saat=saat,
-                         indeks=ara.index, egri_hiz=t.power_curve["wind_speed"].to_numpy(),
-                         egri_guc=t.power_curve["value"].to_numpy(), nominal=t.nominal_power,
-                         kayip=deger(cfg_ruzgar["toplam_kayip"]))
+    return ReferansModel(
+        v=ara["v_gobek"].to_numpy(),
+        rho=ara["yogunluk"].to_numpy(),
+        ay=ay,
+        saat=saat,
+        indeks=ara.index,
+        egri_hiz=t.power_curve["wind_speed"].to_numpy(),
+        egri_guc=t.power_curve["value"].to_numpy(),
+        nominal=t.nominal_power,
+        kayip=deger(cfg_ruzgar["toplam_kayip"]),
+    )
 
 
 def sabit_k(model: ReferansModel, gozlenen: np.ndarray, maske: np.ndarray) -> float:
@@ -106,8 +114,7 @@ def k_matrisi(model: ReferansModel, gozlenen: np.ndarray, maske: np.ndarray) -> 
     yumusak = yumusat(ham)
     # Yumuşatma toplam ortalamayı biraz kaydırır → tek ölçek çarpanıyla yeniden eşle
     hedef = np.nanmean(gozlenen[maske])
-    olcek = brentq(lambda c: model.kf(c * yumusak[model.ay - 1, model.saat], maske).mean() - hedef,
-                   0.8, 1.25, xtol=1e-5)
+    olcek = brentq(lambda c: model.kf(c * yumusak[model.ay - 1, model.saat], maske).mean() - hedef, 0.8, 1.25, xtol=1e-5)
     yumusak = yumusak * olcek
     kolonlar = pd.Index(range(24), name="tsi_saat")
     satirlar = pd.Index(range(1, 13), name="ay")

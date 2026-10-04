@@ -20,6 +20,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
@@ -51,21 +52,27 @@ def saha_verisini_hazirla(kod: str, saha: dict, cfg: dict) -> dict:
 
     # --- GES doğrulama köprüsü (kWh/kWp/yıl)
     yil_sayisi = y2 - y1 + 1
-    pvgis_kwh_kwp = pvcalc["P"].sum() / 1000 / yil_sayisi                     # W → kWh
+    pvgis_kwh_kwp = pvcalc["P"].sum() / 1000 / yil_sayisi  # W → kWh
     # (a) PVGIS ile aynı tanım: DC/AC=1, kırpma yok, %14 toplam kayıp (inverter dahil)
-    esdeger = gunes.gunes_kapasite_faktoru(isinim, meta, cg, dc_ac_orani=1.0,
-                                           sistem_kaybi=deger(cg["dogrulama_kaybi_pvgis"]),
-                                           inverter_yok=True)
-    model_esdeger_kwh_kwp = esdeger.sum() / yil_sayisi                         # MWh/MWp = kWh/kWp
+    esdeger = gunes.gunes_kapasite_faktoru(
+        isinim, meta, cg, dc_ac_orani=1.0, sistem_kaybi=deger(cg["dogrulama_kaybi_pvgis"]), inverter_yok=True
+    )
+    model_esdeger_kwh_kwp = esdeger.sum() / yil_sayisi  # MWh/MWp = kWh/kWp
     # (b) Proje tasarımı: DC/AC=1.2, %14 kayıp + %96 inverter + kırpma
     dc_ac = deger(cg["dc_ac_orani"])
     model_tasarim_kwh_kwp = ges_kf.sum() / dc_ac / yil_sayisi
 
     return {
-        "kod": kod, "saha": saha, "meta": meta, "ges_kf": ges_kf, "res_kf": res_kf,
-        "res_kf_alt": res_kf_alt, "ara": ara,
+        "kod": kod,
+        "saha": saha,
+        "meta": meta,
+        "ges_kf": ges_kf,
+        "res_kf": res_kf,
+        "res_kf_alt": res_kf_alt,
+        "ara": ara,
         "era5_grid": (float(era5["latitude"].iloc[0]), float(era5["longitude"].iloc[0])),
-        "pvgis_kwh_kwp": pvgis_kwh_kwp, "model_esdeger_kwh_kwp": model_esdeger_kwh_kwp,
+        "pvgis_kwh_kwp": pvgis_kwh_kwp,
+        "model_esdeger_kwh_kwp": model_esdeger_kwh_kwp,
         "model_tasarim_kwh_kwp": model_tasarim_kwh_kwp,
         "kirpma": gunes.kirpma_orani(isinim, meta, cg),
     }
@@ -78,7 +85,8 @@ def ozet_satiri(s: dict) -> dict:
     gunluk = df.resample("D").mean()
     return {
         "Saha": s["saha"]["ad"],
-        "Enlem": s["saha"]["enlem"], "Boylam": s["saha"]["boylam"],
+        "Enlem": s["saha"]["enlem"],
+        "Boylam": s["saha"]["boylam"],
         "ERA5 grid": f"{s['era5_grid'][0]:.2f}, {s['era5_grid'][1]:.2f}",
         "Optimum eğim [°]": gunes.optimum_egim(s["meta"]),
         "GES KF [%]": 100 * df["ges_kf"].mean(),
@@ -119,14 +127,12 @@ def grafik_kf_karsilastirma(tablo: pd.DataFrame):
     fig, ax = plt.subplots(figsize=(8, 4.2))
     x = np.arange(len(tablo))
     w = 0.36
-    for i, (sutun, renk, etiket) in enumerate([("GES KF [%]", RENK_GES, "GES"),
-                                               ("RES KF E-141 [%]", RENK_RES, "RES (E-141)")]):
+    for i, (sutun, renk, etiket) in enumerate([("GES KF [%]", RENK_GES, "GES"), ("RES KF E-141 [%]", RENK_RES, "RES (E-141)")]):
         cubuk = ax.bar(x + (i - 0.5) * (w + 0.02), tablo[sutun], w, color=renk, label=etiket)
         ax.bar_label(cubuk, fmt="%.1f", fontsize=8, color=IKINCIL, padding=2)
     ax.set_xticks(x, tablo["Saha"])
     ax.set_ylabel("Kapasite faktörü [%]", color=IKINCIL)
-    ax.set_title("Yıllık ortalama kapasite faktörü (AC, kayıplar sonrası)", loc="left",
-                 color=MUREKKEP, fontsize=11)
+    ax.set_title("Yıllık ortalama kapasite faktörü (AC, kayıplar sonrası)", loc="left", color=MUREKKEP, fontsize=11)
     ax.legend(frameon=False, fontsize=9)
     _eksen_sade(ax)
     fig.tight_layout()
@@ -160,7 +166,7 @@ def grafik_gun_ici_profil(sahalar: list[dict]):
     for ax, s in zip(axs, sahalar):
         df = pd.concat([s["ges_kf"], s["res_kf"]], axis=1, join="inner")
         profil = df.groupby(df.index.hour).mean()
-        tsi = (profil.index + 3) % 24                   # Türkiye saati = UTC+3
+        tsi = (profil.index + 3) % 24  # Türkiye saati = UTC+3
         profil = profil.set_axis(tsi).sort_index()
         ax.plot(profil.index, profil["ges_kf"], color=RENK_GES, lw=2, label="GES")
         ax.plot(profil.index, profil["res_kf"], color=RENK_RES, lw=2, label="RES")
@@ -212,10 +218,7 @@ def main():
     tablo.to_csv(CIKTI / "saha_karsilastirma.csv", index=False, encoding="utf-8-sig")
 
     # Saatlik profiller (UTC) — uzun formatta tek parquet
-    profiller = pd.concat(
-        [pd.concat([s["ges_kf"], s["res_kf"]], axis=1, join="inner").assign(saha=s["kod"])
-         for s in sahalar]
-    )
+    profiller = pd.concat([pd.concat([s["ges_kf"], s["res_kf"]], axis=1, join="inner").assign(saha=s["kod"]) for s in sahalar])
     profiller.index.name = "zaman_utc"
     profiller.to_parquet(ISLENMIS_VERI / "tarama_profilleri.parquet")
 

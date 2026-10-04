@@ -33,13 +33,15 @@ from src.uretim import ruzgar
 
 CIKTI = CIKTILAR / "02_piyasa"
 REFERANS = "enerjisa_canakkale"
-VEKIL_TURBIN = "E-92/2350"     # Siemens SWT-2.3-93'e en yakın spesifik güç (354 vs 339 W/m²)
-VEKIL_GOBEK = 80               # m, 2011 dönemi 2.3 MW türbinler için tipik (varsayım)
+VEKIL_TURBIN = "E-92/2350"  # Siemens SWT-2.3-93'e en yakın spesifik güç (354 vs 339 W/m²)
+VEKIL_GOBEK = 80  # m, 2011 dönemi 2.3 MW türbinler için tipik (varsayım)
 DUYARLILIK = [("E-92/2350", 70), ("E-92/2350", 100), ("E-82/2300", 80), ("SWT113/2300", 80)]
 UZUN_DURUS_SAAT = 48
 CAPRAZ_SANTRALLER = ["enerjisa_canakkale", "camseki", "intepe"]
-KAYNAK = ("Kaynak: EPİAŞ Şeffaflık Platformu (gerçek zamanlı üretim), ERA5 (Copernicus/ECMWF). "
-          f"Model: windpowerlib {VEKIL_TURBIN} vekil türbin, {VEKIL_GOBEK} m göbek, %12 kayıp. Kendi hesaplamam.")
+KAYNAK = (
+    "Kaynak: EPİAŞ Şeffaflık Platformu (gerçek zamanlı üretim), ERA5 (Copernicus/ECMWF). "
+    f"Model: windpowerlib {VEKIL_TURBIN} vekil türbin, {VEKIL_GOBEK} m göbek, %12 kayıp. Kendi hesaplamam."
+)
 
 
 def uzun_duruslar(seri: pd.Series, esik_mw: float = 0.05, min_saat: int = UZUN_DURUS_SAAT) -> pd.Series:
@@ -91,21 +93,31 @@ def main():
     for ad, egitim, test in [("Kur 2014–18, test 2019–23", A, B), ("Kur 2019–23, test 2014–18", B, A)]:
         k = kal.sabit_k(m, g_ref, egitim)
         ham, yum = kal.k_matrisi(m, g_ref, egitim)
-        for yontem, kf in [("Sabit k", m.kf(k)), ("Ay × saat (ham)", m.kf_matris(ham.to_numpy())),
-                           ("Ay × saat (yumuşatılmış)", m.kf_matris(yum.to_numpy()))]:
+        for yontem, kf in [
+            ("Sabit k", m.kf(k)),
+            ("Ay × saat (ham)", m.kf_matris(ham.to_numpy())),
+            ("Ay × saat (yumuşatılmış)", m.kf_matris(yum.to_numpy())),
+        ]:
             cv.append({"Katman": ad, "Yöntem": yontem, **kal.metrikler(m, g_ref, kf, test)})
     cv = pd.DataFrame(cv)
     pd.set_option("display.width", 250)
-    print("\nÇapraz doğrulama (test dönemi metrikleri):"); print(cv.round(3).to_string(index=False))
+    print("\nÇapraz doğrulama (test dönemi metrikleri):")
+    print(cv.round(3).to_string(index=False))
 
     # --- 2) Nihai kalibrasyon, 2014–2023'ün tamamı
     k_sabit = kal.sabit_k(m, g_ref, gecerli)
     ham, yum = kal.k_matrisi(m, g_ref, gecerli)
     kf_sabit, kf_matris = m.kf(k_sabit), m.kf_matris(yum.to_numpy())
-    print(f"\nSabit k (hizalı): {k_sabit:.4f} | matris: min {yum.values.min():.3f}, maks {yum.values.max():.3f}, "
-          f"ortalama {yum.values.mean():.3f}")
-    tum_metrik = pd.DataFrame([{"Yöntem": "Sabit k", **kal.metrikler(m, g_ref, kf_sabit, gecerli)},
-                               {"Yöntem": "Ay × saat", **kal.metrikler(m, g_ref, kf_matris, gecerli)}])
+    print(
+        f"\nSabit k (hizalı): {k_sabit:.4f} | matris: min {yum.values.min():.3f}, maks {yum.values.max():.3f}, "
+        f"ortalama {yum.values.mean():.3f}"
+    )
+    tum_metrik = pd.DataFrame(
+        [
+            {"Yöntem": "Sabit k", **kal.metrikler(m, g_ref, kf_sabit, gecerli)},
+            {"Yöntem": "Ay × saat", **kal.metrikler(m, g_ref, kf_matris, gecerli)},
+        ]
+    )
     print(tum_metrik.round(3).to_string(index=False))
 
     # Matris kaydı: data/processed (model girdisi) + outputs (inceleme)
@@ -121,14 +133,16 @@ def main():
         mm = kal.referans_model(era5, cr, t, h)
         duy.append({"türbin vekili": t, "göbek [m]": h, "k": kal.sabit_k(mm, g_ref, gecerli)})
     duy = pd.DataFrame(duy)
-    print("\nDuyarlılık:"); print(duy.round(3).to_string(index=False))
+    print("\nDuyarlılık:")
+    print(duy.round(3).to_string(index=False))
 
     # --- 4) Yıllık tablo (referans)
     yt = pd.DataFrame({"g": g_ref, "s": kf_sabit, "m": kf_matris, "m1": m.kf(1.0), "yil": yil})[gecerli]
-    tam_yil = yt.groupby("yil").size() > 8000                   # yalnızca tam yıllar
+    tam_yil = yt.groupby("yil").size() > 8000  # yalnızca tam yıllar
     yillik = 100 * yt.groupby("yil")[["g", "m1", "s", "m"]].mean().loc[tam_yil[tam_yil].index]
     yillik.columns = ["Gözlenen KF [%]", "Model k=1 [%]", f"Model sabit k={k_sabit:.3f} [%]", "Model ay×saat [%]"]
-    print("\nYıllık (referans santral):"); print(yillik.round(2).to_string())
+    print("\nYıllık (referans santral):")
+    print(yillik.round(2).to_string())
 
     # --- 5) Çapraz kontrol: üç santralin gün içi profili, model (sabit vs matris) ile
     tsi = (m.indeks.hour + 3) % 24
@@ -140,7 +154,8 @@ def main():
     profiller["Model, ay × saat k"] = pd.Series(kf_matris, index=m.indeks).where(gecerli).groupby(tsi).mean()
     profiller = 100 * pd.DataFrame(profiller)
     profiller.index.name = "tsi_saat"
-    print("\nGün içi profil [% KF]:"); print(profiller.round(1).to_string())
+    print("\nGün içi profil [% KF]:")
+    print(profiller.round(1).to_string())
 
     # --- Kaydet
     cv.to_csv(CIKTI / "kalibrasyon_capraz_dogrulama.csv", encoding="utf-8-sig", index=False, float_format="%.4f")
@@ -148,10 +163,16 @@ def main():
     yillik.to_csv(CIKTI / "kalibrasyon_yillik.csv", encoding="utf-8-sig", float_format="%.3f")
     duy.to_csv(CIKTI / "kalibrasyon_duyarlilik.csv", encoding="utf-8-sig", index=False, float_format="%.4f")
     profiller.to_csv(CIKTI / "kalibrasyon_gun_ici_profil.csv", encoding="utf-8-sig", float_format="%.3f")
-    pd.Series({"k_sabit": k_sabit, "hedef_kf": float(np.nanmean(g_ref)), "zaman_hizasi": "aralik",
-               "vekil_turbin": VEKIL_TURBIN, "vekil_gobek_m": VEKIL_GOBEK,
-               **{f"gecikme_{k}": v for k, v in gecikme.items()}}).to_csv(
-        CIKTI / "kalibrasyon_ozet.csv", encoding="utf-8-sig", header=["deger"])
+    pd.Series(
+        {
+            "k_sabit": k_sabit,
+            "hedef_kf": float(np.nanmean(g_ref)),
+            "zaman_hizasi": "aralik",
+            "vekil_turbin": VEKIL_TURBIN,
+            "vekil_gobek_m": VEKIL_GOBEK,
+            **{f"gecikme_{k}": v for k, v in gecikme.items()},
+        }
+    ).to_csv(CIKTI / "kalibrasyon_ozet.csv", encoding="utf-8-sig", header=["deger"])
 
     grafikler(yillik, profiller, yum, k_sabit, ref["ad"])
 
@@ -159,7 +180,8 @@ def main():
 def grafikler(yillik, profiller, matris, k_sabit, ad):
     # 1) Yıllık KF
     fig, ax = plt.subplots(figsize=(9.5, 4.4))
-    x = np.arange(len(yillik)); w = 0.2
+    x = np.arange(len(yillik))
+    w = 0.2
     for i, (sutun, renk) in enumerate(zip(yillik.columns, [g.MUREKKEP, g.SOLUK, "#9ec5ef", g.RENK_RES])):
         ax.bar(x + (i - 1.5) * (w + 0.01), yillik[sutun], w, color=renk, label=sutun.replace(" [%]", ""))
     ax.set_xticks(x, yillik.index)
@@ -168,24 +190,27 @@ def grafikler(yillik, profiller, matris, k_sabit, ad):
     ax.legend(ncols=4, loc="upper center", fontsize=8)
     g.eksen_sade(ax)
     g.baslik(fig, f"Kalibrasyon: {ad}", "Yıllık kapasite faktörü — gözlenen ve ERA5 modeli (aralık ortalaması zaman tanımı)")
-    fig.tight_layout(rect=(0, 0, 1, 0.9)); g.kaynak_notu(fig, KAYNAK)
-    fig.savefig(CIKTI / "kalibrasyon_yillik.png"); plt.close(fig)
+    fig.tight_layout(rect=(0, 0, 1, 0.9))
+    g.kaynak_notu(fig, KAYNAK)
+    fig.savefig(CIKTI / "kalibrasyon_yillik.png")
+    plt.close(fig)
 
     # 2) Gün içi profiller: üç santral + iki model; sağda k matrisi
     fig, axs = plt.subplots(1, 2, figsize=(13, 4.6), gridspec_kw={"width_ratios": [1.3, 1]})
     ax = axs[0]
     for s, renk in zip(profiller.columns[:3], ["#0b0b0b", "#52514e", "#8a8984"]):
         ax.plot(profiller.index, profiller[s], color=renk, lw=1.8, label=f"Gözlenen: {s}")
-    ax.plot(profiller.index, profiller["Model, sabit k"], color=g.RENK_RES, lw=1.6, ls="--",
-            label=f"Model, sabit k = {k_sabit:.3f}")
+    ax.plot(profiller.index, profiller["Model, sabit k"], color=g.RENK_RES, lw=1.6, ls="--", label=f"Model, sabit k = {k_sabit:.3f}")
     ax.plot(profiller.index, profiller["Model, ay × saat k"], color=g.RENK_RES, lw=2.4, label="Model, ay × saat k")
     ax.set_xticks([0, 3, 6, 9, 12, 15, 18, 21])
-    ax.set_xlabel("Saat (TSİ = UTC+3)"); ax.set_ylabel("Ortalama kapasite faktörü [%]")
+    ax.set_xlabel("Saat (TSİ = UTC+3)")
+    ax.set_ylabel("Ortalama kapasite faktörü [%]")
     ax.set_title("Öğleden sonra meltem piki üç santralde de var", loc="left")
     ax.legend(fontsize=7.5, loc="upper left")
     g.eksen_sade(ax, izgara="both")
     ax = axs[1]
     from matplotlib.colors import TwoSlopeNorm
+
     norm = TwoSlopeNorm(vcenter=1.0, vmin=min(0.75, matris.values.min()), vmax=max(1.25, matris.values.max()))
     im = ax.imshow(matris.to_numpy(), aspect="auto", cmap="RdBu_r", norm=norm)
     ax.set_yticks(range(12), ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"])
@@ -194,12 +219,18 @@ def grafikler(yillik, profiller, matris, k_sabit, ad):
     ax.set_title("Ay × saat hız katsayısı (yumuşatılmış)", loc="left")
     for k in ax.spines.values():
         k.set_visible(False)
-    cb = fig.colorbar(im, ax=ax, fraction=0.045, pad=0.02); cb.outline.set_visible(False)
+    cb = fig.colorbar(im, ax=ax, fraction=0.045, pad=0.02)
+    cb.outline.set_visible(False)
     cb.set_label("k (1 = ERA5 hızı değişmez)", color=g.IKINCIL)
-    g.baslik(fig, "ERA5 öğleden sonraki deniz meltemini kaçırıyor: ay × saat hız düzeltmesi",
-             f"{ad} referanslı kalibrasyon; çapraz kontrol: Çamseki, İntepe (2014–2023)")
-    fig.tight_layout(rect=(0, 0, 1, 0.88)); g.kaynak_notu(fig, KAYNAK)
-    fig.savefig(CIKTI / "kalibrasyon_aylik_gun_ici.png"); plt.close(fig)
+    g.baslik(
+        fig,
+        "ERA5 öğleden sonraki deniz meltemini kaçırıyor: ay × saat hız düzeltmesi",
+        f"{ad} referanslı kalibrasyon; çapraz kontrol: Çamseki, İntepe (2014–2023)",
+    )
+    fig.tight_layout(rect=(0, 0, 1, 0.88))
+    g.kaynak_notu(fig, KAYNAK)
+    fig.savefig(CIKTI / "kalibrasyon_aylik_gun_ici.png")
+    plt.close(fig)
 
 
 if __name__ == "__main__":

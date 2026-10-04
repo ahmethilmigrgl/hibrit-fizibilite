@@ -6,6 +6,7 @@ güvenli çift). Metin her zaman nötr mürekkep rengindedir, seri renginde değ
 """
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
@@ -17,24 +18,28 @@ IKINCIL = "#52514e"
 SOLUK = "#8a8984"
 IZGARA = "#e4e3df"
 
-KAYNAK_NOTU = ("Kaynak: PVGIS-SARAH3 (AB JRC), ERA5 (Copernicus/ECMWF). "
-               "Model: pvlib (PVWatts), windpowerlib (Enercon E-141/4200, 120 m). Kendi hesaplamam.")
+KAYNAK_NOTU = (
+    "Kaynak: PVGIS-SARAH3 (AB JRC), ERA5 (Copernicus/ECMWF). "
+    "Model: pvlib (PVWatts), windpowerlib (Enercon E-141/4200, 120 m). Kendi hesaplamam."
+)
 
-plt.rcParams.update({
-    "font.size": 9,
-    "axes.titlesize": 10,
-    "axes.titlecolor": MUREKKEP,
-    "axes.labelcolor": IKINCIL,
-    "xtick.color": IKINCIL,
-    "ytick.color": IKINCIL,
-    "legend.frameon": False,
-    "figure.dpi": 100,
-    "savefig.dpi": 160,
-    "savefig.bbox": "tight",
-})
+plt.rcParams.update(
+    {
+        "font.size": 9,
+        "axes.titlesize": 10,
+        "axes.titlecolor": MUREKKEP,
+        "axes.labelcolor": IKINCIL,
+        "xtick.color": IKINCIL,
+        "ytick.color": IKINCIL,
+        "legend.frameon": False,
+        "figure.dpi": 100,
+        "savefig.dpi": 160,
+        "savefig.bbox": "tight",
+    }
+)
 
 
-def eksen_sade(ax, izgara: str = "y"):
+def eksen_sade(ax: plt.Axes, izgara: str = "y") -> None:
     """Üst/sağ çerçeveyi kaldırır, ızgarayı çekinik yapar."""
     for k in ("top", "right"):
         ax.spines[k].set_visible(False)
@@ -45,13 +50,13 @@ def eksen_sade(ax, izgara: str = "y"):
     ax.set_axisbelow(True)
 
 
-def baslik(fig, metin: str, alt: str | None = None):
+def baslik(fig: plt.Figure, metin: str, alt: str | None = None) -> None:
     """Sol hizalı başlık ve isteğe bağlı alt başlık."""
     fig.suptitle(metin, x=0.01, ha="left", fontsize=12, color=MUREKKEP, fontweight="bold")
     if alt:
         fig.text(0.01, 0.935, alt, ha="left", va="top", fontsize=9, color=IKINCIL)
 
 
-def kaynak_notu(fig, metin: str = KAYNAK_NOTU):
+def kaynak_notu(fig: plt.Figure, metin: str = KAYNAK_NOTU) -> None:
     """Şeklin altına kaynak notu ekler."""
     fig.text(0.01, -0.01, metin, ha="left", va="top", fontsize=7, color=SOLUK)

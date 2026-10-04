@@ -40,7 +40,8 @@ def durum_cfg(cfg: dict, yontem: str, hiza: str) -> dict:
 
 def main():
     cfg = config_oku()
-    kod = deger(cfg["saha"]["kod"]); saha = cfg["aday_sahalar"][kod]
+    kod = deger(cfg["saha"]["kod"])
+    saha = cfg["aday_sahalar"][kod]
     y1, y2 = deger(cfg["uretim"]["yillar_tam"])
     ptf = pd.read_parquet(ISLENMIS_VERI / "ptf_2014_guncel.parquet")["ptf_usd"]
 

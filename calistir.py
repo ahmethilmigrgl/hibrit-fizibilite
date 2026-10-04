@@ -61,6 +61,7 @@ def kimlik_var(tur: str) -> bool:
     """Gerekli .env anahtarları tanımlı mı? (değerler okunur ama asla yazdırılmaz)"""
     try:
         from dotenv import dotenv_values
+
         env = {**dotenv_values(KOK / ".env"), **os.environ}
     except ImportError:
         env = dict(os.environ)
@@ -85,8 +86,10 @@ def main():
     secim = [x for x in ADIMLAR if "all" in a.asama or x[0] in a.asama]
     for asama, betik, kim, acik in secim:
         if kim and not kimlik_var(kim):
-            print(f"UYARI: {betik} {kim} kimlik bilgisi ister (.env içinde {', '.join(KIMLIK[kim])}); "
-                  "önbellek yoksa bu adım başarısız olur.", flush=True)
+            print(
+                f"UYARI: {betik} {kim} kimlik bilgisi ister (.env içinde {', '.join(KIMLIK[kim])}); önbellek yoksa bu adım başarısız olur.",
+                flush=True,
+            )
         print(f"\n=== Aşama {asama}: {betik} — {acik}", flush=True)
         if a.kuru:
             continue

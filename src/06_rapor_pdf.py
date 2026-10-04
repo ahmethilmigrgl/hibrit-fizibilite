@@ -37,8 +37,13 @@ hr { border: none; border-top: 0.8pt solid #d0cfca; }
 
 
 def chrome_bul() -> str | None:
-    for aday in ["/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-                 "/Applications/Chromium.app/Contents/MacOS/Chromium", "google-chrome", "chromium", "chromium-browser"]:
+    for aday in [
+        "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+        "/Applications/Chromium.app/Contents/MacOS/Chromium",
+        "google-chrome",
+        "chromium",
+        "chromium-browser",
+    ]:
         if Path(aday).exists() or shutil.which(aday):
             return aday
     return None
@@ -54,8 +59,11 @@ def md_pdf(kaynak: Path, pdf: Path, baslik: str, css_ek: str = "") -> None:
     if chrome is None:
         print(f"Chrome/Chromium bulunamadı; HTML bırakıldı: {html_yol} (tarayıcıda açıp PDF olarak yazdırabilirsiniz)")
         return
-    subprocess.run([chrome, "--headless=new", "--disable-gpu", "--no-pdf-header-footer", f"--print-to-pdf={pdf}",
-                    html_yol.as_uri()], check=True, capture_output=True)
+    subprocess.run(
+        [chrome, "--headless=new", "--disable-gpu", "--no-pdf-header-footer", f"--print-to-pdf={pdf}", html_yol.as_uri()],
+        check=True,
+        capture_output=True,
+    )
     html_yol.unlink()
     print(f"Kaydedildi: {pdf.relative_to(KOK)} ({pdf.stat().st_size / 1e6:.1f} MB)")
 

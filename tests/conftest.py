@@ -1,4 +1,5 @@
 """pytest ayarı: proje kökünü içe aktarma yoluna ekler."""
+
 import sys
 from pathlib import Path
 

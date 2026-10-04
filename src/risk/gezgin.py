@@ -28,6 +28,7 @@ TURBIN_GUCU = 4.2
 
 
 def gezgin_yukle(klasor: Path) -> dict:
+    """Dashboard tasarım gezgini tablolarını results/ klasöründen yükler."""
     z = np.load(klasor / "gezgin_tablolari.npz")
     gz = {k: z[k] for k in z.files}
     gz["meta"] = json.loads((klasor / "gezgin_meta.json").read_text())
@@ -65,6 +66,7 @@ _CFG: dict[int, dict] = {}
 
 
 def sfk_yolu(gz: dict, cfg: dict, yillar: np.ndarray, sfk: str) -> np.ndarray:
+    """Seçilen SFK senaryosunun yıllık fiyat çarpanı yolu (2026 = 1)."""
     m = gz["meta"]
     if sfk in ("kapali", "katilamama"):
         return np.zeros(len(yillar))
@@ -73,8 +75,19 @@ def sfk_yolu(gz: dict, cfg: dict, yillar: np.ndarray, sfk: str) -> np.ndarray:
     return deterministik_yol(cfg, sfk, yillar, m["firsat_oran"])
 
 
-def gezgin_degerle(gz: dict, cfg: dict, turbin: float, ges: float, p_mw: float, e_mwh: float, seviye: float = 58.0,
-                   kanibalizasyon: str = "devam", sfk: str = "baz", ppa: bool = False) -> dict:
+def gezgin_degerle(
+    gz: dict,
+    cfg: dict,
+    turbin: float,
+    ges: float,
+    p_mw: float,
+    e_mwh: float,
+    seviye: float = 58.0,
+    kanibalizasyon: str = "devam",
+    sfk: str = "baz",
+    ppa: bool = False,
+) -> dict:
+    """Kullanıcının seçtiği tasarım ve senaryo için beklenen NPV ve göstergeler (önceden hesaplı tablolardan)."""
     _CFG[id(cfg)] = cfg
     v, c = _sabitler(id(cfg), float(seviye))
     N = v.omur
@@ -82,25 +95,47 @@ def gezgin_degerle(gz: dict, cfg: dict, turbin: float, ges: float, p_mw: float, 
     sure = e_mwh / p_mw if p_mw > 0 else 1.0
     tb = ara_tablo(gz, turbin, ges, p_mw, sure)
     sfk_ok = p_mw >= float(gz["sfk_asgari"])
-    t = Tasarim("gezgin", turbin * TURBIN_GUCU, ges, p_mw, e_mwh if p_mw > 0 else 0.0,
-                yan_hizmet=sfk_ok, dengesizlik_azaltim=p_mw > 0, yekg=True, ppa=ppa)
+    t = Tasarim(
+        "gezgin",
+        turbin * TURBIN_GUCU,
+        ges,
+        p_mw,
+        e_mwh if p_mw > 0 else 0.0,
+        yan_hizmet=sfk_ok,
+        dengesizlik_azaltim=p_mw > 0,
+        yekg=True,
+        ppa=ppa,
+    )
     oran0 = gz["meta"]["oran0"]
     taban = gz["meta"]["kan_taban"] if kanibalizasyon == "devam" else oran0
     a = sfk_yolu(gz, cfg, yillar, sfk) if sfk_ok else np.zeros(N)
-    girdi = {"h": h_yolu(cfg, yillar, taban, oran0)[None], "m": np.ones((1, N)), "a": a[None], "L": np.full((1, N), float(seviye)),
-             "tavan": np.zeros((1, N), bool), "ws_ortalama": True,
-             **{k: np.ones(1) for k in ["capex_res", "capex_ges", "capex_bess", "opex", "bozunma"]}}
+    girdi = {
+        "h": h_yolu(cfg, yillar, taban, oran0)[None],
+        "m": np.ones((1, N)),
+        "a": a[None],
+        "L": np.full((1, N), float(seviye)),
+        "tavan": np.zeros((1, N), bool),
+        "ws_ortalama": True,
+        **{k: np.ones(1) for k in ["capex_res", "capex_ges", "capex_bess", "opex", "bozunma"]},
+    }
     r = nakit_akislari(t, tb, c, girdi)
     gelir_yh = np.atleast_2d(r["gelir_yh"])[0] if np.ndim(r["gelir_yh"]) else np.zeros(N)
     yekg = c.yekg * r["satilan"][0]
     gelir = r["gelir_spot"][0] + r["gelir_bess"][0] + gelir_yh + yekg
-    maliyet = gelir - r["vergi"][0] - r["cfads"][0]           # işletme giderleri + dengesizlik + augmentation + söküm
+    maliyet = gelir - r["vergi"][0] - r["cfads"][0]  # işletme giderleri + dengesizlik + augmentation + söküm
     capex = float(r["capex_top"][0])
     lcoe = lcoe_hesapla(capex * np.array(v.capex_takvimi), maliyet, r["satilan"][0], v.wacc)
     irr = irr_vektor(r["sna"])[0]
-    return {"npv": float(r["npv"][0]) / 1e6, "irr": float(irr), "lcoe": lcoe, "capex": capex / 1e6,
-            "kesinti": float(r["kesilen"][0].sum() / max(r["uretilebilir"][0].sum(), 1e-9)),
-            "satilan_gwh": float(r["satilan"][0].mean()) / 1e3, "sfk_katilim": sfk_ok,
-            "yillar": yillar, "gelir": {"spot": r["gelir_spot"][0] / 1e6, "arbitraj": r["gelir_bess"][0] / 1e6,
-                                        "sfk": gelir_yh / 1e6, "yekg": yekg / 1e6},
-            "dengesizlik": r["dengesizlik"][0] / 1e6, "favok": r["favok"][0] / 1e6}
+    return {
+        "npv": float(r["npv"][0]) / 1e6,
+        "irr": float(irr),
+        "lcoe": lcoe,
+        "capex": capex / 1e6,
+        "kesinti": float(r["kesilen"][0].sum() / max(r["uretilebilir"][0].sum(), 1e-9)),
+        "satilan_gwh": float(r["satilan"][0].mean()) / 1e3,
+        "sfk_katilim": sfk_ok,
+        "yillar": yillar,
+        "gelir": {"spot": r["gelir_spot"][0] / 1e6, "arbitraj": r["gelir_bess"][0] / 1e6, "sfk": gelir_yh / 1e6, "yekg": yekg / 1e6},
+        "dengesizlik": r["dengesizlik"][0] / 1e6,
+        "favok": r["favok"][0] / 1e6,
+    }

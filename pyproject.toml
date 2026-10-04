@@ -1,0 +1,31 @@
+# Araç yapılandırması (paket değil). Bağımlılıklar requirements*.txt içinde.
+
+[tool.ruff]
+line-length = 140
+target-version = "py311"
+extend-exclude = ["data", "outputs", "results", "notebooks", "src/08_karusel.py"]  # karusel: LinkedIn materyali, ayrı tutulur
+
+[tool.ruff.lint]
+# pycodestyle hataları, pyflakes, import sırası, pyupgrade, bugbear, ruff'a özgü kurallar
+select = ["E", "F", "W", "I", "UP", "B", "RUF"]
+ignore = [
+    "E501",    # satır uzunluğu: formatter yönetir; uzun Türkçe metin/formül satırları bilinçli
+    "E731",    # kısa lambda atamaları (birim dönüşümleri) okunaklı
+    "E741",    # matematiksel değişken adları (l, I) formülasyonla aynı
+    "B905",    # zip(strict=...) — eşit uzunluk tasarım gereği
+    "RUF001", "RUF002", "RUF003",  # Türkçe metinde ×, −, ’ gibi bilinçli Unicode karakterler
+    "RUF005", "RUF015", "RUF046",  # üslup tercihleri (liste birleştirme, [0] ile ilk eleman, int(round(...)))
+]
+
+[tool.ruff.lint.per-file-ignores]
+"src/0*_*.py" = ["E402"]   # betikler sys.path ayarından sonra içe aktarır
+"app.py" = ["E402"]
+"dashboard/*.py" = ["E402"]
+"tests/*.py" = ["E402"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["veri: ham/işlenmiş veri (data/) gerektiren test — CI'da atlanır"]

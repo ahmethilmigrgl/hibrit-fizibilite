@@ -24,8 +24,8 @@ from src.finans.model import Sonuc
 
 @dataclass
 class BorcSonucu:
-    borc_reel: float          # COD'daki borç, reel USD (FID fiyatlarıyla)
-    borc_orani: float         # borç / CAPEX
+    borc_reel: float  # COD'daki borç, reel USD (FID fiyatlarıyla)
+    borc_orani: float  # borç / CAPEX
     min_dscr: float
     ozkaynak_irr_reel: float
     ozkaynak_irr_nominal: float
@@ -48,11 +48,11 @@ def borc_boyutlandir(boyutlama: Sonuc, cfg: dict, nakit: Sonuc | None = None) ->
     o = boyutlama.ozet
     N = len(o["favok"])
     cfads = o["favok"] - o["vergi"] - o["aug"] - o["sokum"]
-    y_isl = np.arange(nb, nb + N)                              # işletme yıllarının zaman indeksi
+    y_isl = np.arange(nb, nb + N)  # işletme yıllarının zaman indeksi
     enf = (1 + pi) ** (y_isl + 1)
     servis = np.zeros(N)
     servis[:vade] = np.maximum(cfads[:vade], 0) * enf[:vade] / dscr
-    iskonto = (1 + i) ** -(np.arange(1, N + 1))                # COD = inşaat sonu
+    iskonto = (1 + i) ** -(np.arange(1, N + 1))  # COD = inşaat sonu
     borc_nom = float((servis * iskonto).sum())
     capex_nom = float((o["capex_akisi"][:nb] * (1 + pi) ** (np.arange(nb) + 1)).sum())
     takildi = borc_nom > tavan * capex_nom
@@ -75,13 +75,17 @@ def borc_boyutlandir(boyutlama: Sonuc, cfg: dict, nakit: Sonuc | None = None) ->
     akis = np.zeros(T)
     capex_ak = on["capex_akisi"][:nb]
     akis[:nb] = -capex_ak + borc_reel * capex_ak / capex_ak.sum()
-    vergi_kalkani = np.minimum(faiz * vergi, np.maximum(on["vergi"], 0) * enf)   # kalkan ödenen vergiyi aşamaz
+    vergi_kalkani = np.minimum(faiz * vergi, np.maximum(on["vergi"], 0) * enf)  # kalkan ödenen vergiyi aşamaz
     akis[nb:] = cfads_n - (servis - vergi_kalkani) / enf
     irr_r = float(npf.irr(akis)) if np.any(akis > 0) and np.any(akis < 0) else float("nan")
     gercek_dscr = np.where(servis[:vade] > 0, cfads[:vade] * enf[:vade] / np.maximum(servis[:vade], 1e-9), np.inf)
     return BorcSonucu(
-        borc_reel=borc_reel, borc_orani=borc_reel / max(capex_ak.sum(), 1e-9),
+        borc_reel=borc_reel,
+        borc_orani=borc_reel / max(capex_ak.sum(), 1e-9),
         min_dscr=float(gercek_dscr.min()) if vade > 0 else float("nan"),
-        ozkaynak_irr_reel=irr_r, ozkaynak_irr_nominal=(1 + irr_r) * (1 + pi) - 1 if np.isfinite(irr_r) else float("nan"),
-        tavana_takildi=bool(takildi), servis_nominal=servis, ozkaynak_akisi=akis,
+        ozkaynak_irr_reel=irr_r,
+        ozkaynak_irr_nominal=(1 + irr_r) * (1 + pi) - 1 if np.isfinite(irr_r) else float("nan"),
+        tavana_takildi=bool(takildi),
+        servis_nominal=servis,
+        ozkaynak_akisi=akis,
     )

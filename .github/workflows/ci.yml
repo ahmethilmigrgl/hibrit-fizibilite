@@ -1,0 +1,28 @@
+# Her push ve pull request'te: ruff (lint + format kontrolü) ve ham veri gerektirmeyen testler.
+# data/ repoda yok; veri gerektiren testler "veri" işaretiyle atlanır (pyproject.toml → pytest markers).
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+      - name: Bağımlılıklar
+        run: pip install -r requirements-dev.txt
+      - name: Ruff lint
+        run: ruff check .
+      - name: Ruff format kontrolü
+        run: ruff format --check .
+      - name: Testler (ham veri gerektirmeyenler)
+        run: python -m pytest -q -m "not veri"

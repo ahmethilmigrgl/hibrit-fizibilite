@@ -1,5 +1,9 @@
 # Hibrit RES + GES + Batarya Fizibilite Modeli (Türkiye)
 
+[![CI](https://github.com/KULLANICI/hibrit-fizibilite/actions/workflows/ci.yml/badge.svg)](https://github.com/KULLANICI/hibrit-fizibilite/actions/workflows/ci.yml)
+![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)
+[![Lisans: MIT (kod)](https://img.shields.io/badge/license-MIT%20(code)-green.svg)](LICENSE)
+
 [English](README.md) · **Canlı dashboard:** _yayından sonra eklenecek_
 
 **Belgeler:** [Yatırım memosu (PDF)](outputs/08/Yatirim_Memosu.pdf) · [Sunum (PDF)](outputs/08/Sunum.pdf) ·
@@ -57,6 +61,17 @@ formülasyonları `docs/` altında.
   <em>Fırsat penceresi: SFK geliri yalnızca N yıl sürerse NPV.</em>
 </p>
 
+## Dashboard
+
+<p align="center"><img src="docs/img/dashboard.gif" width="85%" alt="Dashboard"></p>
+
+| | |
+|---|---|
+| <img src="docs/img/dashboard_ozet.jpg" alt="Summary"> | <img src="docs/img/dashboard_gezgin.jpg" alt="Design explorer"> |
+| <img src="docs/img/dashboard_risk.jpg" alt="Risk"> | <img src="docs/img/dashboard_piyasa.jpg" alt="Market"> |
+
+*Özet, tasarım gezgini, risk ve piyasa sekmeleri (TR/EN geçişi var). Düzen 390 px telefon ekranında da taşmadan çalışıyor.*
+
 ## Yöntem
 
 ```mermaid
@@ -79,6 +94,16 @@ flowchart LR
 | 6 Stres testi | SFK arz-talep doyum modeli, fırsat penceresi, erteleme ve bekle-gör, esnek batarya tasarımları, muhafazakâr borç | [docs/05 §9](docs/05_risk_ve_gelir_yigini.md) |
 | 7 Gerçek dünya | EPİAŞ talimatları ve referans santrallerle sistem kesintisi; teşvikler (KDV); tüccar / PPA / YEKDEM aynı Monte Carlo'da; önlenen CO2; CPM + Monte Carlo proje takvimi (COD P50/P80, kritiklik indeksi); 20 maddelik risk kaydı | [docs/07](docs/07_tamamlayici_analizler.md) |
 | 8 Karar paketi | Formüllü Excel modeli (FAST benzeri; 48/48 senaryo Python ile mutabık), 3 sayfalık yatırım komitesi memosu, karar yolculuğu grafikli 13 slaytlık sunum | [outputs/08](outputs/08) |
+
+## Model doğrulama
+Ayrıntı: [docs/MODEL_DOGRULAMA.md](docs/MODEL_DOGRULAMA.md).
+
+- **Doğrulananlar:** GES modeli – PVGIS (+%4,0); ERA5 rüzgârı üç santralle kalibrasyon (saatlik korelasyon 0,76 → 0,85,
+  çapraz doğrulamada ay × saat RMSE 2,5–2,8 KF puanı); Excel–Python 48/48 mutabakat; temsilî gün – tam yıl; ara
+  değerleme hatası ~%1; deterministik–Monte Carlo farkının ayrıştırılması (fiyat medyanı hatasını bu buldu).
+- **Doğrulanamayanlar:** YEKDEM endekslemesi, kesinti tazmin oranı, SFK doyum hızı ve parametreleri, PPA iskontosu,
+  CAPEX dağılımları, ornitoloji; saha rüzgâr ölçümü yok.
+- **En duyarlı olduğu girdiler:** uzun vadeli fiyat seviyesi (başabaş ≈ 59 $/MWh), SFK doyumu, CAPEX/WACC, takvim.
 
 ## Kullanılan teknolojiler
 Python 3.11 · Pyomo + HiGHS · pandas / NumPy / SciPy · pvlib · windpowerlib · xarray / ERA5 (cdsapi) · EPİAŞ Şeffaflık
@@ -110,12 +135,14 @@ repoda yok; dashboard ve rapor `results/` altındaki küçük, toplulaştırılm
 ├── app.py                  Streamlit dashboard (6 sekme, TR/EN)
 ├── calistir.py             Tüm hattın tek giriş noktası
 ├── config.yaml             Tüm varsayımlar (değer, birim, kaynak, not)
-├── src/                    Aşama betikleri (00–06) ve modüller (uretim, piyasa, finans, optimizasyon, risk)
-├── tests/                  pytest testleri
-├── docs/                   Aşama bazında formülasyonlar + RAPOR.md
+├── src/                    Aşama betikleri (00–08) ve modüller (uretim, piyasa, finans, optimizasyon, risk)
+├── tests/                  pytest testleri (CI: .github/workflows/ci.yml)
+├── docs/                   Aşama bazında formülasyonlar, RAPOR.md, MODEL_DOGRULAMA.md
 ├── outputs/                Aşama bazında grafikler ve tablolar, RAPOR.pdf; 08/: memo, sunum, Excel modeli
 ├── results/                Dashboard için küçük, toplulaştırılmış sonuçlar
-└── dashboard/              Streamlit Community Cloud giriş noktası (hafif bağımlılıklar)
+├── dashboard/              Streamlit Community Cloud giriş noktası (hafif bağımlılıklar)
+├── DATA_SOURCES.md         Veri kaynakları, lisanslar, atıflar
+└── CHANGELOG.md            Aşamalar, revizyonlar ve karar yolculuğu
 ```
 
 ## Sınırlamalar
@@ -127,5 +154,17 @@ repoda yok; dashboard ve rapor `results/` altındaki küçük, toplulaştırılm
 - **Kur ve borç:** Kur riski ayrıca modellenmedi (reel USD). Borç simülasyonda yeniden yapılandırılmıyor.
 - **Tasarım gezgini:** tek temsilî hava yılı + ara değerleme kullanıyor (tam modele göre hata ≈ 0,5–0,8 M$).
 
+## Veri kaynakları ve atıf
+Ayrıntılar, lisanslar ve her kaynağın ne için kullanıldığı: [DATA_SOURCES.md](DATA_SOURCES.md).
+
+- **ERA5:** Contains modified Copernicus Climate Change Service information 2026. Neither the European Commission nor
+  ECMWF is responsible for any use that may be made of the Copernicus information or data it contains.
+  Veri seti: *ERA5 hourly time-series data on single levels from 1940 to present*, DOI [10.24381/1cf1ad76](https://doi.org/10.24381/1cf1ad76).
+- **PVGIS:** PVGIS © European Communities, 2001-2026 (PVGIS-SARAH3 veritabanı).
+- **EPİAŞ:** Kaynak: EPİAŞ Şeffaflık Platformu (seffaflik.epias.com.tr). Repoda yalnız türetilmiş ve toplulaştırılmış
+  sonuçlar var; ham saatlik EPİAŞ verisi yeniden dağıtılmıyor.
+
 ## Lisans
-MIT — bkz. [LICENSE](LICENSE).
+MIT lisansı ([LICENSE](LICENSE)) **yalnızca koda** uygulanır. Veriler ve veriden türetilen sonuçlar kaynaklarının
+koşullarına tabidir (Copernicus/C3S lisansı, PVGIS yeniden kullanım koşulları, EPİAŞ Şeffaflık Platformu koşulları);
+bkz. [DATA_SOURCES.md](DATA_SOURCES.md).

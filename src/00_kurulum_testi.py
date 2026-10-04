@@ -23,11 +23,11 @@ TEKNOLOJILER = ["GES", "RES"]
 # ---------------------------------------------------------------------------
 # 2) PARAMETRELER (modelin girdisi olan sabit sayılar)
 # ---------------------------------------------------------------------------
-capex = {"GES": 0.6, "RES": 1.2}        # yatırım maliyeti [milyon $/MW]
-gelir = {"GES": 0.096, "RES": 0.180}    # yıllık gelir [milyon $/MW/yıl]
-SEBEKE_KAPASITESI = 50.0                # şebeke bağlantı limiti [MW]
-BUTCE = 45.0                            # toplam yatırım bütçesi [milyon $]
-GES_ARAZI_LIMITI = 40.0                 # arazinin izin verdiği en fazla GES [MW]
+capex = {"GES": 0.6, "RES": 1.2}  # yatırım maliyeti [milyon $/MW]
+gelir = {"GES": 0.096, "RES": 0.180}  # yıllık gelir [milyon $/MW/yıl]
+SEBEKE_KAPASITESI = 50.0  # şebeke bağlantı limiti [MW]
+BUTCE = 45.0  # toplam yatırım bütçesi [milyon $]
+GES_ARAZI_LIMITI = 40.0  # arazinin izin verdiği en fazla GES [MW]
 
 model = pyo.ConcreteModel(name="Isinma_GES_RES")
 model.T = pyo.Set(initialize=TEKNOLOJILER, doc="Teknolojiler")

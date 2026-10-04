@@ -458,6 +458,13 @@ hukuki görüşü, COD ve türbin slotu.
 5. Batarya sipariş zamanlamasının gerçek opsiyon modeli.
 6. Santral bazında talimat verisi (TEİAŞ/EPİAŞ) ile kesinti tahmininin doğrulanması; YEKDEM endekslemesi için hukuki görüş.
 
+## Veri kaynakları ve atıflar
+
+- **ERA5:** Contains modified Copernicus Climate Change Service information 2026. Neither the European Commission nor ECMWF is responsible for any use that may be made of the Copernicus information or data it contains. Veri seti: *ERA5 hourly time-series data on single levels from 1940 to present*, DOI 10.24381/1cf1ad76.
+- **PVGIS:** PVGIS © European Communities, 2001-2026 (PVGIS-SARAH3).
+- **EPİAŞ:** Kaynak: EPİAŞ Şeffaflık Platformu (seffaflik.epias.com.tr). Repoda yalnız türetilmiş ve toplulaştırılmış sonuçlar var.
+- Lisanslar ve tüm kaynaklar: `DATA_SOURCES.md`. Kod MIT lisanslı; veriler kaynaklarının koşullarına tabi.
+
 ---
 *Ekler: tüm formülasyonlar ve ayrıntılı tablolar `docs/00_isinma_modeli.md` – `docs/05_risk_ve_gelir_yigini.md`;
 etkileşimli sonuçlar Streamlit dashboard'unda.*

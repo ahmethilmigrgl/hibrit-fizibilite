@@ -57,7 +57,8 @@ def main():
     # Aşama 5: yan hizmet kapasite fiyatları (2023 sonrası; USD'ye saatlik PTF TL/USD oranıyla çevrilir)
     print("Yan hizmet (PFK/SFK) ve SMF ...", flush=True)
     seriler = {ad: saatlik_seri_cek(c, ad, "2023-01-01", son) for ad in ["pfk_fiyat", "sfk_fiyat", "pfk_miktar", "sfk_miktar", "smf"]}
-    yh = pd.concat(seriler, axis=1); yh.index.name = "zaman_utc"
+    yh = pd.concat(seriler, axis=1)
+    yh.index.name = "zaman_utc"
     kur = (ptf.ptf_tl / ptf.ptf_usd).replace([float("inf")], float("nan"))
     kur = kur.where(ptf.ptf_usd > 1).ffill().reindex(yh.index).ffill()
     for a in ["pfk_fiyat", "sfk_fiyat", "smf"]:

@@ -62,7 +62,8 @@ def ornekle_doyum(cfg: dict, n: int, yillar: np.ndarray, firsat_oran: float, toh
     rng = np.random.default_rng(tohum + 1000)
     sc = deger(st["senaryolar"])
     adlar = list(sc)
-    olas = np.array([sc[k]["olasilik"] for k in adlar]); olas = olas / olas.sum()
+    olas = np.array([sc[k]["olasilik"] for k in adlar])
+    olas = olas / olas.sum()
     secim = rng.choice(len(adlar), size=n, p=olas)
     kayma = rng.uniform(*deger(st["zaman_kaymasi"]), n)
     theta = rng.uniform(*deger(st["sfk_uygun_pay"]), n)
@@ -76,6 +77,15 @@ def ornekle_doyum(cfg: dict, n: int, yillar: np.ndarray, firsat_oran: float, toh
         kurulu[i] = yol
         if ad != "katilamama":
             a[i] = sfk_carpani(yillar, yol, st, theta[i], fc[i])
-    return {"a": a, "kurulu_mw": kurulu, "senaryo": np.array(adlar)[secim], "adlar": adlar,
-            "suruculer": {"Doyum senaryosu": secim.astype(float), "Doyum takvim kayması": kayma,
-                          "SFK'ya uygun batarya payı": theta, "Fırsat maliyeti tabanı": fc}}
+    return {
+        "a": a,
+        "kurulu_mw": kurulu,
+        "senaryo": np.array(adlar)[secim],
+        "adlar": adlar,
+        "suruculer": {
+            "Doyum senaryosu": secim.astype(float),
+            "Doyum takvim kayması": kayma,
+            "SFK'ya uygun batarya payı": theta,
+            "Fırsat maliyeti tabanı": fc,
+        },
+    }

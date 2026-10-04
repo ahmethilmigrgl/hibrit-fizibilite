@@ -44,7 +44,7 @@ def _izgara_agirlik(deg: np.ndarray, izgara: np.ndarray):
     return j, j + 1, t
 
 
-def tablo_ara(tablo: dict, w, s, h, m, a, ip) -> np.ndarray:
+def tablo_ara(tablo: dict, w: np.ndarray, s: np.ndarray, h: np.ndarray, m: np.ndarray, a: np.ndarray, ip: np.ndarray) -> np.ndarray:
     """Tablodan (h, m, a) üzerinde üç doğrusal ara değerleme. Girdiler aynı şekilli diziler; çıktı (..., alan)."""
     T = tablo["T"]
     h0, h1, th = _izgara_agirlik(h, tablo["h"])
@@ -63,29 +63,39 @@ class Sabitler:
     v: Varsayimlar
     yekg: float
     ppa_fiyat: float
-    ppa_pay: float          # saatlik üretim payı (φ)
+    ppa_pay: float  # saatlik üretim payı (φ)
     ppa_vade: int
     dz_azami: float
     dz_doyum: float
     tavan_carpan: float
-    pi: float               # ABD enflasyonu (borç)
+    pi: float  # ABD enflasyonu (borç)
 
     @classmethod
-    def configten(cls, cfg: dict, v: Varsayimlar, L_baz: float = None):
+    def configten(cls, cfg: dict, v: Varsayimlar, L_baz: float | None = None) -> Sabitler:
+        """config.yaml ve finansal varsayımlardan değerleme sabitleri."""
         gy = cfg["gelir_yigini"]
         L0 = L_baz if L_baz is not None else deger(cfg["fiyat_senaryolari"]["seviye"])["baz"]
-        return cls(v=v, yekg=deger(gy["yekg"]), ppa_fiyat=L0 * (1 - deger(gy["ppa"]["iskonto"])),
-                   ppa_pay=deger(gy["ppa"]["pay"]) * 0.94, ppa_vade=deger(gy["ppa"]["vade"]),
-                   dz_azami=deger(gy["dengesizlik_azaltim"]["azami_oran"]),
-                   dz_doyum=deger(gy["dengesizlik_azaltim"]["doyum_orani"]),
-                   tavan_carpan=deger(cfg["fiyat_senaryolari"]["duzenleyici_tavan"])["tavan_carpani"],
-                   pi=deger(cfg["finans"]["abd_enflasyonu"]))
+        return cls(
+            v=v,
+            yekg=deger(gy["yekg"]),
+            ppa_fiyat=L0 * (1 - deger(gy["ppa"]["iskonto"])),
+            ppa_pay=deger(gy["ppa"]["pay"]) * 0.94,
+            ppa_vade=deger(gy["ppa"]["vade"]),
+            dz_azami=deger(gy["dengesizlik_azaltim"]["azami_oran"]),
+            dz_doyum=deger(gy["dengesizlik_azaltim"]["doyum_orani"]),
+            tavan_carpan=deger(cfg["fiyat_senaryolari"]["duzenleyici_tavan"])["tavan_carpani"],
+            pi=deger(cfg["finans"]["abd_enflasyonu"]),
+        )
 
 
 def capex_kalemleri(t: Tasarim, v: Varsayimlar) -> dict:
-    return {"res": t.res_mw * v.capex_res, "ges": t.ges_mw * v.capex_ges,
-            "bess": t.bess_mw * v.capex_bess_guc + t.bess_mwh * v.capex_bess_enerji,
-            "sebeke": t.sebeke_mw * v.capex_sebeke}
+    """Teknoloji bazında CAPEX (USD): RES, GES, batarya (güç + enerji), şebeke."""
+    return {
+        "res": t.res_mw * v.capex_res,
+        "ges": t.ges_mw * v.capex_ges,
+        "bess": t.bess_mw * v.capex_bess_guc + t.bess_mwh * v.capex_bess_enerji,
+        "sebeke": t.sebeke_mw * v.capex_sebeke,
+    }
 
 
 def nakit_akislari(t: Tasarim, tablo: dict, c: Sabitler, girdi: dict) -> dict:
@@ -98,10 +108,10 @@ def nakit_akislari(t: Tasarim, tablo: dict, c: Sabitler, girdi: dict) -> dict:
     nb = v.insaat_suresi
     k = np.arange(1, N + 1)
     phi = np.where(k <= c.ppa_vade, c.ppa_pay, 0.0) if t.ppa else np.zeros(N)
-    if "phi" in girdi:              # sözleşmeli pay yolu dışarıdan (ör. YEKDEM: ilk 10 yıl %100)
+    if "phi" in girdi:  # sözleşmeli pay yolu dışarıdan (ör. YEKDEM: ilk 10 yıl %100)
         phi = np.asarray(girdi["phi"], float)
     ip = (k <= c.ppa_vade).astype(int) if (t.ppa and len(tablo["ppa"]) > 1) else np.zeros(N, int)
-    if girdi.get("tuccar_dispatch"):   # finansal PPA (fark sözleşmesi): batarya tüccar gibi çalışır, PPA'yı "oyunlamaz"
+    if girdi.get("tuccar_dispatch"):  # finansal PPA (fark sözleşmesi): batarya tüccar gibi çalışır, PPA'yı "oyunlamaz"
         ip = np.zeros(N, int)
     # (n × N) dispatch indeksi: yıllık YEKDEM opsiyonunda simülasyon ve yıl bazında katılım (1) / tüccar (0)
     ipm = np.asarray(girdi["ip"], int) if "ip" in girdi else ip[None, :].repeat(n, 0)
@@ -112,12 +122,18 @@ def nakit_akislari(t: Tasarim, tablo: dict, c: Sabitler, girdi: dict) -> dict:
     # RES degradasyonu tablonun RES çarpanı boyutundan geçer → kesinti degrade üretimle doğru hesaplanır
     m_eff = girdi["m"] * deg_r[None, :]
     if "X" in girdi:
-        X = girdi["X"]          # dışarıdan verilmiş yıllık işletme büyüklükleri (doğrulama: tam LP çözümü)
+        X = girdi["X"]  # dışarıdan verilmiş yıllık işletme büyüklükleri (doğrulama: tam LP çözümü)
     elif girdi.get("ws_ortalama"):
         # Beklenen değer modu: her yılın işletme büyüklükleri 10 hava × 2 şekil yılının ortalaması (Aşama 3 tanımı)
         W, S = tablo["T"].shape[:2]
-        X = np.mean([tablo_ara(tablo, np.full((n, N), w_), np.full((n, N), s_), girdi["h"], m_eff, girdi["a"],
-                               ipm) for w_ in range(W) for s_ in range(S)], axis=0)
+        X = np.mean(
+            [
+                tablo_ara(tablo, np.full((n, N), w_), np.full((n, N), s_), girdi["h"], m_eff, girdi["a"], ipm)
+                for w_ in range(W)
+                for s_ in range(S)
+            ],
+            axis=0,
+        )
     else:
         X = tablo_ara(tablo, girdi["w"], girdi["s"], girdi["h"], m_eff, girdi["a"], ipm)
     if "tablo2" in girdi:
@@ -130,14 +146,14 @@ def nakit_akislari(t: Tasarim, tablo: dict, c: Sabitler, girdi: dict) -> dict:
     q_res = np.where(tav, g("gelir_res_qt"), g("gelir_res_q"))
     q_d = np.where(tav, g("gelir_d_qt"), g("gelir_d_q"))
     E_ges, E_res, E_d = g("E_ges") * deg_g, g("E_res"), g("E_d")
-    ppa_fiyat_t = girdi.get("ppa_fiyat", c.ppa_fiyat)   # sabit PPA ya da (n × N) YEKDEM reel fiyat yolu; tavandan etkilenmez
+    ppa_fiyat_t = girdi.get("ppa_fiyat", c.ppa_fiyat)  # sabit PPA ya da (n × N) YEKDEM reel fiyat yolu; tavandan etkilenmez
     gelir_ges = (1 - phi) * L * q_ges + phi * ppa_fiyat_t * E_ges
     gelir_res = (1 - phi) * L * q_res + phi * ppa_fiyat_t * E_res
-    if "kesinti_gelir" in girdi:    # sistem kaynaklı kesinti (TEİAŞ YAT talimatları): RES gelir ve enerji kaybı
+    if "kesinti_gelir" in girdi:  # sistem kaynaklı kesinti (TEİAŞ YAT talimatları): RES gelir ve enerji kaybı
         gelir_res = gelir_res * (1 - girdi["kesinti_gelir"])
         E_res = E_res * (1 - girdi["kesinti_enerji"])
     gelir_bess = L * q_d
-    if girdi.get("desarj_sozlesmeli"):   # YEKDEM: depolanıp verilen santral enerjisi de sözleşmeli fiyattan (YEK Yön. md. 4/7-a)
+    if girdi.get("desarj_sozlesmeli"):  # YEKDEM: depolanıp verilen santral enerjisi de sözleşmeli fiyattan (YEK Yön. md. 4/7-a)
         gelir_bess = (1 - phi) * L * q_d + phi * ppa_fiyat_t * E_d
     gelir_yh = girdi["a"] * g("yh_a") if t.yan_hizmet else 0.0 * L
     gelir_yekg = c.yekg * (E_ges + E_res + E_d) if t.yekg else 0.0 * L
@@ -151,7 +167,7 @@ def nakit_akislari(t: Tasarim, tablo: dict, c: Sabitler, girdi: dict) -> dict:
     satilan = E_ges + E_res + E_d
     capex = capex_kalemleri(t, v)
     cm = {"res": girdi["capex_res"], "ges": girdi["capex_ges"], "bess": girdi["capex_bess"], "sebeke": np.ones(n)}
-    capex_top = sum(capex[kk] * cm[kk] for kk in capex)                                          # (n,)
+    capex_top = sum(capex[kk] * cm[kk] for kk in capex)  # (n,)
     sabit_opex = ((v.opex_ges + v.arazi_ges) * t.ges_mw + (v.opex_res + v.arazi_res) * t.res_mw) * girdi["opex"]
     bess_opex = v.opex_bess_oran * capex["bess"] * girdi["capex_bess"]
     sigorta = v.sigorta_oran * capex_top
@@ -165,11 +181,17 @@ def nakit_akislari(t: Tasarim, tablo: dict, c: Sabitler, girdi: dict) -> dict:
         a_ = v.augmentation
         for y in list(a_["yillar"]) + [y + v.omur_bess for y in a_["yillar"]]:
             if y <= N and y != v.omur_bess:
-                aug[:, y - 1] += a_["oran"] * t.bess_mwh * v.capex_bess_enerji * girdi["capex_bess"] \
-                    * girdi["bozunma"] * (1 - a_["maliyet_dususu_yillik"]) ** y
+                aug[:, y - 1] += (
+                    a_["oran"]
+                    * t.bess_mwh
+                    * v.capex_bess_enerji
+                    * girdi["capex_bess"]
+                    * girdi["bozunma"]
+                    * (1 - a_["maliyet_dususu_yillik"]) ** y
+                )
         if v.bess_yenileme["aktif"] and v.omur_bess < N:
             aug[:, v.omur_bess - 1] += capex["bess"] * girdi["capex_bess"] * (1 - v.bess_yenileme["maliyet_dususu_yillik"]) ** v.omur_bess
-    if "ek_gider" in girdi:        # aşamalı yatırımın ek CAPEX'i ve ek O&M'si (augmentation gibi giderleştirilir)
+    if "ek_gider" in girdi:  # aşamalı yatırımın ek CAPEX'i ve ek O&M'si (augmentation gibi giderleştirilir)
         aug = aug + girdi["ek_gider"]
     sokum = np.zeros(N)
     sokum[-1] = v.sokum["ges"] * t.ges_mw + v.sokum["res"] * t.res_mw + v.sokum["bess"] * t.bess_mwh
@@ -180,12 +202,12 @@ def nakit_akislari(t: Tasarim, tablo: dict, c: Sabitler, girdi: dict) -> dict:
         amort[:, :sure] += (tutar * cm[kk] / sure)[:, None]
     matrah = favok - amort - aug - sokum
     vergi = np.zeros((n, N))
-    kova = np.zeros((n, v.zarar_mahsup))          # kova[j]: (j+1) yıl daha kullanılabilir zarar
+    kova = np.zeros((n, v.zarar_mahsup))  # kova[j]: (j+1) yıl daha kullanılabilir zarar
     for y in range(N):
         mt = matrah[:, y]
         zarar = np.clip(-mt, 0, None)
         kalan = np.clip(mt, 0, None)
-        for j in range(v.zarar_mahsup):           # en eski zarar önce
+        for j in range(v.zarar_mahsup):  # en eski zarar önce
             kullan = np.minimum(kova[:, j], kalan)
             kova[:, j] -= kullan
             kalan -= kullan
@@ -198,11 +220,31 @@ def nakit_akislari(t: Tasarim, tablo: dict, c: Sabitler, girdi: dict) -> dict:
     sna[:, :nb] = -capex_top[:, None] * takvim[None]
     sna[:, nb:] = cfads
     df = (1 + v.wacc) ** -(np.arange(T) + 1)
-    return {"X": X, "aug": aug, "sokum": sokum, "amort": amort, "opex": opex, "esz": esz, "gelir_yekg": gelir_yekg,
-            "sna": sna, "npv": sna @ df, "cfads": cfads, "favok": favok, "vergi": vergi, "satilan": satilan,
-            "capex_top": capex_top, "gelir_bess": gelir_bess, "gelir_yh": gelir_yh, "gelir_spot": gelir_ges + gelir_res,
-            "E_res": E_res, "E_ges": E_ges, "dengesizlik": dengesizlik, "azaltim": azaltim,
-            "kesilen": g("E_k"), "uretilebilir": g("E_A")}
+    return {
+        "X": X,
+        "aug": aug,
+        "sokum": sokum,
+        "amort": amort,
+        "opex": opex,
+        "esz": esz,
+        "gelir_yekg": gelir_yekg,
+        "sna": sna,
+        "npv": sna @ df,
+        "cfads": cfads,
+        "favok": favok,
+        "vergi": vergi,
+        "satilan": satilan,
+        "capex_top": capex_top,
+        "gelir_bess": gelir_bess,
+        "gelir_yh": gelir_yh,
+        "gelir_spot": gelir_ges + gelir_res,
+        "E_res": E_res,
+        "E_ges": E_ges,
+        "dengesizlik": dengesizlik,
+        "azaltim": azaltim,
+        "kesilen": g("E_k"),
+        "uretilebilir": g("E_A"),
+    }
 
 
 def irr_vektor(sna: np.ndarray, alt: float = -0.5, ust: float = 0.6, iter_: int = 80) -> np.ndarray:
@@ -222,8 +264,9 @@ def irr_vektor(sna: np.ndarray, alt: float = -0.5, ust: float = 0.6, iter_: int 
     return np.where(gecerli, (a + b) / 2, np.nan)
 
 
-def borc_boyutla(cfads_p90: np.ndarray, capex_top: float, t: Tasarim, cfg: dict, c: Sabitler,
-                 cfads_ppa_payi: np.ndarray | None = None) -> dict:
+def borc_boyutla(
+    cfads_p90: np.ndarray, capex_top: float, t: Tasarim, cfg: dict, c: Sabitler, cfads_ppa_payi: np.ndarray | None = None
+) -> dict:
     """
     Heykelsi borç (deterministik, FID'de): servis_k = CFADS_nom,k(P90) / DSCR_k, vadenin ilk yıllarında.
     PPA'lı tasarımda DSCR, CFADS'nin sözleşmeli payına 1,20, kalanına hedef DSCR uygulanarak harmanlanır;
@@ -250,8 +293,14 @@ def borc_boyutla(cfads_p90: np.ndarray, capex_top: float, t: Tasarim, cfg: dict,
     for y in range(N):
         faiz[y] = bakiye * i
         bakiye = bakiye + faiz[y] - servis[y]
-    return {"servis_nom": servis, "faiz_nom": faiz, "borc_reel": borc_nom / (1 + c.pi) ** nb, "enf": enf,
-            "vade": vade, "borc_orani": borc_nom / (1 + c.pi) ** nb / capex_top}
+    return {
+        "servis_nom": servis,
+        "faiz_nom": faiz,
+        "borc_reel": borc_nom / (1 + c.pi) ** nb,
+        "enf": enf,
+        "vade": vade,
+        "borc_orani": borc_nom / (1 + c.pi) ** nb / capex_top,
+    }
 
 
 def ozkaynak(sonuc: dict, borc: dict, c: Sabitler) -> dict:

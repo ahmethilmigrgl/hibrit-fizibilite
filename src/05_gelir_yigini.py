@@ -37,8 +37,7 @@ from src.risk.isletme import Tasarim, tablo_uret
 from src.risk.senaryo import a_yolu, birim_sekiller, h_yolu, yan_hizmet_sekli
 
 CIKTI = CIKTILAR / "05_risk"
-KAYNAK = ("Kaynak: kendi modelim (Pyomo + HiGHS). EPİAŞ PTF ve SFK kapasite fiyatları (2025-26), PVGIS, ERA5 (kalibre). "
-          "Reel 2026 USD.")
+KAYNAK = "Kaynak: kendi modelim (Pyomo + HiGHS). EPİAŞ PTF ve SFK kapasite fiyatları (2025-26), PVGIS, ERA5 (kalibre). Reel 2026 USD."
 KOMBINASYONLAR = {
     "(1) Aşama 4 baz": (set(), "baz"),
     "(2) + yan hizmet + dengesizlik + YEK-G": ({"yh", "dz", "yekg"}, "baz"),
@@ -58,8 +57,10 @@ class Ortam:
         self.u = uretim_profili()
         self.v = Varsayimlar.configten(self.cfg)
         self.c = Sabitler.configten(self.cfg, self.v)
-        self.opt = {**{k: deger(x) for k, x in self.cfg["optimizasyon"].items()},
-                    "verim_gd": deger(self.cfg["teknoloji"]["bess"]["verim_gidis_donus"])}
+        self.opt = {
+            **{k: deger(x) for k, x in self.cfg["optimizasyon"].items()},
+            "verim_gd": deger(self.cfg["teknoloji"]["bess"]["verim_gidis_donus"]),
+        }
         w = temsili_hava_yili(self.u.ges, self.u.res, self.u.hava_yillari)
         self.g = self.u.ges[w] * self.u.ges.mean() / self.u.ges[w].mean()
         self.r = self.u.res[w] * self.u.res.mean() / self.u.res[w].mean()
@@ -70,9 +71,15 @@ class Ortam:
         self.yan = yan_hizmet_sekli(self.cfg)
         self.yillar = np.arange(deger(self.cfg["proje"]["baslangic_yili"]), deger(self.cfg["proje"]["baslangic_yili"]) + self.v.omur)
         yh = self.cfg["gelir_yigini"]["yan_hizmet"]
-        self.sabit = dict(eta=float(np.sqrt(self.opt["verim_gd"])), yipranma=self.v.bess_yipranma, teias_e=self.v.teias_enerji,
-                          yekg=self.c.yekg, rezerv_tavan=deger(yh["azami_rezerv"]), enerji_saat=deger(yh["enerji_saat"]),
-                          ppa_fiyat=self.c.ppa_fiyat)
+        self.sabit = dict(
+            eta=float(np.sqrt(self.opt["verim_gd"])),
+            yipranma=self.v.bess_yipranma,
+            teias_e=self.v.teias_enerji,
+            yekg=self.c.yekg,
+            rezerv_tavan=deger(yh["azami_rezerv"]),
+            enerji_saat=deger(yh["enerji_saat"]),
+            ppa_fiyat=self.c.ppa_fiyat,
+        )
         self.yh_azalma, self.yh_taban = deger(yh["yillik_azalma"]), deger(yh["taban_oran"])
         self.kan_taban = deger(self.cfg["fiyat_senaryolari"]["kanibalizasyon"])["taban_oran"]
 
@@ -93,7 +100,9 @@ class Ortam:
         İşletme tablosu (diskte önbellekli: data/processed/isletme_tablolari/). Bataryasız tasarım kapalı formla
         ince ızgarada; bataryalı tasarım LP ile daha seyrek ızgarada hesaplanır (hata Bölüm B'de ölçülür).
         """
-        import hashlib, pickle
+        import hashlib
+        import pickle
+
         pil = t.bess_mw > 0.5
         if pil:
             H = [0.55, 0.62, 0.70, round(self.oran0, 4)]
@@ -103,9 +112,28 @@ class Ortam:
             H, M, A = self.H, [0.78, 0.82, 0.86, 0.90, 0.94, 0.98, 1.02, 1.06, 1.10], [1.0]
         pp = (pp_ozel or [0.0, self.c.ppa_pay]) if t.ppa else [0.0]
         sabit = {**self.sabit, **(sabit_ek or {})}
-        anahtar = hashlib.md5(json.dumps([t.res_mw, t.ges_mw, round(t.bess_mw, 3), round(t.bess_mwh, 3), t.sebeke_mw,
-                                          t.yan_hizmet, t.yekg, t.ppa, H, M, A, pp, sabit], default=float).encode()).hexdigest()[:12]
-        klasor = ISLENMIS_VERI / "isletme_tablolari"; klasor.mkdir(exist_ok=True)
+        anahtar = hashlib.md5(
+            json.dumps(
+                [
+                    t.res_mw,
+                    t.ges_mw,
+                    round(t.bess_mw, 3),
+                    round(t.bess_mwh, 3),
+                    t.sebeke_mw,
+                    t.yan_hizmet,
+                    t.yekg,
+                    t.ppa,
+                    H,
+                    M,
+                    A,
+                    pp,
+                    sabit,
+                ],
+                default=float,
+            ).encode()
+        ).hexdigest()[:12]
+        klasor = ISLENMIS_VERI / "isletme_tablolari"
+        klasor.mkdir(exist_ok=True)
         dosya = klasor / f"{anahtar}.pkl"
         if dosya.exists():
             return pickle.loads(dosya.read_bytes())
@@ -118,11 +146,17 @@ class Ortam:
         N = self.v.omur
         h = h_yolu(self.cfg, self.yillar, self.kan_taban if taban is None else taban, self.oran0)
         a = a_yolu(self.yillar, self.yh_azalma, self.yh_taban) if getattr(self, "a_ozel", None) is None else self.a_ozel
-        girdi = {"h": np.tile(h, (n, 1)), "m": np.ones((n, N)), "a": np.tile(a, (n, 1)), "L": np.full((n, N), L),
-                 "tavan": np.zeros((n, N), bool), **{k: np.ones(n) for k in ["capex_res", "capex_ges", "capex_bess", "opex", "bozunma"]}}
+        girdi = {
+            "h": np.tile(h, (n, 1)),
+            "m": np.ones((n, N)),
+            "a": np.tile(a, (n, 1)),
+            "L": np.full((n, N), L),
+            "tavan": np.zeros((n, N), bool),
+            **{k: np.ones(n) for k in ["capex_res", "capex_ges", "capex_bess", "opex", "bozunma"]},
+        }
         if w is None:
             girdi["ws_ortalama"] = True
-        else:   # hava yılı w sabit, şekil yılları ortalaması için iki ayrı simülasyon satırı
+        else:  # hava yılı w sabit, şekil yılları ortalaması için iki ayrı simülasyon satırı
             girdi.update({"w": np.full((n, N), w[0]), "s": np.full((n, N), w[1])})
         return girdi
 
@@ -143,19 +177,33 @@ class Ortam:
         borc = borc_boyutla(cfads_p90, float(r["capex_top"][0]), t, self.cfg, self.c, pay)
         oz = ozkaynak(r, borc, self.c)
         bb = brentq(lambda x: nakit_akislari(t, tb, self.c, self.beklenen_girdi(x))["npv"][0], 5, 250, xtol=0.01)
-        return {"NPV [M USD]": r["npv"][0] / 1e6, "Proje IRR [%]": 100 * irr_vektor(r["sna"])[0],
-                "Öz kaynak IRR reel [%]": 100 * oz["irr"][0], "Başabaş fiyat [USD/MWh]": bb,
-                "Borç (P90) [M USD]": borc["borc_reel"] / 1e6, "Borç / CAPEX [%]": 100 * borc["borc_orani"],
-                "Borç vadesi [yıl]": borc["vade"], "CAPEX [M USD]": float(r["capex_top"][0]) / 1e6,
-                "Yan hizmet geliri yıl 1 [M USD]": float(np.atleast_2d(r["gelir_yh"])[0, 0]) / 1e6,
-                "Batarya spot geliri yıl 1 [M USD]": float(r["gelir_bess"][0, 0]) / 1e6}
+        return {
+            "NPV [M USD]": r["npv"][0] / 1e6,
+            "Proje IRR [%]": 100 * irr_vektor(r["sna"])[0],
+            "Öz kaynak IRR reel [%]": 100 * oz["irr"][0],
+            "Başabaş fiyat [USD/MWh]": bb,
+            "Borç (P90) [M USD]": borc["borc_reel"] / 1e6,
+            "Borç / CAPEX [%]": 100 * borc["borc_orani"],
+            "Borç vadesi [yıl]": borc["vade"],
+            "CAPEX [M USD]": float(r["capex_top"][0]) / 1e6,
+            "Yan hizmet geliri yıl 1 [M USD]": float(np.atleast_2d(r["gelir_yh"])[0, 0]) / 1e6,
+            "Batarya spot geliri yıl 1 [M USD]": float(r["gelir_bess"][0, 0]) / 1e6,
+        }
 
 
 def tasarim_of(ad, r, kal):
-    return Tasarim(ad, r["RES [MW]"] + r.get("Blok RES [MW]", 0), r["GES [MWac]"] + r.get("Blok GES [MWac]", 0),
-                   max(r["BESS [MW]"], 0), max(r["BESS [MWh]"], 0), 50.0 + r.get("Ek bağlantı L2 [MW]", 0),
-                   yan_hizmet="yh" in kal and r.get("Yan hizmete katılım", 0) == 1, dengesizlik_azaltim="dz" in kal,
-                   yekg="yekg" in kal, ppa="ppa" in kal)
+    return Tasarim(
+        ad,
+        r["RES [MW]"] + r.get("Blok RES [MW]", 0),
+        r["GES [MWac]"] + r.get("Blok GES [MWac]", 0),
+        max(r["BESS [MW]"], 0),
+        max(r["BESS [MWh]"], 0),
+        50.0 + r.get("Ek bağlantı L2 [MW]", 0),
+        yan_hizmet="yh" in kal and r.get("Yan hizmete katılım", 0) == 1,
+        dengesizlik_azaltim="dz" in kal,
+        yekg="yekg" in kal,
+        ppa="ppa" in kal,
+    )
 
 
 def main():
@@ -169,19 +217,32 @@ def main():
         tb = o.tablo(t)
         dg = o.degerle(t, tb, L=deger(o.cfg["fiyat_senaryolari"]["seviye"])[sev])
         tasarimlar[ad] = (t, r, dg)
-        satir = {"Kombinasyon": ad, "Türbin": r["N"], "RES [MW]": t.res_mw, "GES [MWac]": t.ges_mw,
-                 "BESS [MW]": t.bess_mw, "BESS [MWh]": t.bess_mwh, "Ek bağlantı [MW]": r.get("Ek bağlantı L2 [MW]", 0),
-                 "MILP NPV tahmini [M USD]": r["NPV tahmini [M USD]"], **dg, "Kesinti [%]": r["Kesinti [%]"],
-                 "BESS döngü/yıl": r["BESS döngü/yıl"], "Ort. rezerv [MW]": r["Ort. rezerv [MW]"],
-                 "Gelir: yan hizmet [M USD/yıl, seviyeli]": r["Yan hizmet geliri [USD/yıl]"] / 1e6,
-                 "Gelir: arbitraj [M USD/yıl]": r["Batarya: arbitraj [USD/yıl]"] / 1e6,
-                 "Gelir: kesinti kurtarma [M USD/yıl]": r["Batarya: kesinti kurtarma [USD/yıl]"] / 1e6,
-                 "Gelir: dengesizlik azaltımı [M USD/yıl]": r["Dengesizlik azaltımı [USD/yıl]"] / 1e6,
-                 "MILP süresi [s]": r["Çözüm süresi [s]"], "MIP boşluğu": r["MIP boşluğu"]}
+        satir = {
+            "Kombinasyon": ad,
+            "Türbin": r["N"],
+            "RES [MW]": t.res_mw,
+            "GES [MWac]": t.ges_mw,
+            "BESS [MW]": t.bess_mw,
+            "BESS [MWh]": t.bess_mwh,
+            "Ek bağlantı [MW]": r.get("Ek bağlantı L2 [MW]", 0),
+            "MILP NPV tahmini [M USD]": r["NPV tahmini [M USD]"],
+            **dg,
+            "Kesinti [%]": r["Kesinti [%]"],
+            "BESS döngü/yıl": r["BESS döngü/yıl"],
+            "Ort. rezerv [MW]": r["Ort. rezerv [MW]"],
+            "Gelir: yan hizmet [M USD/yıl, seviyeli]": r["Yan hizmet geliri [USD/yıl]"] / 1e6,
+            "Gelir: arbitraj [M USD/yıl]": r["Batarya: arbitraj [USD/yıl]"] / 1e6,
+            "Gelir: kesinti kurtarma [M USD/yıl]": r["Batarya: kesinti kurtarma [USD/yıl]"] / 1e6,
+            "Gelir: dengesizlik azaltımı [M USD/yıl]": r["Dengesizlik azaltımı [USD/yıl]"] / 1e6,
+            "MILP süresi [s]": r["Çözüm süresi [s]"],
+            "MIP boşluğu": r["MIP boşluğu"],
+        }
         satirlar.append(satir)
-        log(f"{ad}: RES {t.res_mw:.1f} GES {t.ges_mw:.1f} BESS {t.bess_mw:.1f}/{t.bess_mwh:.1f} | NPV {dg['NPV [M USD]']:.2f} "
+        log(
+            f"{ad}: RES {t.res_mw:.1f} GES {t.ges_mw:.1f} BESS {t.bess_mw:.1f}/{t.bess_mwh:.1f} | NPV {dg['NPV [M USD]']:.2f} "
             f"IRR {dg['Proje IRR [%]']:.2f} öz {dg['Öz kaynak IRR reel [%]']:.2f} başabaş {dg['Başabaş fiyat [USD/MWh]']:.1f} "
-            f"borç {dg['Borç (P90) [M USD]']:.1f} | MILP {r['Çözüm süresi [s]']:.0f}s")
+            f"borç {dg['Borç (P90) [M USD]']:.1f} | MILP {r['Çözüm süresi [s]']:.0f}s"
+        )
     tablo = pd.DataFrame(satirlar)
     tablo.to_csv(CIKTI / "a3_yeniden_optimizasyon.csv", encoding="utf-8-sig", index=False, float_format="%.4f")
 
@@ -200,10 +261,13 @@ def main():
     f = fiyat_senaryosu_uret(o.cfg, o.u, "baz", "devam")
     yh_lev = float((f.yan_hizmet.mean(axis=(1, 2)) * o.DF).sum() / o.DF.sum())
     yh_2026 = float(o.yan.mean())
-    esik_bilgi = {"Eşik çarpanı": esik, "Seviyeli SFK fiyatı (baz yol) [USD/MW-saat]": yh_lev,
-                  "Gerekli seviyeli SFK fiyatı [USD/MW-saat]": esik * yh_lev,
-                  "2026 SFK seviyesi [USD/MW-saat]": yh_2026,
-                  "Gerekli fiyatın 2026 seviyesine oranı": esik * yh_lev / yh_2026}
+    esik_bilgi = {
+        "Eşik çarpanı": esik,
+        "Seviyeli SFK fiyatı (baz yol) [USD/MW-saat]": yh_lev,
+        "Gerekli seviyeli SFK fiyatı [USD/MW-saat]": esik * yh_lev,
+        "2026 SFK seviyesi [USD/MW-saat]": yh_2026,
+        "Gerekli fiyatın 2026 seviyesine oranı": esik * yh_lev / yh_2026,
+    }
     log(esik_bilgi)
     # Yan hizmet olmadan dengesizlik + YEK-G batarya getiriyor mu?
     r_dz = o.milp({"dz", "yekg"}, "baz")
@@ -217,10 +281,12 @@ def main():
     }
     t2 = tasarimlar["(2) + yan hizmet + dengesizlik + YEK-G"][0]
     t3 = tasarimlar["(3) = (2) + PPA"][0]
-    adaylar["C: gelir yığınlı optimal"] = Tasarim("C: gelir yığınlı optimal", t2.res_mw, t2.ges_mw, t2.bess_mw, t2.bess_mwh,
-                                                 t2.sebeke_mw, t2.yan_hizmet, True, True, False)
-    adaylar["D: gelir yığınlı + PPA"] = Tasarim("D: gelir yığınlı + PPA", t3.res_mw, t3.ges_mw, t3.bess_mw, t3.bess_mwh,
-                                               t3.sebeke_mw, t3.yan_hizmet, True, True, True)
+    adaylar["C: gelir yığınlı optimal"] = Tasarim(
+        "C: gelir yığınlı optimal", t2.res_mw, t2.ges_mw, t2.bess_mw, t2.bess_mwh, t2.sebeke_mw, t2.yan_hizmet, True, True, False
+    )
+    adaylar["D: gelir yığınlı + PPA"] = Tasarim(
+        "D: gelir yığınlı + PPA", t3.res_mw, t3.ges_mw, t3.bess_mw, t3.bess_mwh, t3.sebeke_mw, t3.yan_hizmet, True, True, True
+    )
     adaylar["E: RES 58,8 + PPA"] = Tasarim("E: RES 58,8 + PPA", 58.8, 0.0, ppa=True)
     Path(CIKTI / "adaylar.json").write_text(json.dumps({k: t.__dict__ for k, t in adaylar.items()}, ensure_ascii=False, indent=1))
     grafik_gelir_yigini(tablo)
@@ -230,8 +296,12 @@ def main():
 def grafik_gelir_yigini(tablo):
     fig, axs = plt.subplots(1, 2, figsize=(13.5, 4.8), gridspec_kw={"width_ratios": [1.3, 1]})
     ax = axs[0]
-    kal = ["Gelir: yan hizmet [M USD/yıl, seviyeli]", "Gelir: arbitraj [M USD/yıl]", "Gelir: kesinti kurtarma [M USD/yıl]",
-           "Gelir: dengesizlik azaltımı [M USD/yıl]"]
+    kal = [
+        "Gelir: yan hizmet [M USD/yıl, seviyeli]",
+        "Gelir: arbitraj [M USD/yıl]",
+        "Gelir: kesinti kurtarma [M USD/yıl]",
+        "Gelir: dengesizlik azaltımı [M USD/yıl]",
+    ]
     renk = ["#7f6bd1", g.RENK_RES, g.RENK_GES, g.RENK_HIBRIT]
     et = [k.split(") ")[0] + ")" for k in tablo["Kombinasyon"]]
     alt = np.zeros(len(tablo))
@@ -242,7 +312,8 @@ def grafik_gelir_yigini(tablo):
     for i, (b, e) in enumerate(zip(tablo["BESS [MW]"], tablo["BESS [MWh]"])):
         ax.text(i, alt[i] + 0.05, f"{b:.0f} MW\n{e:.0f} MWh" if b > 0.5 else "batarya\nyok", ha="center", fontsize=7.5, color=g.MUREKKEP)
     ax.set_ylabel("Batarya geliri [M USD/yıl, seviyelendirilmiş]")
-    ax.set_title("Batarya gelir yığını", loc="left"); ax.legend(fontsize=8, loc="upper left")
+    ax.set_title("Batarya gelir yığını", loc="left")
+    ax.legend(fontsize=8, loc="upper left")
     ax.set_ylim(0, alt.max() * 1.25 + 0.3)
     g.eksen_sade(ax)
     ax = axs[1]
@@ -250,14 +321,20 @@ def grafik_gelir_yigini(tablo):
     for i, (npv, bb) in enumerate(zip(tablo["NPV [M USD]"][::-1], tablo["Başabaş fiyat [USD/MWh]"][::-1])):
         ax.text(max(npv, 0) + 0.5, i, f"{npv:+.1f} M$ | başabaş {bb:.0f}", va="center", ha="left", fontsize=8, color=g.MUREKKEP)
     ax.axvline(0, color=g.MUREKKEP, lw=0.8)
-    ax.set_xlabel("NPV [M USD]"); ax.set_title("Optimal tasarımın NPV'si ve başabaş fiyatı", loc="left")
+    ax.set_xlabel("NPV [M USD]")
+    ax.set_title("Optimal tasarımın NPV'si ve başabaş fiyatı", loc="left")
     lo, hi = tablo["NPV [M USD]"].min(), tablo["NPV [M USD]"].max()
     ax.set_xlim(min(lo, 0) - 12, hi + 18)
     g.eksen_sade(ax, izgara="x")
-    g.baslik(fig, "Yan hizmet geliri bataryayı tasarıma sokuyor",
-             "Kombinasyonlar: (1) Aşama 4 baz, (2) + yan hizmet + dengesizlik + YEK-G, (3) + PPA, (4) + depolamalı lisans, (5) = (2) yüksek fiyat.")
-    fig.tight_layout(rect=(0, 0, 1, 0.88)); g.kaynak_notu(fig, KAYNAK)
-    fig.savefig(CIKTI / "a3_batarya_gelir_yigini.png"); plt.close(fig)
+    g.baslik(
+        fig,
+        "Yan hizmet geliri bataryayı tasarıma sokuyor",
+        "Kombinasyonlar: (1) Aşama 4 baz, (2) + yan hizmet + dengesizlik + YEK-G, (3) + PPA, (4) + depolamalı lisans, (5) = (2) yüksek fiyat.",
+    )
+    fig.tight_layout(rect=(0, 0, 1, 0.88))
+    g.kaynak_notu(fig, KAYNAK)
+    fig.savefig(CIKTI / "a3_batarya_gelir_yigini.png")
+    plt.close(fig)
 
 
 if __name__ == "__main__":

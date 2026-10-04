@@ -10,8 +10,7 @@ from __future__ import annotations
 import pandas as pd
 
 
-def ortak_baglanti(ges_kf: pd.Series, res_kf: pd.Series, ges_mw: float = 1.0,
-                   res_mw: float = 1.0, baglanti_mw: float = 1.0) -> dict:
+def ortak_baglanti(ges_kf: pd.Series, res_kf: pd.Series, ges_mw: float = 1.0, res_mw: float = 1.0, baglanti_mw: float = 1.0) -> dict:
     """
     Saatlik kapasite faktörlerinden ortak bağlantı göstergeleri (yıllık ortalama).
 
@@ -22,9 +21,9 @@ def ortak_baglanti(ges_kf: pd.Series, res_kf: pd.Series, ges_mw: float = 1.0,
         baglanti_kf      — satılan / (bağlantı × saat): bağlantının ne kadar dolu kullanıldığı
     """
     df = pd.concat([ges_kf.rename("ges"), res_kf.rename("res")], axis=1, join="inner").dropna()
-    uretim = ges_mw * df["ges"] + res_mw * df["res"]           # MW (saatlik ortalama → MWh)
+    uretim = ges_mw * df["ges"] + res_mw * df["res"]  # MW (saatlik ortalama → MWh)
     satilan = uretim.clip(upper=baglanti_mw)
-    yil_sayisi = len(df) / 8766                                 # ortalama yıl uzunluğu (saat)
+    yil_sayisi = len(df) / 8766  # ortalama yıl uzunluğu (saat)
     return {
         "uretim_mwh_yil": uretim.sum() / yil_sayisi,
         "satilan_mwh_yil": satilan.sum() / yil_sayisi,

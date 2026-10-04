@@ -64,11 +64,13 @@ def gunluk_spread(fiyat: pd.Series) -> pd.DataFrame:
         d = np.sort(s.values)
         return d[-4:].mean() - d[:4].mean() if len(d) >= 8 else np.nan
 
-    return pd.DataFrame({
-        "spread": gruplar.max() - gruplar.min(),
-        "spread_4s": gruplar.apply(ust_alt_4),
-        "saat": gruplar.size(),
-    })
+    return pd.DataFrame(
+        {
+            "spread": gruplar.max() - gruplar.min(),
+            "spread_4s": gruplar.apply(ust_alt_4),
+            "saat": gruplar.size(),
+        }
+    )
 
 
 def dusuk_fiyat_saatleri(fiyat_usd: pd.Series, esikler: list[float]) -> pd.DataFrame:
@@ -84,14 +86,22 @@ def hava_yillari_ile_yakalanan(fiyat: pd.Series, profil: pd.DataFrame, fiyat_yil
     ortalamasını, en düşüğünü ve en yükseğini döndürür. 'Aynı yılın fiyatı' yaklaşımından farklıdır:
     hava ile fiyat arasındaki gerçek eşzamanlılık (ör. rüzgârlı saatte fiyat düşmesi) kaybolur.
     """
-    def anahtar(indeks):
+
+    def anahtar(indeks: pd.DatetimeIndex) -> pd.MultiIndex:
+        """UTC zaman damgasını Türkiye saatinde (ay, gün, saat) anahtarına çevirir."""
         y = indeks.tz_convert("Europe/Istanbul")
         return pd.MultiIndex.from_arrays([y.month, y.day, y.hour], names=["ay", "gun", "saat"])
 
     f = fiyat.copy()
-    f.index = pd.MultiIndex.from_arrays([fiyat.index.tz_convert("Europe/Istanbul").year, anahtar(fiyat.index).get_level_values(0),
-                                         anahtar(fiyat.index).get_level_values(1), anahtar(fiyat.index).get_level_values(2)],
-                                        names=["yil", "ay", "gun", "saat"])
+    f.index = pd.MultiIndex.from_arrays(
+        [
+            fiyat.index.tz_convert("Europe/Istanbul").year,
+            anahtar(fiyat.index).get_level_values(0),
+            anahtar(fiyat.index).get_level_values(1),
+            anahtar(fiyat.index).get_level_values(2),
+        ],
+        names=["yil", "ay", "gun", "saat"],
+    )
     f = f[~f.index.duplicated()]
     p_yil = profil.index.tz_convert("Europe/Istanbul").year
     sonuclar = []

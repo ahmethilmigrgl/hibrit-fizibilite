@@ -23,5 +23,19 @@ class Tasarim:
 
 
 # İşletme tablosunun son boyutundaki alanlar (src/risk/isletme.py → birim_toplamlar)
-ALANLAR = ["gelir_ges_q", "gelir_res_q", "gelir_d_q", "E_ges", "E_res", "E_d", "E_c", "E_k", "E_A",
-           "yh_a", "rezerv", "gelir_ges_qt", "gelir_res_qt", "gelir_d_qt"]
+ALANLAR = [
+    "gelir_ges_q",
+    "gelir_res_q",
+    "gelir_d_q",
+    "E_ges",
+    "E_res",
+    "E_d",
+    "E_c",
+    "E_k",
+    "E_A",
+    "yh_a",
+    "rezerv",
+    "gelir_ges_qt",
+    "gelir_res_qt",
+    "gelir_d_qt",
+]

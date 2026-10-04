@@ -15,9 +15,7 @@ Zaman: ERA5 zaman damgaları UTC'dir ve rüzgâr değişkenleri o andaki (anlık
 
 from __future__ import annotations
 
-import io
 import zipfile
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -28,8 +26,8 @@ from src.ayarlar import HAM_VERI, cds_istemcisi, deger
 
 ERA5_KLASOR = HAM_VERI / "era5"
 VERI_SETI = "reanalysis-era5-single-levels-timeseries"
-R_KURU_HAVA = 287.05      # J/(kg·K), kuru hava gaz sabiti
-G = 9.80665               # m/s², yerçekimi ivmesi
+R_KURU_HAVA = 287.05  # J/(kg·K), kuru hava gaz sabiti
+G = 9.80665  # m/s², yerçekimi ivmesi
 SICAKLIK_GRADYANI = 0.0065  # K/m, standart atmosfer sıcaklık düşüş oranı
 
 
@@ -64,10 +62,10 @@ def era5_indir(kod: str, enlem: float, boylam: float, yil: int, cfg_ruzgar: dict
     return df
 
 
-def era5_coklu_yil(kod: str, enlem: float, boylam: float, y1: int, y2: int,
-                   cfg_ruzgar: dict) -> pd.DataFrame:
+def era5_coklu_yil(kod: str, enlem: float, boylam: float, y1: int, y2: int, cfg_ruzgar: dict) -> pd.DataFrame:
     """y1..y2 (dahil) yıllarını indirip birleştirir (önbellekte olmayan yıllar paralel indirilir)."""
     from concurrent.futures import ThreadPoolExecutor
+
     with ThreadPoolExecutor(max_workers=5) as havuz:
         parcalar = havuz.map(lambda y: era5_indir(kod, enlem, boylam, y, cfg_ruzgar), range(y1, y2 + 1))
         return pd.concat(list(parcalar))
@@ -132,10 +130,15 @@ def tsi_ay_saat(indeks: pd.DatetimeIndex) -> tuple[np.ndarray, np.ndarray]:
     return np.asarray(tsi.month), np.asarray(tsi.hour)
 
 
-def ruzgar_kapasite_faktoru(df: pd.DataFrame, cfg_ruzgar: dict,
-                            turbin_modeli: str | None = None, gobek: float | None = None,
-                            katsayi: float | None = None, k_matris: pd.DataFrame | None = None,
-                            zaman_hizasi: str | None = None) -> tuple[pd.Series, pd.DataFrame]:
+def ruzgar_kapasite_faktoru(
+    df: pd.DataFrame,
+    cfg_ruzgar: dict,
+    turbin_modeli: str | None = None,
+    gobek: float | None = None,
+    katsayi: float | None = None,
+    k_matris: pd.DataFrame | None = None,
+    zaman_hizasi: str | None = None,
+) -> tuple[pd.Series, pd.DataFrame]:
     """
     Saatlik RES kapasite faktörü (MW başına, 0-1, kayıplar düşülmüş).
 
@@ -174,9 +177,7 @@ def ruzgar_kapasite_faktoru(df: pd.DataFrame, cfg_ruzgar: dict,
 
     # IEC 61400-12 yoğunluk düzeltmesi: güç eğrisinin hız ekseni her saat için
     # o saatin yoğunluğuna göre kaydırılır (windpowerlib uygulaması)
-    guc = power_curve_density_correction(
-        ara["v_kalibre"], egri["wind_speed"], egri["value"], ara["yogunluk"]
-    )
+    guc = power_curve_density_correction(ara["v_kalibre"], egri["wind_speed"], egri["value"], ara["yogunluk"])
     ara["brut_kf"] = np.asarray(guc, dtype=float) / t.nominal_power
     kayip = deger(cfg_ruzgar["toplam_kayip"])
     kf = (ara["brut_kf"] * (1 - kayip)).clip(0, 1).rename("res_kf")

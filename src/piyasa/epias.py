@@ -20,7 +20,7 @@ import hashlib
 import json
 import os
 import time
-from pathlib import Path
+from datetime import datetime
 
 import requests
 from dotenv import load_dotenv
@@ -30,8 +30,8 @@ from src.ayarlar import HAM_VERI, KOK
 GIRIS_URL = "https://giris.epias.com.tr/cas/v1/tickets"
 TABAN_URL = "https://seffaflik.epias.com.tr/electricity-service"
 EPIAS_KLASOR = HAM_VERI / "epias"
-BILET_OMRU_SN = 100 * 60       # 2 saatlik biletin güvenli kullanım süresi
-BEKLEME_SN = 0.4               # istekler arası nezaket beklemesi
+BILET_OMRU_SN = 100 * 60  # 2 saatlik biletin güvenli kullanım süresi
+BEKLEME_SN = 0.4  # istekler arası nezaket beklemesi
 
 
 class EpiasHatasi(RuntimeError):
@@ -71,8 +71,7 @@ class EpiasIstemcisi:
         return self._bilet
 
     # ------------------------------------------------------------------ istek
-    def istek(self, yol: str, govde: dict | None = None, yontem: str = "POST",
-              deneme: int = 5) -> dict:
+    def istek(self, yol: str, govde: dict | None = None, yontem: str = "POST", deneme: int = 5) -> dict:
         """Tek bir API isteği (önbelleksiz). 401/403'te bileti yeniler, 429/5xx'te bekleyip tekrar dener."""
         url = f"{TABAN_URL}{yol}"
         for i in range(deneme):
@@ -89,14 +88,14 @@ class EpiasIstemcisi:
                 self._son_istek = time.time()
                 if i == deneme - 1:
                     raise EpiasHatasi(f"Bağlantı hatası: {e}") from e
-                time.sleep(2 ** i)
+                time.sleep(2**i)
                 continue
             self._son_istek = time.time()
 
             if yanit.status_code == 200:
                 return yanit.json()
             if yanit.status_code in (401, 403):
-                self._bilet = None          # bilet süresi dolmuş olabilir → yenile
+                self._bilet = None  # bilet süresi dolmuş olabilir → yenile
                 continue
             if yanit.status_code in (429, 500, 502, 503, 504) and i < deneme - 1:
                 time.sleep(2 ** (i + 1))
@@ -104,8 +103,7 @@ class EpiasIstemcisi:
             raise EpiasHatasi(f"{yol} → HTTP {yanit.status_code}: {_hata_ozeti(yanit)}")
         raise EpiasHatasi(f"{yol}: {deneme} denemede başarısız")
 
-    def onbellekli_istek(self, servis: str, yol: str, govde: dict | None = None,
-                         yontem: str = "POST", yenile: bool = False) -> dict:
+    def onbellekli_istek(self, servis: str, yol: str, govde: dict | None = None, yontem: str = "POST", yenile: bool = False) -> dict:
         """İsteği data/raw/epias/<servis>/ altında önbelleğe alarak yapar."""
         klasor = EPIAS_KLASOR / servis
         klasor.mkdir(parents=True, exist_ok=True)
@@ -127,8 +125,7 @@ def _hata_ozeti(yanit: requests.Response) -> str:
     try:
         govde = yanit.json()
         hatalar = govde.get("errors") or []
-        mesajlar = [h.get("errorMessage") or h.get("message") or str(h.get("errorCode"))
-                    for h in hatalar if isinstance(h, dict)]
+        mesajlar = [h.get("errorMessage") or h.get("message") or str(h.get("errorCode")) for h in hatalar if isinstance(h, dict)]
         return "; ".join(m for m in mesajlar if m) or str(govde.get("status", "bilinmeyen hata"))
     except ValueError:
         return "(JSON olmayan yanıt)"
@@ -145,7 +142,7 @@ def _okunur_anahtar(govde: dict | None) -> str:
     return "_".join(p for p in parca if p) or "istek"
 
 
-def tarih_metni(zaman) -> str:
+def tarih_metni(zaman: datetime) -> str:
     """pandas Timestamp / datetime → EPİAŞ ISO-8601 metni (Türkiye saati ofsetiyle)."""
     import pandas as pd
 
@@ -155,4 +152,4 @@ def tarih_metni(zaman) -> str:
     else:
         z = z.tz_convert("Europe/Istanbul")
     metin = z.strftime("%Y-%m-%dT%H:%M:%S%z")
-    return metin[:-2] + ":" + metin[-2:]     # +0300 → +03:00
+    return metin[:-2] + ":" + metin[-2:]  # +0300 → +03:00

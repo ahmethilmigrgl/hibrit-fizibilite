@@ -85,14 +85,20 @@ def ptf_cek(istemci: EpiasIstemcisi, bas: str, son: str) -> pd.DataFrame:
 
 
 URETIM_SUTUNLARI = {
-    "total": "toplam", "wind": "ruzgar", "sun": "gunes", "naturalGas": "dogalgaz",
-    "importCoal": "ithal_komur", "lignite": "linyit", "dammedHydro": "barajli",
-    "river": "akarsu", "geothermal": "jeotermal", "biomass": "biyokutle",
+    "total": "toplam",
+    "wind": "ruzgar",
+    "sun": "gunes",
+    "naturalGas": "dogalgaz",
+    "importCoal": "ithal_komur",
+    "lignite": "linyit",
+    "dammedHydro": "barajli",
+    "river": "akarsu",
+    "geothermal": "jeotermal",
+    "biomass": "biyokutle",
 }
 
 
-def uretim_cek(istemci: EpiasIstemcisi, bas: str, son: str,
-               santral_id: int | None = None) -> pd.DataFrame:
+def uretim_cek(istemci: EpiasIstemcisi, bas: str, son: str, santral_id: int | None = None) -> pd.DataFrame:
     """
     Saatlik gerçek zamanlı üretim [MWh], UTC indeksli. santral_id verilirse tek santral,
     verilmezse Türkiye geneli kaynak bazında. API sınırı 3 ay olduğu için çeyreklik parçalarla çekilir.
@@ -104,7 +110,7 @@ def uretim_cek(istemci: EpiasIstemcisi, bas: str, son: str,
     for b, s in _parcalar(bas_y.tz_localize(None), son_y.tz_localize(None), "QS"):
         govde = {"startDate": tarih_metni(b), "endDate": tarih_metni(s)}
         if santral_id:
-            govde["powerPlantId"] = santral_id   # dikkat: 'powerplantId' yazılırsa filtre sessizce yok sayılır
+            govde["powerPlantId"] = santral_id  # dikkat: 'powerplantId' yazılırsa filtre sessizce yok sayılır
         kayitlar += istemci.onbellekli_istek(servis, URETIM_YOLU, govde)["items"]
     sutunlar = ["total", "wind"] if santral_id else list(URETIM_SUTUNLARI)
     df = _utc_cevir(kayitlar, sutunlar).rename(columns=URETIM_SUTUNLARI)
@@ -128,11 +134,17 @@ def auf_cek(istemci: EpiasIstemcisi, bas: str = "2022-04-01", son: str = "2023-0
         satirlar += istemci.onbellekli_istek("auf", "/v1/markets/data/maximum-settlement-price", govde)["items"]
     df = pd.DataFrame(satirlar).drop_duplicates()
     df["ay"] = df["period"].str.slice(0, 7)
-    return (df.groupby("ay")
-              .agg(auf_yenilenebilir=("other", "first"), auf_dogalgaz=("naturalGas", "first"),
-                   auf_ithal_komur=("importedCoal", "first"), auf_yerli_komur=("localCoal", "first"),
-                   gop_azami_fiyat=("gopMaxPrice", "max"))
-              .sort_index())
+    return (
+        df.groupby("ay")
+        .agg(
+            auf_yenilenebilir=("other", "first"),
+            auf_dogalgaz=("naturalGas", "first"),
+            auf_ithal_komur=("importedCoal", "first"),
+            auf_yerli_komur=("localCoal", "first"),
+            gop_azami_fiyat=("gopMaxPrice", "max"),
+        )
+        .sort_index()
+    )
 
 
 YAN_HIZMET_YOLLARI = {
@@ -166,8 +178,9 @@ def yekg_fiyat_cek(istemci: EpiasIstemcisi, bas: str, son: str) -> pd.DataFrame:
     """YEK-G (yenilenebilir enerji kaynak garanti) ağırlıklı ortalama fiyatı, kaynak türüne göre [TL, USD /MWh]."""
     kayit = []
     for b, s in _parcalar(pd.Timestamp(bas), pd.Timestamp(son) + pd.Timedelta(hours=23), "QS"):
-        r = istemci.onbellekli_istek("yekg_fiyat", "/v1/markets/yek-g/data/weighted-average-price",
-                                     {"startDate": tarih_metni(b), "endDate": tarih_metni(s)})
+        r = istemci.onbellekli_istek(
+            "yekg_fiyat", "/v1/markets/yek-g/data/weighted-average-price", {"startDate": tarih_metni(b), "endDate": tarih_metni(s)}
+        )
         kayit += r.get("items", [])
     return pd.DataFrame(kayit).drop_duplicates()
 
@@ -186,6 +199,9 @@ def talimat_ozeti_cek(istemci: EpiasIstemcisi, bas: str, son: str) -> pd.DataFra
         df["zaman_utc"] = pd.to_datetime(df["date"], utc=True)
         df = df.drop_duplicates("zaman_utc").set_index("zaman_utc").sort_index()
         ad = "downRegulation" if yon == "yat" else "upRegulation"
-        parcalar.append(pd.DataFrame({f"{yon}_0": df[f"{ad}ZeroCoded"].abs(), f"{yon}_1": df[f"{ad}OneCoded"].abs(),
-                                      f"{yon}_2": df[f"{ad}TwoCoded"].abs()}).astype(float))
+        parcalar.append(
+            pd.DataFrame(
+                {f"{yon}_0": df[f"{ad}ZeroCoded"].abs(), f"{yon}_1": df[f"{ad}OneCoded"].abs(), f"{yon}_2": df[f"{ad}TwoCoded"].abs()}
+            ).astype(float)
+        )
     return pd.concat(parcalar, axis=1)

@@ -20,15 +20,21 @@ Kısıtlar     y_t + k_t + c_t = A_t                    (üretim dengesi: üreti
 from __future__ import annotations
 
 import time
+from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 import numpy as np
 import pandas as pd
 import pyomo.environ as pyo
 from pyomo.contrib import appsi
 
+if TYPE_CHECKING:
+    from src.finans.model import Konfig, Varsayimlar
 
-def _model_kur(n: int, L: float, P: float, E: float, eta: float, yipranma: float, sebekeden: bool,
-               teias_e: float = 0.0, s0_oran: float = 0.5) -> pyo.ConcreteModel:
+
+def _model_kur(
+    n: int, L: float, P: float, E: float, eta: float, yipranma: float, sebekeden: bool, teias_e: float = 0.0, s0_oran: float = 0.5
+) -> pyo.ConcreteModel:
     m = pyo.ConcreteModel(name="Basamak2_Hibrit")
     # --- Kümeler
     m.T = pyo.RangeSet(0, n - 1)
@@ -44,15 +50,14 @@ def _model_kur(n: int, L: float, P: float, E: float, eta: float, yipranma: float
     m.d = pyo.Var(m.T, bounds=(0, P))
     m.s = pyo.Var(m.T, bounds=(0, E))
     # --- Amaç
-    m.amac = pyo.Objective(expr=sum((m.p[t] - teias_e) * (m.y[t] + m.d[t]) - m.p[t] * m.g[t] - yipranma * m.d[t]
-                                    for t in m.T),
-                           sense=pyo.maximize)
+    m.amac = pyo.Objective(
+        expr=sum((m.p[t] - teias_e) * (m.y[t] + m.d[t]) - m.p[t] * m.g[t] - yipranma * m.d[t] for t in m.T), sense=pyo.maximize
+    )
     # --- Kısıtlar
     m.k_uretim = pyo.Constraint(m.T, rule=lambda m, t: m.y[t] + m.k[t] + m.c[t] == m.A[t])
     m.k_sebeke = pyo.Constraint(m.T, rule=lambda m, t: m.y[t] + m.d[t] <= L)
     m.k_sarj_guc = pyo.Constraint(m.T, rule=lambda m, t: m.c[t] + m.g[t] <= P)
-    m.k_soc = pyo.Constraint(m.T, rule=lambda m, t: m.s[t] == (s0 if t == 0 else m.s[t - 1])
-                             + eta * (m.c[t] + m.g[t]) - m.d[t] / eta)
+    m.k_soc = pyo.Constraint(m.T, rule=lambda m, t: m.s[t] == (s0 if t == 0 else m.s[t - 1]) + eta * (m.c[t] + m.g[t]) - m.d[t] / eta)
     m.k_son = pyo.Constraint(expr=m.s[n - 1] == s0)
     return m
 
@@ -60,8 +65,18 @@ def _model_kur(n: int, L: float, P: float, E: float, eta: float, yipranma: float
 class HibritDispatch:
     """Sabit kapasiteli hibrit + batarya için tekrar kullanılabilir (persistent) dispatch çözücüsü."""
 
-    def __init__(self, n: int, L: float, P: float, E: float, verim_gd: float, yipranma: float,
-                 sebekeden: bool = False, dual: bool = False, teias_e: float = 0.0):
+    def __init__(
+        self,
+        n: int,
+        L: float,
+        P: float,
+        E: float,
+        verim_gd: float,
+        yipranma: float,
+        sebekeden: bool = False,
+        dual: bool = False,
+        teias_e: float = 0.0,
+    ):
         self.n, self.L, self.P, self.E = n, L, P, E
         self.m = _model_kur(n, L, P, E, float(np.sqrt(verim_gd)), yipranma, sebekeden, teias_e)
         if dual:
@@ -70,14 +85,22 @@ class HibritDispatch:
         self.cozucu.config.load_solution = True
 
     def coz(self, uretim: np.ndarray, fiyat: np.ndarray) -> dict[str, np.ndarray]:
+        """Verilen üretim ve fiyat serisi için LP'yi çözer; saatlik dispatch dizilerini döndürür."""
         for t in range(self.n):
             self.m.A[t].set_value(float(uretim[t]))
             self.m.p[t].set_value(float(fiyat[t]))
         sonuc = self.cozucu.solve(self.m)
         assert sonuc.termination_condition == appsi.base.TerminationCondition.optimal, sonuc.termination_condition
         al = lambda v: np.fromiter((v[t].value for t in range(self.n)), float, self.n)
-        cikti = {"y": al(self.m.y), "k": al(self.m.k), "c": al(self.m.c), "g": al(self.m.g),
-                 "d": al(self.m.d), "s": al(self.m.s), "amac": pyo.value(self.m.amac)}
+        cikti = {
+            "y": al(self.m.y),
+            "k": al(self.m.k),
+            "c": al(self.m.c),
+            "g": al(self.m.g),
+            "d": al(self.m.d),
+            "s": al(self.m.s),
+            "amac": pyo.value(self.m.amac),
+        }
         if hasattr(self.m, "dual"):
             self.cozucu.load_vars()
             dualler = self.cozucu.get_duals(cons_to_load=[self.m.k_sebeke[t] for t in range(self.n)])
@@ -85,25 +108,42 @@ class HibritDispatch:
         return cikti
 
 
-def hibrit_coz(G: np.ndarray, R: np.ndarray, fiyat: np.ndarray, L: float, P: float, E: float,
-               verim_gd: float, yipranma: float, sebekeden: bool = False) -> tuple[pd.DataFrame, dict]:
+def hibrit_coz(
+    G: np.ndarray, R: np.ndarray, fiyat: np.ndarray, L: float, P: float, E: float, verim_gd: float, yipranma: float, sebekeden: bool = False
+) -> tuple[pd.DataFrame, dict]:
     """Basamak 2: tek bir yıl için çöz, bataryasız durumla karşılaştır, gölge fiyatları döndür."""
     t0 = time.time()
     n = len(fiyat)
     A = G + R
     r = HibritDispatch(n, L, P, E, verim_gd, yipranma, sebekeden, dual=True).coz(A, fiyat)
-    df = pd.DataFrame({"fiyat": fiyat, "ges": G, "res": R, "kullanilabilir": A, "dogrudan": r["y"], "kesinti": r["k"],
-                       "sarj": r["c"], "sebekeden_sarj": r["g"], "desarj": r["d"], "soc": r["s"],
-                       "sebekeye": r["y"] + r["d"], "sebeke_golge": r["sebeke_golge"]})
+    df = pd.DataFrame(
+        {
+            "fiyat": fiyat,
+            "ges": G,
+            "res": R,
+            "kullanilabilir": A,
+            "dogrudan": r["y"],
+            "kesinti": r["k"],
+            "sarj": r["c"],
+            "sebekeden_sarj": r["g"],
+            "desarj": r["d"],
+            "soc": r["s"],
+            "sebekeye": r["y"] + r["d"],
+            "sebeke_golge": r["sebeke_golge"],
+        }
+    )
     # Bataryasız referans
     sat0 = np.minimum(A, L)
     gelir0 = float((sat0 * fiyat).sum())
     gelir1 = float((df.sebekeye * fiyat).sum() - (df.sebekeden_sarj * fiyat).sum())
     ozet = {
-        "Bataryasız gelir [USD]": gelir0, "Bataryalı gelir [USD]": gelir1, "Ek gelir [USD]": gelir1 - gelir0,
+        "Bataryasız gelir [USD]": gelir0,
+        "Bataryalı gelir [USD]": gelir1,
+        "Ek gelir [USD]": gelir1 - gelir0,
         "Yıpranma [USD]": yipranma * float(df.desarj.sum()),
         "Ek gelir − yıpranma [USD]": gelir1 - gelir0 - yipranma * float(df.desarj.sum()),
-        "Bataryasız kesinti [MWh]": float((A - sat0).sum()), "Bataryalı kesinti [MWh]": float(df.kesinti.sum()),
+        "Bataryasız kesinti [MWh]": float((A - sat0).sum()),
+        "Bataryalı kesinti [MWh]": float(df.kesinti.sum()),
         "Kurtarılan kesinti [MWh]": float((A - sat0).sum() - df.kesinti.sum()),
         "Zamanda kaydırılan enerji (deşarj) [MWh]": float(df.desarj.sum()),
         "Şarjın kesintiden gelen payı [%]": float(100 * ((A - sat0).sum() - df.kesinti.sum()) / max(df.sarj.sum(), 1e-9)),
@@ -124,7 +164,7 @@ def temsili_hava_yili(ges: np.ndarray, res: np.ndarray, yillar: list[int]) -> in
     return int(np.argmin(uzaklik))
 
 
-def dispatch_kancasi(verim_gd: float, yipranma: float, teias_e: float, sebekeden: bool = False):
+def dispatch_kancasi(verim_gd: float, yipranma: float, teias_e: float, sebekeden: bool = False) -> Callable[..., np.ndarray]:
     """
     Aşama 3 proje_degerle için batarya kancası: her (fiyat-yılı grubu, hava yılı, şekil yılı) için 8760 saatlik
     dispatch LP'si çözülür. Fiyatı aynı olan yıllar (ör. kanibalizasyon tabanına ulaştıktan sonraki yıllar)
@@ -133,25 +173,31 @@ def dispatch_kancasi(verim_gd: float, yipranma: float, teias_e: float, sebekeden
     kullanılabilir üretimle sınırlanır (küçük yaklaşım; bkz. docs/04).
     Döndürür: (x, d, c) — şebekeye verilen, deşarj, santralden şarj; şekil (N, W, S, 8760).
     """
-    def kanca(Gx, Rx, P4, konfig, v):
+
+    def kanca(Gx: np.ndarray, Rx: np.ndarray, P4: np.ndarray, konfig: Konfig, v: Varsayimlar) -> np.ndarray:
+        """Her (yıl grubu, hava yılı, şekil yılı) için bataryanın net şebeke enjeksiyonu (MW)."""
         N, W, _, T = Gx.shape
         S = P4.shape[2]
-        A = (Gx + Rx)[:, :, 0, :]                                       # (N, W, T)
-        x = np.zeros((N, W, S, T)); d = np.zeros_like(x); c = np.zeros_like(x)
-        cozucu = HibritDispatch(T, konfig.sebeke_mw, konfig.bess_mw, konfig.bess_mwh, verim_gd, yipranma,
-                                sebekeden, teias_e=teias_e)
+        A = (Gx + Rx)[:, :, 0, :]  # (N, W, T)
+        x = np.zeros((N, W, S, T))
+        d = np.zeros_like(x)
+        c = np.zeros_like(x)
+        cozucu = HibritDispatch(T, konfig.sebeke_mw, konfig.bess_mw, konfig.bess_mwh, verim_gd, yipranma, sebekeden, teias_e=teias_e)
         # Fiyat-yılı grupları: ardışık özdeş fiyat dizileri
         gruplar, bas = [], 0
         for n in range(1, N + 1):
             if n == N or not np.array_equal(P4[n, 0], P4[bas, 0]):
-                gruplar.append((bas, n)); bas = n
-        for (b, e) in gruplar:
+                gruplar.append((bas, n))
+                bas = n
+        for b, e in gruplar:
             for w in range(W):
                 for s in range(S):
                     r = cozucu.coz(A[b, w], P4[b, 0, s])
                     for n in range(b, e):
                         cc = np.minimum(r["c"], A[n, w])
                         x[n, w, s] = np.minimum(np.clip(A[n, w] - r["k"] - cc, 0, None) + r["d"], konfig.sebeke_mw)
-                        d[n, w, s] = r["d"]; c[n, w, s] = cc
+                        d[n, w, s] = r["d"]
+                        c[n, w, s] = cc
         return x, d, c
+
     return kanca

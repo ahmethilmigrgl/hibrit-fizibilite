@@ -104,3 +104,8 @@ başvuru için hazırlanıyor. Sonuçlar, varsayımlar ve formülasyonlar mülak
    `monte_carlo.log_merkez`; YEKDEM kararı `fiyat_tahmini`/`yekdem_katilim`). Deterministik → Monte Carlo köprüsü
    `src/07_fark_ayristirma.py [once|sonra]`. Baz vaka E[NPV] −1,66 M$ → karar (b) rafa kaldır, tetikleyicileri izle.
    Aşama 5–6 çıktıları (outputs/05_risk) medyan tanımıyla kaldı (tarihsel).
+9. **Yayın öncesi kalite turu:** ✅ Bölüm A yukarıda (Güncelleme 3). Bölüm B: ruff (`pyproject.toml`; karusel betiği
+   hariç), tip ipuçları/docstring, CI `.github/workflows/ci.yml` (ruff + `pytest -m "not veri"`; geliştirme bağımlılıkları
+   `requirements-dev.txt`), `DATA_SOURCES.md` (Copernicus/PVGIS/EPİAŞ atıfları birebir), `docs/MODEL_DOGRULAMA.md`,
+   dashboard cilası (Hakkında, `dashboard/favicon.png`, TR/EN sayı biçimi `tablo()`/`ciz()`, Markdown'da `$` kaçışı),
+   README ekran görüntüleri `docs/img/`, `CHANGELOG.md`, etiket v1.0.0. Repo henüz push edilmedi (`REPO_URL` yer tutucu).
