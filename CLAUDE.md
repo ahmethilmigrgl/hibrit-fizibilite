@@ -90,3 +90,8 @@ başvuru için hazırlanıyor. Sonuçlar, varsayımlar ve formülasyonlar mülak
    `src/risk/yekdem_tablo.py`); PPA finansal fark sözleşmesi (`tuccar_dispatch`). Nihai baz vaka `config.yaml →
    nihai_baz_vaka` (`src/07_baz_vaka.py` → `outputs/07/baz_vaka.csv`): yatırım önerilmez (E[NPV] −11,4 M$). Ana sayılar
    bu dosyadan okunmalı.
+   **Güncelleme 2 (tutarlılık):** YEKDEM yıllık opsiyon (md. 4/2, 5/1, 8/1; `config.yaml → yekdem_opsiyon`, karar 30 Kasım'da
+   bilinen bilgiyle), ortak batarya sürücüsü (`ortak_surucu`: kurulu batarya → SFK, kesinti, kanibalizasyon), inşaata hazır
+   takvim (COD P50 Kas 2029). Baz vaka: E[NPV] +1,5 M$ → dar kapsamlı durum tespiti + teklif (azami prim ~1,5 M$).
+   Durum tespiti bilgi değeri: `outputs/07/durum_tespiti_bilgi_degeri.csv`. Sürücü kapalı karşılaştırma:
+   `ORTAK_SURUCU=0 SADECE_G=1 .venv/bin/python src/07_gelir_yapilari.py`.

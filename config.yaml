@@ -268,8 +268,8 @@ takvim:
       TBA: {ad: "TEİAŞ bağlantı ve sistem kullanım anlaşması", a: 3, m: 6, b: 12, onc: [ONL]}
       LIS: {ad: "Üretim lisansı",                            a: 2,  m: 3,  b: 6,  onc: [CED, IMR]}
       PPA: {ad: "PPA müzakeresi",                            a: 3,  m: 6,  b: 10, onc: [ONL]}
-      FIN: {ad: "Finansman kapanışı (FID)",                  a: 3,  m: 4,  b: 8,  onc: [LIS, OLC, TBA, PPA]}
-      TUR: {ad: "Türbin tedariki (sipariş → teslim)",        a: 12, m: 15, b: 20, onc: [FIN]}
+      FIN: {ad: "Finansman kapanışı (FID)",                  a: 3,  m: 4,  b: 8,  onc: [LIS, OLC, TBA]}
+      TUR: {ad: "Türbin tedariki (sipariş → teslim)",        a: 12, m: 18, b: 30, onc: [FIN]}
       BOP: {ad: "RES altyapı inşaatı (yol, temel, trafo)",   a: 6,  m: 8,  b: 12, onc: [FIN]}
       SEB: {ad: "Şebeke bağlantısı (TM/ENH)",                a: 9,  m: 12, b: 20, onc: [TBA, FIN]}
       MNT: {ad: "Türbin montajı",                            a: 3,  m: 4,  b: 6,  onc: [TUR, BOP]}
@@ -280,16 +280,30 @@ takvim:
       SFK: {ad: "SFK ön yeterlilik ve performans testleri",  a: 1,  m: 2,  b: 4,  onc: [DBAT]}
   birim: "ay; üçgen (iyimser a, olası m, kötümser b); öncüller bitiş-başlangıç"
   kaynak: "Enerjisa YEKA RES-2 projeleri Teknik Olmayan Özetleri (DFC, 2024): inşaat 12-21 ay; EPDK ön lisans geçerlilik süresi 24 ay; ÇED Yönetmeliği süreleri; Çanakkale Boğazı süzülen kuş göç yolu → ilkbahar (Mar-Haz) ve sonbahar (Ağu-Eki) göç dönemleri; türbin teslim 12-20 ay ve BESS 6-12 ay (sektör raporları, DOE BESS supply chain 2024, IEEFA 2025: BESS projelerinde 9-18 ay gecikmeler)"
-  not: "TAHMİN — Süreler Türkiye'deki örnek projelerden ve sektör kaynaklarından gerekçelendirildi ama projeye özgü değil. Başlangıç Ekim 2026 (geliştirme kararı); mevcut bir ön lisansın devri varsayılır (Ekim 2023'ten beri yeni başvuru kısıtlı)"
+  not: "TAHMİN — Süreler Türkiye'deki örnek projelerden ve sektör kaynaklarından gerekçelendirildi ama projeye özgü değil. Başlangıç Ekim 2026 (geliştirme kararı); mevcut bir ön lisansın devri varsayılır (Ekim 2023'ten beri yeni başvuru kısıtlı). Düzeltme (2026-10): türbin teslimi 12/18/30 ay — 2024-25 Avrupa OEM siparişlerinde teslim 18-36 ay sonraya (Vestas 2024 Almanya siparişi teslim 2027 Ç3, Nordex 2025 sonu siparişleri 2027); finansman PPA'yı beklemez (baz strateji YEKDEM opsiyonu + tüccar); inşaata hazır projede TEİAŞ bağlantı anlaşması tamamlanmış sayılır (lisans öncesi imzalanır)"
 nihai_baz_vaka:
   value:
     proje_olgunlugu: insaata_hazir
-    cod: "2030-01"
-    erteleme_yil: 2
+    cod: "takvim P50 (outputs/07/takvim_ozet.csv, inşaata hazır, B1)"
     tasarim: {res_mw: 58.8, turbin: 14, ges_mw: 0, bess_mw: 30, bess_mwh: 60, sebeke_mw: 50, buyutme: false}
-    gelir_yapisi: yekdem_nominal
-    karsilastirma: [yekdem_endeksli, ppa, tuccar]
+    gelir_yapisi: yekdem_opsiyon
+    karsilastirma: [yekdem_opsiyon_endeksli, yekdem_nominal_sabit, ppa, tuccar]
     edinim_primi_musd: 0.0
-  birim: "COD yıl-ay; erteleme = finansal modelin COD'una (Oca 2028) göre yıl; edinim primi M USD (bugünkü değer, t = 0)"
-  kaynak: "Aşama 7 takvimi: inşaata hazır proje COD P50 Mart 2030 (yıllık modelde Ocak 2030, 2 yıl erteleme); Ö1 sonrası tasarım: YEKDEM altında tam 30 MW SFK rezervi için 2 saatlik batarya (30 MW / 60 MWh) en iyisi, aşamalı büyütmenin değeri ~0,1 M$ → kaldırıldı"
-  not: "Gelir yapısı: YEKDEM nominal koridor (endeksleme teyit edilmediği için muhafazakâr), 10 yıl sonra tüccar. Karşılaştırma senaryoları aynı tasarımla. Sonuçlar: src/07_baz_vaka.py → outputs/07/baz_vaka.csv"
+  birim: "edinim primi M USD (bugünkü değer, t = 0)"
+  kaynak: "Aşama 7 takvimi (düzeltilmiş: inşaata hazır COD P50); Ö1 tasarımı (30 MW / 60 MWh); YEK Yönetmeliği md. 4/2, 5/1, 8/1 (yıllık YEKDEM seçimi)"
+  not: "Gelir yapısı: yatırımcının fiilen izleyeceği en iyi uygulanabilir strateji — her yıl 30 Kasım'da YEKDEM'e katılım kararı (o gün bilinen bilgiyle), aksi halde tüccar; koridor muhafazakâr olarak nominal (endeksli senaryo ayrıca). PPA ile birleşim modellenmedi: YEKDEM başvurusu lisanstaki üretimin tamamını kapsar (md. 5/1), 12 yıllık PPA hacmiyle çakışır. Sonuçlar: src/07_baz_vaka.py → outputs/07/baz_vaka.csv"
+ortak_surucu:
+  value: {aktif: true, sure_saat: 1.1, fazla_gun: 150, verim: 0.88, fazla_2026_twh: 10.0, fazla_buyume: 0.04, kanibalizasyon_geri_alma: 1.0}
+  birim: "batarya süresi [saat]; yılda öğle fazlası olan gün; gidiş-dönüş verimi; 2026 öğle fazlası [TWh/yıl]; yıllık büyüme; emilen pay başına kanibalizasyon derinliğinin geri alınan oranı"
+  kaynak: "Kurulu batarya yolu: stres_testi.senaryolar (tek ortak sürücü). Öğle fazlası vekili: EPİAŞ sistem YAT 2026 Oca-Eyl 9,5 TWh (Ekim-Aralık düşük) → ~10 TWh/yıl; süre 1,1 saat: depolamalı ön lisans ortalaması (Yeşil Haber)"
+  not: "TAHMİN — Emilen pay a_y = min(1, kurulu_MW · süre · gün · verim / fazla_y), fazla_y = 10 TWh · 1,04^(y−2026). Kesinti: κ_y = κ_0 · 1,04^(y−2026) · (1 − a_y)/(1 − a_2026) · gürültü (senaryo çarpanının yerine). Kanibalizasyon: güneş yakalanma hedefi h_y = h_y^bataryasız + (oran0 − h_y^bataryasız) · a_y (öğle çukuru emilen pay kadar geri alınır; spread daralır, arbitraj tablolardaki h boyutundan otomatik düşer). SFK fiyatı aynı kurulu yoldan (doyum modeli)."
+yekdem_opsiyon:
+  value: {esik_carpani: 1.066, karar_tarihi: "30 Kasım (t−1)"}
+  birim: "YEKDEM reel fiyatı / beklenen yıllık PTF eşiği"
+  kaynak: "YEK Yönetmeliği md. 4/2 (YEKDEM takvim yılı bazında; katılan tesis o yıl içinde çıkamaz), md. 5/1 ve 5/4 (bir sonraki takvim yılı için başvuru ve vazgeçme 30 Kasım'a kadar; başvuru lisanstaki üretimin tamamını kapsar), md. 8/1 (10 yıllık hak işletmeye giriş tarihinden itibaren işler)"
+  not: "Karar kuralı: t yılı için 30 Kasım t−1'de, o gün bilinen bilgiyle YEKDEM'e katıl ⇔ YEKDEM reel fiyatı_t > 1,066 × E[PTF_t | PTF_(t−1)]. Beklenti ortalamaya dönen log süreçten: ln F_t = ln 58 + 0,55 · (ln PTF_(t−1) − ln 58) — yatırımcı uzun dönem ortalamasını bilmez, ön beklentisi 58'i kullanır. 1,066 = tüccar modda (santral + batarya) PTF birimi başına gelir / YEKDEM modunda satılan enerji (deterministik baz, L = 58: 11,75 M$ / 58 / 190,1 GWh) — kaybedilen arbitrajı ve ekonomik kesinti farkını içerir; SFK iki modda aynı. Hak süresi COD'dan itibaren 10 yıl; katılınmayan yıllar süreyi uzatmaz."
+durum_tespiti:
+  value: {tesvik_ret_olasiligi: 0.10, tesvik_kaybi_musd: 5.75, ornitoloji_olasiligi: 0.15, ornitoloji_kaybi_musd: 2.5, tipik_maliyet_musd: [0.35, 0.6]}
+  birim: "olasılık; M USD; üretim payı"
+  kaynak: "Teşvik kaybı: outputs/07/tesvik_etkisi.csv (KDV, TL aşınması dahil); 60 MW RES durum tespiti maliyeti: hukuki + teknik (bağımsız mühendis) + çevresel/ornitoloji incelemesi için sektör pratiği"
+  not: "TAHMİN — teşvik belgesinin alınamama olasılığı; işletmede göç dönemi seçici durdurma zorunluluğu olasılığı ve NPV kaybı (~%2,5 üretim × ~100 M$ RES gelirinin bugünkü değeri); tipik maliyet aralığı. EVPPI hesaplarında kullanılır (src/07_baz_vaka.py)."

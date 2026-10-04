@@ -68,10 +68,14 @@ def ornekle_doyum(cfg: dict, n: int, yillar: np.ndarray, firsat_oran: float, toh
     theta = rng.uniform(*deger(st["sfk_uygun_pay"]), n)
     fc = firsat_oran * rng.uniform(*deger(st["firsat_maliyeti_carpani"]), n)
     a = np.zeros((n, len(yillar)))
+    kurulu = np.zeros((n, len(yillar)))
     for i in range(n):
         ad = adlar[secim[i]]
+        # Ortak sürücü: kurulu batarya yolu "katilamama"da baz senaryodan (TEİAŞ'ın hibrit kararı yayılımı değiştirmez)
+        yol = kurulu_yol(sc["baz" if ad == "katilamama" else ad]["kurulu_mw"], yillar, kayma[i])
+        kurulu[i] = yol
         if ad != "katilamama":
-            a[i] = sfk_carpani(yillar, kurulu_yol(sc[ad]["kurulu_mw"], yillar, kayma[i]), st, theta[i], fc[i])
-    return {"a": a, "senaryo": np.array(adlar)[secim], "adlar": adlar,
+            a[i] = sfk_carpani(yillar, yol, st, theta[i], fc[i])
+    return {"a": a, "kurulu_mw": kurulu, "senaryo": np.array(adlar)[secim], "adlar": adlar,
             "suruculer": {"Doyum senaryosu": secim.astype(float), "Doyum takvim kayması": kayma,
                           "SFK'ya uygun batarya payı": theta, "Fırsat maliyeti tabanı": fc}}

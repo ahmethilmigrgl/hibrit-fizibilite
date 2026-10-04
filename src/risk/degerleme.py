@@ -103,6 +103,10 @@ def nakit_akislari(t: Tasarim, tablo: dict, c: Sabitler, girdi: dict) -> dict:
     ip = (k <= c.ppa_vade).astype(int) if (t.ppa and len(tablo["ppa"]) > 1) else np.zeros(N, int)
     if girdi.get("tuccar_dispatch"):   # finansal PPA (fark sözleşmesi): batarya tüccar gibi çalışır, PPA'yı "oyunlamaz"
         ip = np.zeros(N, int)
+    # (n × N) dispatch indeksi: yıllık YEKDEM opsiyonunda simülasyon ve yıl bazında katılım (1) / tüccar (0)
+    ipm = np.asarray(girdi["ip"], int) if "ip" in girdi else ip[None, :].repeat(n, 0)
+    if ipm.shape[0] != n:
+        ipm = np.broadcast_to(ipm, (n, N))
     deg_g = (1 - v.degr_ges) ** (k - 1)
     deg_r = (1 - v.degr_res) ** (k - 1)
     # RES degradasyonu tablonun RES çarpanı boyutundan geçer → kesinti degrade üretimle doğru hesaplanır
@@ -113,12 +117,12 @@ def nakit_akislari(t: Tasarim, tablo: dict, c: Sabitler, girdi: dict) -> dict:
         # Beklenen değer modu: her yılın işletme büyüklükleri 10 hava × 2 şekil yılının ortalaması (Aşama 3 tanımı)
         W, S = tablo["T"].shape[:2]
         X = np.mean([tablo_ara(tablo, np.full((n, N), w_), np.full((n, N), s_), girdi["h"], m_eff, girdi["a"],
-                               ip[None, :].repeat(n, 0)) for w_ in range(W) for s_ in range(S)], axis=0)
+                               ipm) for w_ in range(W) for s_ in range(S)], axis=0)
     else:
-        X = tablo_ara(tablo, girdi["w"], girdi["s"], girdi["h"], m_eff, girdi["a"], ip[None, :].repeat(n, 0))
+        X = tablo_ara(tablo, girdi["w"], girdi["s"], girdi["h"], m_eff, girdi["a"], ipm)
     if "tablo2" in girdi:
         # Aşamalı yatırım: maske True olan yıllarda işletme büyüklükleri ikinci (büyütülmüş) tasarımın tablosundan
-        X2 = tablo_ara(girdi["tablo2"], girdi["w"], girdi["s"], girdi["h"], m_eff, girdi["a"], ip[None, :].repeat(n, 0))
+        X2 = tablo_ara(girdi["tablo2"], girdi["w"], girdi["s"], girdi["h"], m_eff, girdi["a"], ipm)
         X = np.where(girdi["maske2"][..., None], X2, X)
     g = lambda ad: X[..., AI[ad]]
     L, tav = girdi["L"], girdi["tavan"]

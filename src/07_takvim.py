@@ -40,7 +40,7 @@ def log(*a):
     print(*a, flush=True)
 
 
-HAZIR = ["OLC", "KUS", "CED", "IMR", "LIS"]   # inşaata hazır projede tamamlanmış aktiviteler
+HAZIR = ["OLC", "KUS", "CED", "IMR", "LIS", "TBA"]   # inşaata hazır projede tamamlanmış (bağlantı anlaşması lisans öncesi imzalanır)
 
 
 def ag(cfg, politika: str, olgunluk: str = "gelistirme") -> pd.DataFrame:

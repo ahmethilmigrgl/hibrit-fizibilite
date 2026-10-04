@@ -32,7 +32,10 @@ from src.risk.monte_carlo import ornekle, ucgen_ters
 from src.risk.tasarim import Tasarim
 from src.risk.yekdem_tablo import yekdem_tablosu
 
-CIKTI = CIKTILAR / "07"
+import os
+ORTAK_SURUCU = os.environ.get("ORTAK_SURUCU", "1") == "1"      # 0: düzeltme öncesi (bağımsız sürücüler) karşılaştırması
+SADECE_G = os.environ.get("SADECE_G", "0") == "1"              # yalnız nihai tasarım seçenekleri (hızlı karşılaştırma)
+CIKTI = CIKTILAR / "07" if ORTAK_SURUCU else CIKTILAR / "07" / "ortak_surucu_kapali"
 KAYNAK = "Kaynak: kendi modelim (Monte Carlo, doyum + sistem kesintisi). YEKDEM: CK 7189; teşvik: CK 9903; emisyon faktörü: ETKB. Reel 2026 USD."
 
 
@@ -50,7 +53,8 @@ def log(*a):
     print(*a, flush=True)
 
 
-def kesinti_ornekle(cfg, n, yillar, senaryo, rng, batarya: bool, kurtarma: float, deger_faktoru: float, yekdem: bool = False):
+def kesinti_ornekle(cfg, n, yillar, senaryo, rng, batarya: bool, kurtarma: float, deger_faktoru: float, yekdem: bool = False,
+                    carp_ozel=None):
     """
     Tüccar/PPA: kayıp = κ · değer faktörü · (1 − tazmin) · (1 − batarya kurtarma payı (gelir))
     YEKDEM: talimatla verilmeyen enerjiye YEK farkı ödenmez (YEK Yön. md. 18: ödeme UEVM üzerinden); DGP'de tazmin
@@ -61,7 +65,8 @@ def kesinti_ornekle(cfg, n, yillar, senaryo, rng, batarya: bool, kurtarma: float
     k0 = ucgen_ters(rng.random(n), *k["oran_ucgen"])
     carp = np.array([k["senaryo_carpani"][s] for s in senaryo])
     gurultu = np.exp(k["yil_sd"] * rng.standard_normal((n, len(yillar))) - 0.5 * k["yil_sd"] ** 2)
-    kappa = np.clip(k0[:, None] * carp[:, None] * (1 + k["gunes_buyume"]) ** (yillar - 2026)[None] * gurultu, 0, 0.3)
+    carp = carp[:, None] if carp_ozel is None else carp_ozel      # ortak sürücü: (1 − emilen pay_y) / (1 − emilen pay_2026)
+    kappa = np.clip(k0[:, None] * carp * (1 + k["gunes_buyume"]) ** (yillar - 2026)[None] * gurultu, 0, 0.3)
     tazmin = rng.uniform(*k["tazmin_orani"], n)
     if yekdem:
         kur = 0.35 if batarya else 0.0
@@ -102,7 +107,7 @@ def main():
     es = deger(stc["esnek_tasarimlar"])["asamali"]
     F2a = replace(C_, ad="F2a", bess_mw=es["ilk_mw"], bess_mwh=es["ilk_mwh"])
     F2aP = replace(F2a, ppa=True)
-    kesl = pd.read_csv(CIKTI / "kesinti_batarya_kurtarma.csv", index_col=0)
+    kesl = pd.read_csv(CIKTILAR / "07" / "kesinti_batarya_kurtarma.csv", index_col=0)
     kurtarma = float(kesl.loc["30 MW / 52,5 MWh", "Batarya kurtarma payı [%]"]) / 100
     oran_ref = deger(cfg["kesinti"])["oran_2026"]
     deger_faktoru = float(kesl.loc["Bataryasız", "Kayıp [M USD]"] / (oran_ref * kesl.loc["Bataryasız", "Kesintisiz gelir [M USD]"]))
@@ -152,6 +157,8 @@ def main():
         "GP: nihai tasarım — PPA": (replace(G, ppa=True), "G", o.c, cfg, None, "ppa"),
         "GY: nihai tasarım — YEKDEM nominal": (replace(G, ppa=True), "F2Y60", c_y, cfg_y, None, "yekdem"),
         "GYe: nihai tasarım — YEKDEM endeksli": (replace(G, ppa=True), "F2Y60", c_y, cfg_y, None, "yekdem_e"),
+        "GYo: nihai tasarım — YEKDEM yıllık opsiyon (nominal) + tüccar": (replace(G, ppa=True), "F2Y60", c_y, cfg_y, None, "yekdem_opsiyon"),
+        "GYoe: nihai tasarım — YEKDEM yıllık opsiyon (endeksli) + tüccar": (replace(G, ppa=True), "F2Y60", c_y, cfg_y, None, "yekdem_opsiyon_e"),
         # YEKDEM altında batarya boyutu duyarlılığı (büyütmesiz)
         "BY1: YEKDEM, batarya 30/52,5 (büyütmesiz)": (F2Ys, "F2aY", c_y, cfg_y, None, "yekdem"),
         "BY2: YEKDEM, batarya 30/60 (büyütmesiz)": (F2Y60s, "F2Y60", c_y, cfg_y, None, "yekdem"),
@@ -162,21 +169,46 @@ def main():
     }
     yk_e = np.repeat(yk_nom[:, None], len(yil_ext), axis=1)       # TAHMİN varyantı: taban/tavan ABD enflasyonuyla endeksli (reel sabit)
 
+    if SADECE_G:
+        secenek = {k: v for k, v in secenek.items() if k.startswith("G")}
     ornek = ornekle(cfg, n, yil_ext, o.oran0, tohum)
     girdi_ext = ornek["girdi"]
     dy = ornekle_doyum(cfg, n, yil_ext, firsat_oran, tohum)
     girdi_ext["a"] = dy["a"]
     senaryo = dy["senaryo"]
-    kes_b = kesinti_ornekle(cfg, n, yil_ext, senaryo, np.random.default_rng(tohum + 11), True, kurtarma, deger_faktoru)
-    kes_0 = kesinti_ornekle(cfg, n, yil_ext, senaryo, np.random.default_rng(tohum + 11), False, kurtarma, deger_faktoru)
-    kes_yb = kesinti_ornekle(cfg, n, yil_ext, senaryo, np.random.default_rng(tohum + 11), True, kurtarma, deger_faktoru, yekdem=True)
-    kes_y0 = kesinti_ornekle(cfg, n, yil_ext, senaryo, np.random.default_rng(tohum + 11), False, kurtarma, deger_faktoru, yekdem=True)
+    # --- Ortak sürücü (Türkiye batarya yayılımı → SFK fiyatı, sistem kesintisi, öğle kanibalizasyonu)
+    os_ = deger(cfg["ortak_surucu"])
+    carp_ozel = None
+    if ORTAK_SURUCU:
+        emme = lambda mw, yil: np.clip(mw * os_["sure_saat"] * os_["fazla_gun"] * os_["verim"]
+                                       / (os_["fazla_2026_twh"] * 1e6 * (1 + os_["fazla_buyume"]) ** (yil - 2026)), 0, 1)
+        a_abs = emme(dy["kurulu_mw"], yil_ext[None, :])
+        a26 = float(emme(1000.0, 2026))                               # 2026'da ~1 GW kurulu (EDEDER/sektör)
+        carp_ozel = (1 - a_abs) / (1 - a26)
+        girdi_ext["h"] = girdi_ext["h"] + (o.oran0 - girdi_ext["h"]) * a_abs * os_["kanibalizasyon_geri_alma"]
+        log(f"Ortak sürücü: emilen öğle fazlası payı 2030 ort. {a_abs[:, 2].mean():.1%}, 2035 ort. {a_abs[:, 7].mean():.1%}")
+    kw = dict(carp_ozel=carp_ozel)
+    kes_b = kesinti_ornekle(cfg, n, yil_ext, senaryo, np.random.default_rng(tohum + 11), True, kurtarma, deger_faktoru, **kw)
+    kes_0 = kesinti_ornekle(cfg, n, yil_ext, senaryo, np.random.default_rng(tohum + 11), False, kurtarma, deger_faktoru, **kw)
+    kes_yb = kesinti_ornekle(cfg, n, yil_ext, senaryo, np.random.default_rng(tohum + 11), True, kurtarma, deger_faktoru, yekdem=True, **kw)
+    kes_y0 = kesinti_ornekle(cfg, n, yil_ext, senaryo, np.random.default_rng(tohum + 11), False, kurtarma, deger_faktoru, yekdem=True, **kw)
+    # --- YEKDEM yıllık opsiyonu: karar t−1 yılının 30 Kasım'ında, o gün bilinen bilgiyle (YEK Yön. md. 4/2, 5/1, 8/1)
+    fs_ = deger(cfg["monte_carlo"]["fiyat_sureci"]); mu_hat = deger(cfg["monte_carlo"]["fiyat_uzun_ortalama"])["medyan"]
+    yo = deger(cfg["yekdem_opsiyon"])
+    L_ext = girdi_ext["L"]
+    def yekdem_karar(yol, kd):
+        """(n × N) katılım: YEKDEM reel fiyatı > beklenen tüccar geliri/MWh × (1 + arbitraj kaybı payı), yalnız ilk 10 işletme yılı."""
+        kol = np.arange(kd, kd + N)
+        onceki = np.where(kol[None, :] >= 1, L_ext[:, np.clip(kol - 1, 0, None)],
+                          mu_hat * (49.0 / mu_hat) ** (fs_["phi"] ** 2))          # 2027: 2026 seviyesinden tahmin
+        tahmin = np.exp(np.log(mu_hat) + fs_["phi"] * (np.log(onceki) - np.log(mu_hat)))
+        return (yol[:, kol] > tahmin * yo["esik_carpani"]) & (k_[None, :] <= yk["sure_yil"])
     sec_kes = lambda pil, yapi: (kes_yb if pil else kes_y0) if yapi.startswith("yekdem") else (kes_b if pil else kes_0)
     log(f"Kesinti oranı κ (2028): ortalama {kes_0['kappa'][:, 0].mean():.1%}, P90 {np.percentile(kes_0['kappa'][:, 0], 90):.1%}")
     baz_yol = st.deterministik_yol(cfg, "baz", o.yillar, firsat_oran)
     k_ = np.arange(1, N + 1)
 
-    satir, npv_tum, erteleme, npv_k_tum = [], {}, {}, {}
+    satir, npv_tum, erteleme, npv_k_tum, katilim = [], {}, {}, {}, {}
     for ad_, (t, tbk, c, cf, asamali, yapi) in secenek.items():
         pil = t.bess_mw > 0.5
         for kesinti in ([False, True] if ad_.startswith("F2P") else [True]):
@@ -187,7 +219,18 @@ def main():
                 if kesinti:
                     ks = sec_kes(pil, yapi)
                     gk["kesinti_gelir"] = ks["kesinti_gelir"][:, kd:kd + N]; gk["kesinti_enerji"] = ks["kesinti_enerji"][:, kd:kd + N]
-                if yapi.startswith("yekdem"):
+                if yapi.startswith("yekdem_opsiyon"):
+                    yol = yk_reel if yapi == "yekdem_opsiyon" else yk_e
+                    katil = yekdem_karar(yol, kd)
+                    gk["phi"] = katil.astype(float); gk["ip"] = katil.astype(int); gk["ppa_fiyat"] = yol[:, kd:kd + N]
+                    gk["desarj_sozlesmeli"] = True
+                    if kesinti:
+                        ky, km = (kes_yb, kes_b) if pil else (kes_y0, kes_0)
+                        gk["kesinti_gelir"] = np.where(katil, ky["kesinti_gelir"][:, kd:kd + N], km["kesinti_gelir"][:, kd:kd + N])
+                        gk["kesinti_enerji"] = np.where(katil, ky["kesinti_enerji"][:, kd:kd + N], km["kesinti_enerji"][:, kd:kd + N])
+                    if kd == 0:
+                        katilim[ad_] = katil[:, :yk["sure_yil"]].mean(0)
+                elif yapi.startswith("yekdem"):
                     yol = yk_reel if yapi == "yekdem" else yk_e
                     gk["phi"] = np.where(k_ <= yk["sure_yil"], 1.0, 0.0); gk["ppa_fiyat"] = yol[:, kd:kd + N]
                     gk["desarj_sozlesmeli"] = True
@@ -208,7 +251,11 @@ def main():
             if kesinti:
                 ks = sec_kes(pil, yapi)
                 ek = {"kesinti_gelir": ks["kesinti_gelir"][:, :N].mean(0)[None], "kesinti_enerji": ks["kesinti_enerji"][:, :N].mean(0)[None]}
-            if yapi.startswith("yekdem"):
+            if yapi.startswith("yekdem_opsiyon"):
+                yol = yk_reel if yapi == "yekdem_opsiyon" else yk_e
+                pk = np.r_[katilim[ad_], np.zeros(N - yk["sure_yil"])]
+                ek.update({"phi": pk, "ip": (pk > 0.5).astype(int)[None], "ppa_fiyat": yol[:, :N].mean(0)[None], "desarj_sozlesmeli": True})
+            elif yapi.startswith("yekdem"):
                 yol = yk_reel if yapi == "yekdem" else yk_e
                 ek.update({"phi": np.where(k_ <= yk["sure_yil"], 1.0, 0.0), "ppa_fiyat": yol[:, :N].mean(0)[None], "desarj_sozlesmeli": True})
             if yapi == "ppa":
@@ -231,6 +278,9 @@ def main():
                           "SFK geliri, ilk 10 yıl [M USD/yıl]": np.atleast_2d(r0["gelir_yh"])[:, :10].mean() / 1e6 if pil else 0.0})
             log(f"  {etiket}: E[NPV] {npv.mean() / 1e6:.2f} | P {100 * (npv > 0).mean():.0f}% | CVaR {kotu.mean() / 1e6:.1f}")
     tablo = pd.DataFrame(satir)
+    if katilim:
+        pd.DataFrame(katilim, index=pd.Index(range(1, len(next(iter(katilim.values()))) + 1), name="İşletme yılı")).round(4).to_csv(
+            CIKTI / "yekdem_opsiyon_katilim.csv", encoding="utf-8-sig")
     tablo.to_csv(CIKTI / "gelir_yapilari_metrikler.csv", encoding="utf-8-sig", index=False, float_format="%.3f")
     pd.DataFrame(erteleme).T.to_csv(CIKTI / "erteleme_kesintili.csv", encoding="utf-8-sig", float_format="%.3f")
     np.savez_compressed(CIKTI / "gelir_yapilari_npv_erteleme.npz",
@@ -303,7 +353,7 @@ def co2_hesapla(cfg, tablo):
 
 def grafik(tablo, npv_tum):
     fig, axs = plt.subplots(1, 2, figsize=(13.5, 4.8))
-    renk = {"tüccar": g.RENK_RES, "ppa": g.RENK_HIBRIT, "yekdem": "#7f6bd1", "yekdem_e": "#b9aef0"}
+    renk = {"tüccar": g.RENK_RES, "ppa": g.RENK_HIBRIT, "yekdem": "#7f6bd1", "yekdem_e": "#b9aef0", "yekdem_opsiyon": "#c0392b", "yekdem_opsiyon_e": "#f1948a"}
     ax = axs[0]
     for ad_, x in npv_tum.items():
         if "kesintisiz" in ad_ or ad_.startswith(("BY", "AYe", "F2")):

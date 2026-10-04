@@ -89,20 +89,20 @@ sekmeler = st.tabs([T("Özet", "Summary"), T("Saha ve üretim", "Site & generati
 with sekmeler[0]:
     st.subheader(T("Yatırım önerisi", "Investment recommendation"))
     bv = oku("baz_vaka.csv"); b0 = bv[bv["Baz vaka"]].iloc[0]; tuc = bv[bv["Senaryo"] == "Tüccar"].iloc[0]
-    st.error(T(
-        f"**Mevcut varsayımlarla yatırım önerilmez.** Nihai baz vaka: inşaata hazır proje, COD {b0['COD']}, RES 58,8 MW + 30 MW / 60 MWh "
-        f"batarya, nominal koridorlu YEKDEM (sonra tüccar) → beklenen NPV {sayi(b0['Beklenen NPV [M USD]'])} M$, kâr olasılığı "
-        f"{yuzde(b0['P(NPV > 0) [%]'])}, azami edinim primi {sayi(b0['Azami edinim primi [M USD]'])} M$. En iyi alternatif (tüccar) "
-        f"{sayi(tuc['Beklenen NPV [M USD]'])} M$, kâr olasılığı {yuzde(tuc['P(NPV > 0) [%]'])}: ancak sembolik bir edinim primini haklı çıkarıyor.",
-        f"**Do not invest under current assumptions.** Final base case: ready-to-build project, COD {b0['COD']}, 58.8 MW wind + 30 MW / "
-        f"60 MWh battery, YEKDEM with nominal corridor (then merchant) → expected NPV {sayi(b0['Beklenen NPV [M USD]'])} M$, probability "
-        f"of profit {yuzde(b0['P(NPV > 0) [%]'])}, maximum acquisition premium {sayi(b0['Azami edinim primi [M USD]'])} M$. Best "
-        f"alternative (merchant) {sayi(tuc['Beklenen NPV [M USD]'])} M$, {yuzde(tuc['P(NPV > 0) [%]'])} chance of profit: worth at most a "
-        "token acquisition premium."))
-    st.caption(T("Öneri üç kez değişti: SFK doyum stres testi (kâr olasılığı %97 → %59), Aşama 7'nin gerçek dünya analizleri (kesinti, "
-                 "takvim, YEKDEM) ve tutarlılık kontrolü (YEKDEM/PPA'da bataryanın arbitraj geliri yanlış sayılıyordu). Tetikleyiciler: docs/RAPOR.md §10.",
-                 "The recommendation changed three times: the SFK saturation stress test (97% → 59%), stage 7's real-world analysis "
-                 "(curtailment, schedule, YEKDEM) and a consistency check (battery arbitrage was miscounted under YEKDEM/PPA). Triggers: docs/RAPOR.md §10."))
+    dd = oku("durum_tespiti_bilgi_degeri.csv", index_col=0)["değer"]
+    st.info(T(
+        f"**Dar kapsamlı durum tespiti ve bağlayıcı olmayan teklif; henüz yatırım kararı yok.** Nihai baz vaka: inşaata hazır proje, "
+        f"COD {b0['COD']}, RES 58,8 MW + 30 MW / 60 MWh batarya, her yıl seçilen YEKDEM (nominal koridor) + tüccar → beklenen NPV "
+        f"{sayi(b0['Beklenen NPV [M USD]'])} M$, kâr olasılığı {yuzde(b0['P(NPV > 0) [%]'])}, azami edinim primi "
+        f"{sayi(b0['Azami edinim primi [M USD]'])} M$. Durum tespiti bütçesi tavanı {sayi(dd.iloc[-1])} M$ (bilgi değeri).",
+        f"**Narrow due diligence and a non-binding offer; no investment decision yet.** Final base case: ready-to-build project, COD "
+        f"{b0['COD']}, 58.8 MW wind + 30 MW / 60 MWh battery, YEKDEM chosen year by year (nominal corridor) + merchant → expected NPV "
+        f"{sayi(b0['Beklenen NPV [M USD]'])} M$, probability of profit {yuzde(b0['P(NPV > 0) [%]'])}, maximum acquisition premium "
+        f"{sayi(b0['Azami edinim primi [M USD]'])} M$. Due diligence budget cap {sayi(dd.iloc[-1])} M$ (value of information)."))
+    st.caption(T("Öneri dört kez değişti: SFK doyum stres testi (kâr olasılığı %97 → %59), Aşama 7'nin gerçek dünya analizleri, YEKDEM/PPA'da "
+                 "batarya arbitrajı düzeltmesi (\"hayır\") ve YEKDEM'in yıllık opsiyon yapısı + ortak batarya sürücüsü + takvim düzeltmeleri. docs/RAPOR.md §10.",
+                 "The recommendation changed four times: the SFK saturation stress test (97% → 59%), stage 7's real-world analysis, the battery "
+                 "arbitrage fix under YEKDEM/PPA (\"no\") and YEKDEM's annual-option structure + common battery driver + schedule fixes. docs/RAPOR.md §10."))
     tk = oku("takvim_ozet.csv"); co2 = oku("co2.csv").set_index("Kalem")["Değer"]
     hazir = tk[(tk["Proje olgunluğu"] == "İnşaata hazır proje") & tk["Politika"].str.startswith("B1")].iloc[0]
     gel = tk[(tk["Proje olgunluğu"].str.startswith("Geliştirme")) & tk["Politika"].str.startswith("B1")].iloc[0]
@@ -110,7 +110,7 @@ with sekmeler[0]:
     k[0].metric(T("Baz vaka: E[NPV]", "Base case: E[NPV]"), f"{sayi(b0['Beklenen NPV [M USD]'])} M$",
                 T(f"P(NPV>0) {yuzde(b0['P(NPV > 0) [%]'])}, CVaR {sayi(b0['CVaR %5 [M USD]'])} M$",
                   f"P(NPV>0) {yuzde(b0['P(NPV > 0) [%]'])}, CVaR {sayi(b0['CVaR %5 [M USD]'])} M$"), delta_color="off")
-    k[1].metric(T("En iyi alternatif: tüccar", "Best alternative: merchant"), f"{sayi(tuc['Beklenen NPV [M USD]'])} M$",
+    k[1].metric(T("Karşılaştırma: saf tüccar", "Benchmark: pure merchant"), f"{sayi(tuc['Beklenen NPV [M USD]'])} M$",
                 T(f"P(NPV>0) {yuzde(tuc['P(NPV > 0) [%]'])}", f"P(NPV>0) {yuzde(tuc['P(NPV > 0) [%]'])}"), delta_color="off")
     k[2].metric(T("COD P50 / P80 (inşaata hazır)", "COD P50 / P80 (ready-to-build)"), f"{hazir['RES COD P50']} / {hazir['RES COD P80']}",
                 T(f"geliştirmeden: {gel['RES COD P50']}", f"from pre-licence: {gel['RES COD P50']}"), delta_color="off")

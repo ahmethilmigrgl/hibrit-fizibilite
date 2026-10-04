@@ -9,7 +9,104 @@ sonunda o adımın nihai öneriye etkisi ayrıca raporlandı.
 
 ---
 
-## Güncelleme (Ö1–Ö2): tutarlılık düzeltmeleri, nihai baz vaka ve yeni öneri
+## Güncelleme 2: üç tutarlılık düzeltmesi ve düzeltilmiş nihai baz vaka (güncel)
+
+Bu adım yalnız üç somut iç tutarsızlıkla sınırlı tutuldu; başka hiçbir varsayım değiştirilmedi. Sonuçlar:
+`outputs/07/baz_vaka.csv`, `baz_vaka_duzeltmeler.csv`, `yekdem_opsiyon_degeri.csv`, `yekdem_opsiyon_katilim.csv`.
+
+### D1. YEKDEM'in opsiyon yapısı
+**Mevzuat** (YEK Belgelendirme ve Desteklenme Yönetmeliği, güncel konsolide metin —
+[mevzuat.gov.tr](https://www.mevzuat.gov.tr/MevzuatMetin/yonetmelik/7.5.18907.pdf)):
+- **Md. 4/2:** "YEKDEM, Piyasa İşletmecisi tarafından takvim yılı bazında işletilir. YEKDEM'e bir takvim yılı için tabi
+  olan üretim lisansı sahipleri, uygulamaya dahil oldukları takvim yılı içerisinde YEKDEM'den çıkamaz." Lisanssızlar 10
+  yıl çıkamaz; lisanslılar için böyle bir kilit yok.
+- **Md. 5/1:** Lisanslı üretici "bir sonraki takvim yılında YEKDEM'e kayıt olmak istemeleri halinde 30 Kasım tarihine
+  kadar" EPDK'ya başvurur; başvuru lisanstaki üretim miktarının tamamını kapsar.
+- **Md. 5/4:** Başvurudan vazgeçme de 30 Kasım'a kadar yazılı bildirilir.
+- **Md. 6–7:** Ön YEK listesi Aralık'ın ilk on gününde, nihai liste 31 Aralık'a kadar ilan edilir; YEKDEM'e esas üretim
+  dönemi takvim yılıdır.
+- **Md. 8/1:** Lisanslı tesis, lisanstaki ilk kurulu gücün tamamının **işletmeye giriş tarihinden itibaren on yıl süreyle**
+  YEKDEM'den yararlanabilir.
+- **Sonuç:** Tesis 10 yıllık pencere içinde **her yıl ayrı başvuruyla** YEKDEM ile tüccar arasında seçim yapabiliyor; bir
+  yıl içinde çıkılamıyor. Katılınmayan yıllar 10 yıllık süreyi uzatmıyor (süre COD'dan işliyor).
+- *Belirsiz:* Çıkıp yeniden girme sayısına bir sınır bulamadım. Metinde böyle bir sınır yok.
+
+**Model:** YEKDEM, 10 yıllık bir yıllık opsiyonlar dizisi olarak modellendi.
+- **Karar kuralı** (`config.yaml → yekdem_opsiyon`): t yılı için karar 30 Kasım t−1'de, **o gün bilinen bilgiyle** verilir.
+  Katıl ⇔ YEKDEM'in t yılındaki reel fiyatı > 1,066 × E[PTF_t | PTF_(t−1)].
+- **Beklenti:** ortalamaya dönen log süreçten: ln F = ln 58 + 0,55 · (ln PTF_(t−1) − ln 58). Yatırımcı simülasyonun gizli
+  uzun dönem ortalamasını bilmez, ön beklentisi 58'i kullanır. Gerçekleşen t yılı fiyatı kararda **kullanılmaz**.
+- **1,066 katsayısı:** tüccar modda santral + batarya gelirinin YEKDEM modundaki satılan enerjiye oranı. Kaybedilen
+  arbitrajı ve ekonomik kesinti farkını içeriyor.
+- **Kesinti ve dispatch** her yıl seçilen rejime göre: YEKDEM yıllarında YEKDEM dispatch'i ve kesinti kuralı, diğer
+  yıllarda tüccar.
+- **PPA ile birleşim** modellenmedi: YEKDEM başvurusu üretimin tamamını kapsıyor (md. 5/1), 12 yıllık PPA hacmiyle çakışır.
+
+**Katılım oranı** (nominal koridor): 2. yıl %15, sonra azalarak 10. yılda %1. Nominal koridor reel olarak aşındığı için
+YEKDEM yalnız fiyatların düştüğü yıllarda seçiliyor. Endeksli koridorda katılım ~%26–29.
+
+**Opsiyonun değeri** (opsiyonlu − saf tüccar): model takviminde +0,46 M$, baz vaka takviminde **+0,34 M$**; endeksli
+koridorda +1,98 M$. Opsiyon küçük ama pozitif bir sigorta: fiyat düştüğünde YEKDEM tabanına sığınma hakkı.
+
+**Neden önceki baz vaka bu kadar kötüydü?** "10 yıl kesintisiz nominal YEKDEM" yatırımcının fiilen izlemeyeceği, baskın
+olunan (dominated) bir stratejiydi. Aynı mekanizma yıllık seçimle tüccarın üstünde kalıyor.
+
+### D2. Batarya yayılımının ortak sürücüsü
+- Türkiye'deki kurulu batarya yolu (Aşama 6 doyum senaryoları) artık tek ortak sürücü. Aynı yol üç şeyi belirliyor:
+  - SFK fiyatı (zaten bağlıydı).
+  - Sistem kesintisi oranı.
+  - Öğle kanibalizasyonu / günlük spread.
+- **Emilen pay:** a_y = min(1, kurulu_MW × 1,1 saat × 150 gün × 0,88 / öğle fazlası_y). Öğle fazlası: 2026'da ~10 TWh
+  (sistem YAT vekili), yılda %4 büyüyor (`config.yaml → ortak_surucu`, TAHMİN).
+- **Kesinti:** κ_y ∝ (1 − a_y)/(1 − a_2026). Senaryo çarpanlarının (0,7–1,3) yerini aldı.
+- **Kanibalizasyon:** güneş yakalanma hedefi h_y = h_y^bataryasız + (oran0 − h_y^bataryasız) × a_y. Öğle çukuru emilen
+  pay kadar geri alınıyor; arbitraj spread'i, işletme tablolarının h boyutundan otomatik olarak daralıyor.
+- **Büyüklük:** emilen pay 2030'da ortalama %7, 2035'te %12.
+- **Tek başına etkisi:** baz vakada **+0,15 M$** (kesinti ve kanibalizasyon biraz azalırken arbitraj biraz daralıyor;
+  net küçük pozitif).
+
+### D3. İnşaata hazır proje takvimi
+Kaynaklarla yeniden kontrol (`config.yaml → takvim`):
+- **Türbin tedariki 15 aydan 12/18/30 aya uzatıldı.** 2024–25 Avrupa OEM siparişlerinde teslim 18–36 ay sonraya veriliyor
+  (Vestas'ın 2024 Almanya siparişi 2027 Ç3, Nordex'in 2025 sonu siparişleri 2027;
+  [AA](https://www.aa.com.tr/en/energy/wind/vestas-secures-43-megawatt-turbine-agreement-in-germany/58486),
+  [Windtech](https://www.windtech-international.com/projects-and-contracts/nordex-group-records-3-6-gw-of-wind-turbine-orders-in-fourth-quarter-2025)).
+- **TEİAŞ bağlantı anlaşması inşaata hazır projede tamamlanmış.** Önlisans sahibi lisansa başvurmadan bağlantı ve sistem
+  kullanım anlaşması için TEİAŞ'a başvurmak zorunda
+  ([EPDK lisans işlemleri](https://www.epdk.gov.tr/Detay/Icerik/3-0-86-3/elektriklisans-islemleri)).
+- **Finansman kapanışı PPA müzakeresini beklemiyor.** Baz strateji YEKDEM opsiyonu + tüccar.
+
+**Sonuç:** inşaata hazır projede COD **P50 Mart 2030 → Kasım 2029**, P80 Mart 2030, P90 Mayıs 2030. Kritik yol: devir →
+FID → türbin → montaj → COD. Önceki P50 tutarlı değildi; bağlantı anlaşmasının hazır olmasının etkisi türbin teslim
+süresinin uzamasından büyük. Geliştirme senaryosu: P50 Mayıs 2032. **Tek başına etkisi** (önceki COD 2030'a göre):
+**+0,30 M$**.
+
+### Düzeltilmiş nihai baz vaka
+- **Tanım:** inşaata hazır, COD Kasım 2029; RES 58,8 MW + 30 MW / 60 MWh; YEKDEM yıllık opsiyonu (nominal) + tüccar.
+- **Ara değerleme:** COD gecikmesi 1,83 yıl; 1 ve 2 yıllık dağılımlar arasında simülasyon bazında ara değerleme.
+
+| | E[NPV] | P(NPV>0) | CVaR %5 | NPV P10 / P90 | Azami edinim primi |
+|---|---|---|---|---|---|
+| Önceki baz vaka (10 yıl sabit nominal YEKDEM, COD 2030) | −11,37 | %13 | −28,6 | −22,8 / 1,9 | 0 |
+| + (1) YEKDEM yıllık opsiyonu | +1,08 | %50 | −25,7 | −17,7 / 21,4 | 1,08 |
+| + (2) ortak batarya sürücüsü | +1,25 | %50 | −25,6 | −17,7 / 21,8 | 1,25 |
+| **+ (3) inşaata hazır takvim = düzeltilmiş baz vaka** | **+1,49** | **%50** | **−25,8** | −17,8 / 22,3 | **1,49** |
+
+| Karşılaştırma (aynı tasarım, COD Kasım 2029) | E[NPV] | P(NPV>0) | CVaR %5 |
+|---|---|---|---|
+| YEKDEM yıllık opsiyonu (endeksli) + tüccar | +3,13 | %54 | −20,5 |
+| Saf tüccar | +1,15 | %50 | −27,8 |
+| PPA (%70 P90, 12 yıl) | −3,98 | %34 | −24,4 |
+| YEKDEM 10 yıl sabit (nominal) | −10,92 | %14 | −28,6 |
+
+**Öneri:** Beklenen NPV pozitif (+1,5 M$) ama ince. Kâr olasılığı yarı yarıya, sol kuyruk kalın. Bu, bir **edinim primi
+sınırı** (~1,5 M$) ve dar kapsamlı bir durum tespiti (due diligence) ile **bağlayıcı olmayan teklif** yetkisini haklı
+çıkarıyor; kesin bir yatırım kararını değil. Aşağıdaki Ö1–Ö2 bölümündeki "yatırım önerilmez" sonucu bu düzeltmelerle
+geçersiz kaldı.
+
+---
+
+## Güncelleme 1 (Ö1–Ö2): tutarlılık düzeltmeleri — sonucu Güncelleme 2 ile geçersiz
 
 **Ne düzeltildi (Ö1):**
 

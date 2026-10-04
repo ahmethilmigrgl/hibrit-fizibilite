@@ -23,16 +23,16 @@ mathematically in `docs/`.
 | 3 | **Battery value comes almost entirely from secondary-reserve (SFK) capacity payments**, not arbitrage. | 87% of battery revenue; NPV −1.6 → +26 M$ in the no-saturation case |
 | 4 | **The saturation stress test changed the recommendation.** The SFK market needs ~1 GW against 28–33 GW of storage pre-licences. A supply–demand model calibrated on GB, Germany and Australia turns the battery into an *option*. | P(NPV > 0) for the 40 MW battery design: 97% → 59%; CVaR 5%: −2.5 → −30 M$ |
 | 5 | **The valuable flexibility is deferring battery scale, not adding duration.** A 30 MW battery (the SFK entry threshold) with a conditional expansion beats both a 40 MW and a 4-hour battery. Waiting to learn costs more than the information is worth. | E[NPV] +6.3 M$ (staged) vs −0.4 M$ (4-hour); 1-year delay −2.1 M$ |
-| 6 | **Real-world frictions and a consistency check turn the answer to "no".** System curtailment started in 2026; a CPM + Monte Carlo schedule pushes COD to 2030 (ready-to-build) or 2032; under the YEKDEM feed-in the battery cannot earn arbitrage (stored plant energy is paid the same fixed price) and the nominal USD corridor erodes in real terms. | Base case E[NPV] −11.4 M$, P(NPV>0) 13%; best alternative (merchant) +0.8 M$ |
+| 6 | **Real-world frictions and three consistency checks set the final answer.** Wind curtailment started in 2026; a CPM + Monte Carlo schedule puts COD at Nov 2029 for a ready-to-build project (May 2032 from a pre-licence). Under YEKDEM the battery cannot arbitrage. YEKDEM turned out to be an **annual option** (participation chosen each 30 Nov), not a 10-year lock-in. | Base case E[NPV] +1.5 M$, P(NPV>0) 50%; 10-year fixed YEKDEM −10.9 M$ |
 
-**Recommendation: do not invest under current assumptions.**
+**Recommendation: approve a narrow due diligence (~0.5 M$, capped at ~1.0 M$ by its value of information) and a
+non-binding offer for a ready-to-build project with a premium of at most ~1.5 M$. Do not take an investment decision yet.**
 
-- **Final base case** (`config.yaml → nihai_baz_vaka`): ready-to-build project, COD 2030, 58.8 MW wind + 30 MW / 60 MWh
-  battery, YEKDEM with nominal corridor then merchant.
-- **Base-case result:** expected NPV **−11.4 M$**, probability of profit **13%**, maximum acquisition premium **0**.
-- **Best alternative (merchant):** +0.8 M$ with a 49% chance of profit and a heavy left tail.
-- **What would revive it** (listed in the [report](docs/RAPOR.md#10-öneri)): a higher long-run price outlook,
-  confirmation that the YEKDEM corridor is indexed together with a zero-premium project, or curtailment receding.
+- **Final base case** (`config.yaml → nihai_baz_vaka`): COD Nov 2029, 58.8 MW wind + 30 MW / 60 MWh battery, YEKDEM
+  annual option (nominal corridor) plus merchant.
+- **Result:** expected NPV **+1.5 M$**, probability of profit **50%**, CVaR 5% −25.8 M$.
+- **Sensitivity:** value is thin. Indexed YEKDEM corridor +3.1 M$; pure merchant +1.2 M$; PPA −4.0 M$.
+  See the [report](docs/RAPOR.md#10-öneri).
 
 <p align="center">
   <img src="outputs/05_risk/s_risk_getiri.png" width="85%"><br>

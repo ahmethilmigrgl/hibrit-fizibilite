@@ -479,12 +479,12 @@ Devreye alma 1–3 yıl ertelenirse (fiyat ve doyum yolları takvime göre kayar
 
 ### 9.7 Nihai öneri (güncellendi)
 
-> **Güncel öneri (Aşama 7 + Ö1–Ö2 tutarlılık düzeltmeleri): yatırım önerilmez.** Ayrıntı:
-> [docs/07, "Güncelleme (Ö1–Ö2)"](07_tamamlayici_analizler.md).
-> - **Nihai baz vaka:** inşaata hazır proje, COD 2030; RES 58,8 MW + 30 MW / 60 MWh; nominal YEKDEM, sonra tüccar.
->   Beklenen NPV −11,4 M$, P(NPV>0) %13, azami edinim primi 0.
-> - **En iyi alternatif, tüccar yapı:** +0,8 M$, P %49.
-> - Aşağıdaki "batarya siparişi FID'den ~12 ay sonra" koşulu da Aşama 7'de kaldırılmıştı.
+> **Güncel öneri (Aşama 7 + tutarlılık düzeltmeleri): dar kapsamlı durum tespiti + bağlayıcı olmayan teklif.**
+> Ayrıntı: [docs/07, "Güncelleme 2"](07_tamamlayici_analizler.md).
+> - **Nihai baz vaka:** inşaata hazır proje, COD Kasım 2029; RES 58,8 MW + 30 MW / 60 MWh; YEKDEM yıllık opsiyonu
+>   (nominal) + tüccar.
+> - **Sonuç:** beklenen NPV +1,5 M$, P(NPV>0) %50, azami edinim primi ~1,5 M$.
+> - Aşağıdaki "batarya siparişi FID'den ~12 ay sonra" koşulu Aşama 7'de kaldırılmıştı.
 > Aşağıdaki metin Aşama 6 önerisi olarak saklandı.
 
 **Öneri değişti.** Aşama 5'te D tasarımını (RES 58,8 + BESS ~40 MW / 63 MWh + PPA), %99 başarı olasılığıyla

@@ -1,0 +1,7 @@
+﻿Seçenek,Gelir yapısı,Beklenen NPV [M USD],P(NPV > 0) [%],CVaR %5 [M USD],Proje IRR P50 [%],"Borç kapasitesi, baz [M USD]",Borç vadesi [yıl],"P(DSCR < 1), baz borç [%]","Borç kapasitesi, muhafazakâr [M USD]","P(DSCR < 1), muhafazakâr borç [%]","Öz kaynak IRR P50, muhafazakâr [%]",Satılan enerji P50 [GWh/yıl],"Batarya deşarj geliri, ilk 10 yıl [M USD/yıl]","SFK geliri, ilk 10 yıl [M USD/yıl]"
+G: nihai tasarım — tüccar,tüccar,4.267,55.870,-30.566,7.436,53.523,15,81.470,33.223,41.710,8.659,170.007,1.417,1.774
+GP: nihai tasarım — PPA,ppa,-1.192,43.040,-26.991,6.569,56.048,18,81.910,41.411,34.110,7.614,170.007,1.417,1.774
+GY: nihai tasarım — YEKDEM nominal,yekdem,-6.467,29.040,-30.026,5.763,40.824,12,71.880,32.793,20.780,6.023,178.630,0.042,1.959
+GYe: nihai tasarım — YEKDEM endeksli,yekdem_e,0.516,44.760,-22.910,6.754,48.253,12,70.680,40.877,21.200,7.514,178.630,0.049,1.959
+GYo: nihai tasarım — YEKDEM yıllık opsiyon (nominal) + tüccar,yekdem_opsiyon,4.722,56.420,-28.072,7.466,47.414,12,76.610,29.078,31.150,8.338,170.506,1.371,1.783
+GYoe: nihai tasarım — YEKDEM yıllık opsiyon (endeksli) + tüccar,yekdem_opsiyon_e,6.214,59.220,-23.531,7.605,47.172,12,72.510,31.129,26.630,8.648,172.032,1.145,1.821
