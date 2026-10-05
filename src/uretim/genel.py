@@ -20,7 +20,7 @@ import numpy as np
 import pandas as pd
 
 from src.ayarlar import ISLENMIS_VERI, KOK, deger
-from src.kaynaklar import gwa, open_meteo
+from src.kaynaklar import open_meteo
 from src.saha import Saha
 from src.uretim import gunes, ruzgar
 
@@ -49,14 +49,12 @@ def k_matrisi(saha: Saha, hava: pd.DataFrame, kalibrasyon: str, cfg: dict) -> tu
         return sabit_matris(1.0), {"mod": "yok", "aciklama": "ham ERA5"}
     v100 = float(np.hypot(hava["u100"], hava["v100"]).mean())
     if kalibrasyon == "gwa":
-        c = gwa.duzeltme_katsayisi(saha.enlem, saha.boylam, v100)
-        return sabit_matris(c), {
-            "mod": "gwa",
-            "c": c,
-            "gwa_100m": gwa.nokta(saha.enlem, saha.boylam)["ws_ort"],
-            "era5_100m": v100,
-            "aciklama": "GWA ortalama düzeltmesi (sabit katsayı)",
-        }
+        from src.saha import gwa_hizi
+
+        g = gwa_hizi(saha, cfg)
+        c = float(np.clip(g["hiz"] / v100, 0.5, 3.2))
+        bilgi = {"mod": "gwa", "c": c, "gwa_100m": g["hiz"], "turbin_yerlesimi": g["yerlesim"], "era5_100m": v100}
+        return sabit_matris(c), {**bilgi, "aciklama": "GWA ortalama düzeltmesi (sabit katsayı)"}
     if kalibrasyon == "atlas":
         from src.atlas.aktarim import aktarim_matrisi
 

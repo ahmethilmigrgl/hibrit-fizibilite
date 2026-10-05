@@ -330,7 +330,17 @@ v2:
   aday_nokta_sayisi: {value: 5, birim: "adet", kaynak: "Proje kararı", not: "İl/ilçe seçildiğinde ilçe içinde GWA ortalama hızı en yüksek hücreler (ilçe merkezi değil)"}
   aday_nokta_asgari_aralik_km: {value: 3.0, birim: "km", kaynak: "Proje kararı", not: "Aday noktaların aynı sırtta yığılmaması için"}
   aktarim:
-    value: {yakin_km: 30, orta_km: 30, azami_komsu: 3, idw_us: 2, rakim_farki_m: 400, karmasiklik_farki: 0.04, kiyi_benzerlik: true, karmasiklik_esik: 0.083}
+    value: {yakin_km: 30, orta_km: 30, azami_komsu: 3, idw_us: 2, rakim_farki_m: 400, karmasiklik_farki: 0.04, kiyi_benzerlik: true, karmasiklik_esik: 0.083, gwa_modu: "yerlesim", santral_yaricap_km: 3.0, asgari_aralik_m: 500}
     birim: "km, m, GWA değişkenlik katsayısı farkı"
     kaynak: "Proje kararı; eşikler A4 'birini dışarıda bırak' çapraz doğrulamasıyla sınandı (docs/v2_A_veri_altyapisi.md)"
     not: "Benzer santral: rakım farkı ≤ 400 m, karmaşıklık farkı ≤ 0,04 ve aynı kıyı sınıfı (kıyı < 20 km / iç). Komşu yalnız ≤ 30 km'de kullanılır (yüksek güven); A4 çapraz doğrulamasında 30–80 km'deki komşular (KF RMSE 9,1 puan) ulusal medyan artıktan (7,7) kötü çıktı. Komşu yoksa GWA × ulusal medyan artık matrisi: arazi karmaşıklığı ≤ 0,083 (atlasın alt üçte biri) ise orta, değilse düşük güven"
+  veri_deposu:
+    value: {repo_id: "KULLANICI/hibrit-fizibilite-veri", revizyon: "v1", tur: "dataset"}
+    birim: "Hugging Face veri deposu"
+    kaynak: "Proje kararı (Ö2)"
+    not: "ERA5 Türkiye nokta gridi (era5_tr/v1) ve GWA 250 m karoları (gwa_tr/v1). repo_id yükleme sonrası kullanıcı adıyla güncellenecek. Uygulama önce yerel önbelleğe (data/onbellek/hf), sonra yerel üretim klasörüne (data/grid), en son HF'ye bakar; anahtar gerekmez (herkese açık depo)"
+  guven:
+    value: {yuksek_km: 15, orta_km: 30}
+    birim: "km, m, GWA değişkenlik katsayısı farkı / eşiği"
+    kaynak: "Ö4: A4 çapraz doğrulamasının kuyruk incelemesiyle yeniden tanımlandı (docs/v2_A_veri_altyapisi.md §5)"
+    not: "Yüksek: benzer komşu santral ≤ 15 km; orta: en yakın benzer komşu 15–30 km; düşük: 30 km içinde benzer santral yok (GWA × ulusal medyan artık). Komşusuz santrallerde hatayı arazi karmaşıklığı ayırt etmedi (Spearman 0,01); eski karmaşıklık tabanlı orta/düşük ayrımı kaldırıldı. Seçilen tanım medyan ve %90'lık hatada sıralı (bootstrap aralıkları A4_guven_bootstrap.csv)"

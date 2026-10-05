@@ -12,8 +12,8 @@ Yeni saha x için yöntemler:
      ortalama gün içi şekli taşır)
     "yok"        K_x = 1
 Ağırlık: ters mesafe karesi, en fazla 3 benzer santral (rakım, karmaşıklık, kıyı sınıfı; config v2.aktarim).
-Güven seviyesi: yüksek (benzer santral ≤ 30 km); komşu yoksa GWA × ulusal medyan artık ile orta (düz/az karmaşık arazi,
-karmaşıklık ≤ 0,083) ya da düşük (karmaşık arazi). 30–80 km'deki komşular çapraz doğrulamada bilgi katmadı.
+Güven seviyesi (Ö4): yüksek (en yakın benzer santral ≤ 15 km), orta (15–30 km), düşük (30 km içinde benzer santral yok →
+GWA × ulusal medyan artık). 30–80 km'deki komşular çapraz doğrulamada bilgi katmadı.
 Tipik hatalar (KF puanı) A4 çapraz doğrulamasından: data/atlas/guven_seviyeleri.csv.
 """
 
@@ -46,6 +46,31 @@ def _km(e1, b1, e2, b2):
     return 12742 * np.arcsin(np.sqrt(a))
 
 
+def gwa_hizi(enlem: float, boylam: float, mod: str, adet: int = 12, yaricap_km: float = 2.0, asgari_aralik_m: float = 500.0) -> float:
+    """GWA 100 m hız: 'nokta1km' (Faz A), 'nokta250' (250 m hücre) ya da 'yerlesim' (yarıçapta en rüzgârlı hücreler)."""
+    from src.kaynaklar import gwa250
+
+    if mod == "nokta1km":
+        return gwa.nokta(enlem, boylam)["ws_ort"]
+    if mod == "nokta250":
+        return gwa250.nokta(enlem, boylam)
+    return gwa250.turbin_yerlesimi(enlem, boylam, yaricap_km, adet, asgari_aralik_m)["ortalama"]
+
+
+@lru_cache(maxsize=8)
+def santral_c(mod: str) -> dict[int, float]:
+    """Atlas santrallerinin GWA düzeltmesi c_i = GWA_i / ERA5_i (aynı GWA moduyla; yerleşimde türbin sayısı kurulu güçten)."""
+    a = deger(config_oku()["v2"]["aktarim"])
+    df, _ = atlas()
+    c = {}
+    for r in df.itertuples():
+        mw = r.osm_mw if r.osm_mw == r.osm_mw else 30.0
+        adet = int(np.clip(round(mw / 3.0), 3, 30))
+        v = gwa_hizi(r.enlem, r.boylam, mod, adet, a["santral_yaricap_km"], a["asgari_aralik_m"])
+        c[int(r.epias_id)] = float(np.clip(v / r.era5_100m, 0.5, 3.2))
+    return c
+
+
 def tanimlayicilar(enlem: float, boylam: float) -> dict:
     return {
         "rakim_m": arazi.rakim([(enlem, boylam)])[0],
@@ -76,12 +101,22 @@ def tahmin(
     cfg: dict | None = None,
     haric: int | None = None,
     tan: dict | None = None,
+    gwa_hiz: float | None = None,
+    gmod: str | None = None,
 ) -> tuple[np.ndarray, dict]:
-    """12 × 24 k matrisi ve açıklama (güven seviyesi, kullanılan santraller)."""
+    """
+    12 × 24 k matrisi ve açıklama (güven seviyesi, kullanılan santraller).
+    gwa_hiz: sahanın GWA 100 m hızı (yerleşim ya da nokta); verilmezse gmod'a göre hesaplanır.
+    gmod: santral R'lerinin ve (verilmezse) sahanın GWA modu — 'nokta1km' / 'nokta250' / 'yerlesim'.
+    """
     cfg = cfg or config_oku()
     a = deger(cfg["v2"]["aktarim"])
+    gmod = gmod or a["gwa_modu"]
     tan = tan or tanimlayicilar(enlem, boylam)
-    c = gwa.duzeltme_katsayisi(enlem, boylam, era5_v100)
+    if gwa_hiz is None:
+        gwa_hiz = gwa_hizi(enlem, boylam, gmod, 16, 2.0, a["asgari_aralik_m"])
+    c = float(np.clip(gwa_hiz / era5_v100, 0.5, 3.2))
+    ci = santral_c(gmod)
     if yontem == "yok":
         return np.ones((12, 24)), {"yontem": yontem, "guven": "—"}
     if yontem == "gwa":
@@ -89,30 +124,36 @@ def tahmin(
     k = komsular(enlem, boylam, tan, cfg, haric)
     _, mat = atlas()
     if k.empty:
-        guven = "orta" if tan["karmasiklik"] <= a["karmasiklik_esik"] else "düşük"
+        guven = "düşük"
         if yontem == "gwa_olcekli":  # komşu yok: sahanın GWA düzeltmesi × ulusal medyan artık matrisi (sistematik sapma + ortalama şekil)
-            return c * ulusal_artik(haric), {"yontem": "gwa × ulusal artık (komşu yok)", "c": c, "guven": guven, "komsu": []}
+            return c * ulusal_artik(haric, gmod), {"yontem": "gwa × ulusal artık (komşu yok)", "c": c, "guven": guven, "komsu": []}
         return np.full((12, 24), c), {"yontem": "gwa (komşu yok)", "c": c, "guven": guven, "komsu": []}
     w = 1.0 / np.maximum(k["mesafe_km"].to_numpy(), 1.0) ** a["idw_us"]
     w = w / w.sum()
     if yontem == "dogrudan":
         K = sum(wi * mat[int(i)] for wi, i in zip(w, k["epias_id"]))
     else:  # gwa_olcekli
-        R = sum(wi * mat[int(i)] / float(np.clip(r.gwa_era5_orani, 0.5, 3.2)) for wi, i, r in zip(w, k["epias_id"], k.itertuples()))
+        R = sum(wi * mat[int(i)] / ci[int(i)] for wi, i in zip(w, k["epias_id"]))
         K = c * R
-    guven = "yüksek"
+    gv = deger(cfg["v2"]["guven"])
+    guven = "yüksek" if k["mesafe_km"].iloc[0] <= gv["yuksek_km"] else "orta"
     return K, {"yontem": yontem, "c": c, "guven": guven, "komsu": k["ad"].tolist(), "mesafe_km": k["mesafe_km"].round(1).tolist()}
 
 
-def ulusal_artik(haric: int | None = None) -> np.ndarray:
+def ulusal_artik(haric: int | None = None, gmod: str = "yerlesim") -> np.ndarray:
     """Atlastaki tüm kullanılabilir santrallerin GWA sonrası artık matrislerinin (R = K / c) hücre bazında medyanı."""
     df, mat = atlas()
+    ci = santral_c(gmod)
     d = df if haric is None else df[df["epias_id"] != haric]
-    return np.median([mat[int(i)] / float(np.clip(o, 0.5, 3.2)) for i, o in zip(d["epias_id"], d["gwa_era5_orani"])], axis=0)
+    return np.median([mat[int(i)] / ci[int(i)] for i in d["epias_id"]], axis=0)
 
 
 def aktarim_matrisi(saha, era5_v100: float, cfg: dict) -> tuple[pd.DataFrame, dict]:
-    """genel.profil_uret için: atlas kuralıyla 12 × 24 matris (DataFrame) ve açıklama."""
-    K, bilgi = tahmin(saha.enlem, saha.boylam, era5_v100, "gwa_olcekli", cfg)
-    bilgi["mod"] = "atlas"
+    """genel.profil_uret için: atlas kuralıyla 12 × 24 matris (DataFrame) ve açıklama (sahanın türbin yerleşimi seçeneğiyle)."""
+    from src.saha import gwa_hizi as saha_gwa
+
+    g = saha_gwa(saha, cfg)
+    gmod = "yerlesim" if g["yerlesim"] else "nokta250"
+    K, bilgi = tahmin(saha.enlem, saha.boylam, era5_v100, "gwa_olcekli", cfg, gwa_hiz=g["hiz"], gmod=gmod)
+    bilgi.update({"mod": "atlas", "gwa_hiz": g["hiz"], "turbin_yerlesimi": g["yerlesim"]})
     return pd.DataFrame(K, index=range(1, 13), columns=range(24)), bilgi

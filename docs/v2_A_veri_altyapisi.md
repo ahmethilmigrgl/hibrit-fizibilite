@@ -192,6 +192,79 @@ Yüksek seviyede RMSE'yi birkaç uç değer büyütüyor (medyan 2,4); Monte Car
 - Yani v1, sahayı fiilen "santral sırtı kadar iyi" varsaymıştı. v2'de bu varsayım görünür hale geliyor: kullanıcı santral
   benzeri bir sırt noktası seçerse sonuç v1'e yaklaşır.
 
+## 5a. Ön adım güncellemesi (Ö3–Ö4): 250 m GWA, türbin yerleşimi ve güven seviyeleri
+
+> Bu bölüm §5'teki güven seviyesi tablosunun yerini alır.
+
+**250 m GWA:**
+- Türkiye 100 m ortalama hız rasterı (7.767 × 3.713, uint16 cm/s, deflate) Cloud Optimized GeoTIFF olarak **20,8 MB**.
+- 1° × 1° karolara bölündüğünde toplam **17,1 MB** (145 karo, karo başına ~100–200 KB).
+- Uygulama GDAL gerektirmeden yalnızca sahanın düştüğü karoları indiriyor (`src/kaynaklar/gwa250.py`, `hf_veri.py`).
+- 1 km paketi yedek olarak kalıyor.
+
+**Türbin yerleşimi** (`gwa250.turbin_yerlesimi`; Saha alanları `turbin_yerlesimi`, `yerlesim_yaricap_km`, varsayılan 2 km):
+- Seçilen noktanın çevresinde, yarıçap içindeki en rüzgârlı 250 m hücreler türbin konumu kabul edilir.
+- Türbinler birbirinden en az 500 m uzak (~4 rotor çapı); sayı ≈ 1,3 × bağlantı / türbin gücü.
+- Sahanın GWA hızı bu hücrelerin ortalaması olur. Seçenek kapalıyken noktanın 250 m hücresi kullanılır.
+- Atlas tarafında santrallerin c'si de aynı yöntemle hesaplanır: kurulu güç / 3 MW türbin, 3 km yarıçap.
+- **Modellenmeyenler:** iz (wake) kayıpları (yalnız toplam kayıp oranıyla), erişim yolu ve eğim, arazi kullanımı ve mülkiyet,
+  koruma alanları, izinler, hücre içi türbulans ve yükler. Sonuç "uygun bir sırt varsa" potansiyelidir, mikro yerleşim
+  değildir.
+
+**Çapraz doğrulama (GWA modu × yöntem, 90 santral, KF puanı):**
+
+| GWA modu | Yöntem | Ort. hata | Medyan mutlak | RMSE | P90 mutlak | Gün içi RMSE |
+|---|---|---|---|---|---|---|
+| 1 km nokta | GWA ölçekli kural | −0,7 | 4,8 | 7,8 | 14,4 | 6,3 |
+| 250 m nokta | GWA ölçekli kural | −0,8 | 5,4 | 9,0 | 16,3 | 7,5 |
+| **Yerleşim** | **GWA ölçekli kural** | **−0,6** | **4,6** | **7,0** | **11,4** | **6,3** |
+| Yerleşim | Yalnız GWA | +3,3 | 5,7 | 7,7 | 12,0 | 8,6 |
+| Yerleşim | Doğrudan komşu | +1,4 | 5,5 | 7,8 | 12,8 | 7,8 |
+
+**Yorum:**
+- Yerleşim hatayı azaltıyor: RMSE 7,8 → 7,0, P90 14,4 → 11,4.
+- 250 m tek nokta, 1 km'den bile kötü. OSM koordinatı santral poligonunun merkezi; çoğu zaman sırtın kendisi değil, yamaç
+  ya da vadi hücresine düşüyor.
+- Bu, santrallerin sırtlarda olduğu yorumunu destekliyor. Sabit kuralın varsayılanı `gwa_modu = yerlesim` yapıldı.
+- Yerleşimle ulusal medyan artık R 0,92'ye iniyor: seçilen en iyi hücreler santrallerin ortalama türbin konumundan daha
+  rüzgârlı. Saha tarafı da aynı yöntemle hesaplandığı için bu iç tutarlılığı bozmuyor.
+
+**Ö4 — Güven seviyelerinin yeniden tanımı:**
+- Eski tanımda "yüksek" seviyenin P90'ı (11,9) "orta"nınkinden (9,3) kötüydü.
+- Kuyruk incelemesi: yüksek seviyedeki en kötü santral Söke RES (−20 puan), komşusu 26 km uzakta ve 200 m rakım farkında.
+  Diğer kuyruk santralleri 12–29 km mesafede.
+- Komşusuz santrallerde hatayı **arazi karmaşıklığı ayırt etmiyor** (Spearman 0,01). Eski karmaşıklık tabanlı orta/düşük
+  ayrımının dayanağı olmadığı için kaldırıldı.
+- Denenen dört tanım arasında (mesafe; rakım farkı; ikisi birlikte; komşu sayısı) hem medyanda hem P90'da en net sıralanan,
+  mesafe tabanlı tanım oldu.
+
+| Seviye | Tanım | Santral | Medyan mutlak hata [puan] (%90 GA) | P90 mutlak hata (%90 GA) | RMSE | Göreli RMSE | Gün içi RMSE |
+|---|---|---|---|---|---|---|---|
+| **Yüksek** | Benzer santral ≤ 15 km | 28 | **2,1** (1,7–3,7) | **7,5** (4,4–8,3) | 4,1 | %12 | 4,2 |
+| **Orta** | En yakın benzer santral 15–30 km | 8 | **5,2** (4,0–7,9) | **11,8** (6,0–20,4) | 8,9 | %27 | 7,0 |
+| **Düşük** | 30 km içinde benzer santral yok | 54 | **5,9** (4,7–7,1) | **13,6** (10,7–15,0) | 7,8 | %24 | 7,6 |
+
+- GA: 4.000 örnekli bootstrap; `outputs/v2/A4_guven_bootstrap.csv`, `data/atlas/guven_seviyeleri.csv`.
+- Orta seviyenin örneklemi küçük (n = 8); P90 aralığı çok geniş. Seviyeler nokta tahminlerinde sıralı ama orta ile düşüğün
+  medyan aralıkları örtüşüyor.
+- Monte Carlo'da her seviyenin medyan ve P90 hatası birlikte kullanılacak (Faz B).
+
+**Ezine (Ö3):** v1 kalibre KF %37,7 (E-141/120 m; `outputs/v2/O3_ezine_yerlesim.csv`).
+
+| | Yerleşim kapalı (250 m nokta) | Yerleşim 2 km | Yerleşim 3 km |
+|---|---|---|---|
+| GWA hızı | 6,44 m/s | 6,98 m/s | 7,18 m/s |
+| Yalnız GWA düzeltmesi | %32,4 (−5,3) | **%37,1 (−0,6)** | %38,7 (+1,0) |
+| Atlas kuralı (3 komşu, yüksek) | %30,2 (−7,5) | %30,2 (−7,5) | %31,7 (−5,9) |
+
+**Yorum:**
+- Yerleşim açıkken yalnız GWA düzeltmesi v1'e 0,6 puan yaklaşıyor. v1'in örtük varsayımı ("saha, santral sırtları kadar
+  rüzgârlı") yerleşimle büyük ölçüde açıklanıyor.
+- Atlas kuralı ise daha düşük, çünkü komşu santraller GWA'nın sırt potansiyelinin altında üretiyor. Yerleşimle artık R
+  değerleri: Enerjisa 0,95, Çamseki 0,92, Sares 0,84.
+- Atlas, Ezine'de "yakın santraller gibi üretir" diyor; v1 ise Enerjisa'nın katsayısını aynen taşımıştı. İkisi arasındaki
+  ~7 puan, Ezine sahası için gerçek bir belirsizlik. Yüksek güvenin P90'ı (7,5 puan) bu farkı kapsıyor.
+
 ## 6. A5 — Sahaya bağlı parametreler
 
 - **İl/ilçe:** geoBoundaries ilçe sınırları 1 km ızgaraya rasterize edildi (973 ilçe, 81 il). Nokta → il/ilçe ve "Türkiye

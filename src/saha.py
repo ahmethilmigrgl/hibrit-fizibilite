@@ -31,6 +31,8 @@ class Saha:
     turbin: str | None = None  # None → GWA rüzgâr sınıfına göre otomatik
     gobek: float | None = None
     varsayimlar: dict = field(default_factory=dict)  # {"finans.wacc_reel": 0.08, ...} — config anahtar yolu → değer
+    turbin_yerlesimi: bool | None = None  # None → config v2.aktarim.gwa_modu; True: yarıçaptaki en rüzgârlı 250 m hücreler
+    yerlesim_yaricap_km: float = 2.0
 
     @property
     def kod(self) -> str:
@@ -90,10 +92,40 @@ def teias_bedelleri(saha: Saha, cfg: dict | None = None) -> tuple[float, float]:
     return deger(t["uretim_tarifesi"])[tarife_bolgesi(saha, cfg)] / kur, deger(t["uretim_enerji_bedeli"]) / kur
 
 
-def turbin_sec(saha: Saha, cfg: dict | None = None) -> dict:
-    """GWA 100 m ortalama hızına göre rüzgâr sınıfı, türbin ve göbek (kullanıcı verdiyse o kullanılır)."""
+def yerlesim_acik(saha: Saha, cfg: dict | None = None) -> bool:
+    if saha.turbin_yerlesimi is not None:
+        return saha.turbin_yerlesimi
+    return deger((cfg or config_oku())["v2"]["aktarim"])["gwa_modu"] == "yerlesim"
+
+
+def gwa_hizi(saha: Saha, cfg: dict | None = None) -> dict:
+    """
+    Sahanın GWA 100 m ortalama hızı: türbin yerleşimi açıksa yarıçap içindeki en rüzgârlı 250 m hücrelerin ortalaması
+    (türbin sayısı ≈ 1,3 × bağlantı / türbin gücü, en az 500 m aralık), kapalıysa noktanın 250 m hücresi.
+    """
+    from src.kaynaklar import gwa250
+
     cfg = cfg or config_oku()
-    v = gwa.nokta(saha.enlem, saha.boylam)["ws_ort"]
+    if not yerlesim_acik(saha, cfg):
+        v = gwa250.nokta(saha.enlem, saha.boylam)
+        return {"hiz": v, "nokta": v, "konumlar": [(saha.enlem, saha.boylam)], "yerlesim": False}
+    tg = 4.2 if saha.turbin is None else _turbin_gucu(saha.turbin, saha.gobek)
+    adet = int(min(deger(cfg["optimizasyon"]["turbin_azami"]), math.ceil(1.3 * saha.baglanti_mw / tg)))
+    a = deger(cfg["v2"]["aktarim"])
+    y = gwa250.turbin_yerlesimi(saha.enlem, saha.boylam, saha.yerlesim_yaricap_km, adet, a["asgari_aralik_m"])
+    return {"hiz": y["ortalama"], "nokta": y["nokta"], "konumlar": y["konumlar"], "yerlesim": True, "adet": adet}
+
+
+def _turbin_gucu(model: str, gobek: float | None) -> float:
+    from windpowerlib import WindTurbine
+
+    return WindTurbine(turbine_type=model, hub_height=gobek or 100).nominal_power / 1e6
+
+
+def turbin_sec(saha: Saha, cfg: dict | None = None) -> dict:
+    """GWA 100 m hızına (yerleşim seçeneğine göre) göre rüzgâr sınıfı, türbin ve göbek (kullanıcı verdiyse o kullanılır)."""
+    cfg = cfg or config_oku()
+    v = gwa_hizi(saha, cfg)["hiz"]
     kural = next(k for k in deger(cfg["v2"]["turbin_secimi"]) if v < k["gwa_100m_ust"])
     return {
         "gwa_100m": v,
