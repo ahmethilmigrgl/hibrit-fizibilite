@@ -1,6 +1,6 @@
 ﻿,Spearman
-k ~ kiyi_km,1.000
-k ~ rakim_m,0.500
-k ~ karmasiklik,0.500
-k ~ gwa_era5_orani,1.000
-k ~ era5_100m,-0.866
+k ~ kiyi_km,0.591
+k ~ rakim_m,0.703
+k ~ karmasiklik,0.508
+k ~ gwa_era5_orani,0.902
+k ~ era5_100m,-0.957

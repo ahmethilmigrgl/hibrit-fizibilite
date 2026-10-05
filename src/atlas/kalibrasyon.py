@@ -19,6 +19,7 @@ Kalite bayrakları:
 from __future__ import annotations
 
 import importlib.util
+from contextlib import contextmanager
 from dataclasses import dataclass
 
 import numpy as np
@@ -38,6 +39,25 @@ def _v1_kalibrasyon_modulu():
 
 
 V1 = _v1_kalibrasyon_modulu()
+ARALIK = (
+    0.4,
+    3.5,
+)  # Türkiye geneli: iç/dağlık kesimde ERA5 hücre ortalaması santral noktasındaki hızın üçte birine kadar düşebilir (GWA/ERA5 ≤ 3)
+
+
+@contextmanager
+def _aralik(alt: float, ust: float):
+    """v1 arama aralığını yalnız atlas kalibrasyonu süresince değiştirir (v1 kodu etkilenmez)."""
+    eski = (kal.K_ALT, kal.K_UST)
+    kal.K_ALT, kal.K_UST = alt, ust
+    try:
+        yield
+    finally:
+        kal.K_ALT, kal.K_UST = eski
+
+
+class KSinirDisi(ValueError):
+    """Gözlenen KF'yi eşleyen k, kalibrasyon arama aralığının (v1 K_ALT–K_UST) dışında."""
 
 
 @dataclass
@@ -58,8 +78,15 @@ def kalibre_et(uretim_mw: pd.Series, era5: pd.DataFrame, cfg_ruzgar: dict, osm_m
     gecerli = ~np.isnan(g)
     if gecerli.sum() < 2 * 8760 or np.nanmean(g) < 0.05:
         return None
-    k = kal.sabit_k(m, g, gecerli)
-    _, yum = kal.k_matrisi(m, g, gecerli)
+    try:
+        with _aralik(*ARALIK):
+            k = kal.sabit_k(m, g, gecerli)
+        # Ay × saat hücreleri santralin kendi k'sine göre görece aralıkta (v1 Ezine: 0,5–2,0 ≈ 0,47k–1,87k): zayıf rüzgârlı
+        # hücrelerde güç eğrisi düz olduğundan mutlak geniş aralık hücre katsayısını sınıra kaçırır
+        with _aralik(0.5 * k, 1.8 * k):
+            _, yum = kal.k_matrisi(m, g, gecerli)
+    except ValueError as ex:  # k arama aralığı dışında: çoğunlukla yanlış eşleşme, kapasite ya da veri sorunu
+        raise KSinirDisi(f"gözlenen KF {np.nanmean(g):.3f}") from ex
     km = yum.to_numpy()
     kf_m = m.kf_matris(km)
     met = kal.metrikler(m, g, kf_m, gecerli)
@@ -93,11 +120,16 @@ def kalibre_et(uretim_mw: pd.Series, era5: pd.DataFrame, cfg_ruzgar: dict, osm_m
     return SantralKalibrasyonu(ozet, km, gozlenen, yillik)
 
 
-def kalite_sinifi(o: dict) -> str:
-    """temiz / kullanilabilir / disarida — eşikler docs/v2_A_veri_altyapisi.md'de."""
+def kalite_sinifi(o: dict, gwa_era5_orani: float | None = None) -> str:
+    """
+    temiz / kullanilabilir / disarida — eşikler docs/v2_A_veri_altyapisi.md'de.
+    k'nin makullüğü ham değerle değil, GWA düzeltmesinden arta kalan R = k / (GWA/ERA5) ile sınanır: iç ve karmaşık arazide
+    k > 1,5 fiziksel olarak beklenir (ERA5 hücre ortalaması sırt hızını düşük gösterir), ama R ~1'den çok sapmamalıdır.
+    """
     oran_iyi = np.isnan(o["kapasite_orani"]) or 0.7 <= o["kapasite_orani"] <= 1.3
-    if o["korelasyon"] >= 0.70 and o["veri_yili"] >= 3 and o["talimat_suphesi"] <= 0.02 and oran_iyi and 0.75 <= o["k_sabit"] <= 1.45:
+    R = o["k_sabit"] / gwa_era5_orani if gwa_era5_orani and np.isfinite(gwa_era5_orani) else o["k_sabit"]
+    if o["korelasyon"] >= 0.70 and o["veri_yili"] >= 3 and o["talimat_suphesi"] <= 0.02 and oran_iyi and 0.75 <= R <= 1.35:
         return "temiz"
-    if o["korelasyon"] >= 0.60 and o["veri_yili"] >= 2 and o["talimat_suphesi"] <= 0.05 and 0.6 <= o["k_sabit"] <= 1.7:
+    if o["korelasyon"] >= 0.60 and o["veri_yili"] >= 2 and o["talimat_suphesi"] <= 0.05 and 0.6 <= R <= 1.6:
         return "kullanilabilir"
     return "disarida"

@@ -134,3 +134,8 @@ tüm v2 işi `v2-genel` dalında.
   sayfasından doğrulanır ve DATA_SOURCES.md'ye yazılır. Herkese açık uygulamada kullanımı engelleyen koşul varsa durulur
   ve kullanıcıya sorulur.
 - Kişisel bilgi gerektiren indirme formları (ör. GEM) kullanıcı tarafından doldurulur.
+   **Faz A durumu (2026-10-05):** ✅ kod ve analiz; bkz. `docs/v2_A_veri_altyapisi.md`. Modüller: `src/saha.py`,
+   `src/kaynaklar/` (open_meteo, gwa, sinirlar, arazi, era5_cds), `src/atlas/` (kalibrasyon, aktarim), `src/uretim/genel.py`;
+   betikler `src/v2_A*.py`. Atlas: 90 kalibre santral; aktarım kuralı GWA ölçekli (komşu ≤ 30 km), güven seviyeleri
+   `data/atlas/guven_seviyeleri.csv`. Açık kararlar (kullanıcı): `data/atlas/` commit edilsin mi (v1 kuralı "data/ commit
+   edilmez"), yedek ERA5 grid indirmesi (~7–8 saat CDS), GEM tracker (form ile kullanıcı indirir).

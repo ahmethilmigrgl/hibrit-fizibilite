@@ -8,9 +8,12 @@ Yeni saha x için yöntemler:
     "dogrudan"   K_x = Σ w_i K_i                 (komşu santral matrislerinin ağırlıklı ortalaması)
     "gwa_olcekli" K_x = c_x · Σ w_i R_i          (komşuların şekli/artığı + sahanın kendi GWA düzeltmesi)  ← kural
     "gwa"        K_x = c_x (sabit)
+    (komşu yoksa "gwa_olcekli": K_x = c_x · medyan R — ulusal medyan artık matrisi; GWA'nın sistematik düşük sapmasını ve
+     ortalama gün içi şekli taşır)
     "yok"        K_x = 1
 Ağırlık: ters mesafe karesi, en fazla 3 benzer santral (rakım, karmaşıklık, kıyı sınıfı; config v2.aktarim).
-Güven seviyesi: yüksek (benzer santral ≤ 30 km), orta (≤ 80 km), düşük (benzer santral yok → yalnız GWA).
+Güven seviyesi: yüksek (benzer santral ≤ 30 km); komşu yoksa GWA × ulusal medyan artık ile orta (düz/az karmaşık arazi,
+karmaşıklık ≤ 0,083) ya da düşük (karmaşık arazi). 30–80 km'deki komşular çapraz doğrulamada bilgi katmadı.
 Tipik hatalar (KF puanı) A4 çapraz doğrulamasından: data/atlas/guven_seviyeleri.csv.
 """
 
@@ -84,18 +87,28 @@ def tahmin(
     if yontem == "gwa":
         return np.full((12, 24), c), {"yontem": yontem, "c": c, "guven": "düşük"}
     k = komsular(enlem, boylam, tan, cfg, haric)
-    if k.empty:
-        return np.full((12, 24), c), {"yontem": "gwa (komşu yok)", "c": c, "guven": "düşük", "komsu": []}
     _, mat = atlas()
+    if k.empty:
+        guven = "orta" if tan["karmasiklik"] <= a["karmasiklik_esik"] else "düşük"
+        if yontem == "gwa_olcekli":  # komşu yok: sahanın GWA düzeltmesi × ulusal medyan artık matrisi (sistematik sapma + ortalama şekil)
+            return c * ulusal_artik(haric), {"yontem": "gwa × ulusal artık (komşu yok)", "c": c, "guven": guven, "komsu": []}
+        return np.full((12, 24), c), {"yontem": "gwa (komşu yok)", "c": c, "guven": guven, "komsu": []}
     w = 1.0 / np.maximum(k["mesafe_km"].to_numpy(), 1.0) ** a["idw_us"]
     w = w / w.sum()
     if yontem == "dogrudan":
         K = sum(wi * mat[int(i)] for wi, i in zip(w, k["epias_id"]))
     else:  # gwa_olcekli
-        R = sum(wi * mat[int(i)] / float(np.clip(r.gwa_era5_orani, 0.6, 1.8)) for wi, i, r in zip(w, k["epias_id"], k.itertuples()))
+        R = sum(wi * mat[int(i)] / float(np.clip(r.gwa_era5_orani, 0.5, 3.2)) for wi, i, r in zip(w, k["epias_id"], k.itertuples()))
         K = c * R
-    guven = "yüksek" if k["mesafe_km"].iloc[0] <= a["yakin_km"] else "orta"
+    guven = "yüksek"
     return K, {"yontem": yontem, "c": c, "guven": guven, "komsu": k["ad"].tolist(), "mesafe_km": k["mesafe_km"].round(1).tolist()}
+
+
+def ulusal_artik(haric: int | None = None) -> np.ndarray:
+    """Atlastaki tüm kullanılabilir santrallerin GWA sonrası artık matrislerinin (R = K / c) hücre bazında medyanı."""
+    df, mat = atlas()
+    d = df if haric is None else df[df["epias_id"] != haric]
+    return np.median([mat[int(i)] / float(np.clip(o, 0.5, 3.2)) for i, o in zip(d["epias_id"], d["gwa_era5_orani"])], axis=0)
 
 
 def aktarim_matrisi(saha, era5_v100: float, cfg: dict) -> tuple[pd.DataFrame, dict]:

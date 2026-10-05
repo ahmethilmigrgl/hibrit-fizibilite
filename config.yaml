@@ -330,7 +330,7 @@ v2:
   aday_nokta_sayisi: {value: 5, birim: "adet", kaynak: "Proje kararı", not: "İl/ilçe seçildiğinde ilçe içinde GWA ortalama hızı en yüksek hücreler (ilçe merkezi değil)"}
   aday_nokta_asgari_aralik_km: {value: 3.0, birim: "km", kaynak: "Proje kararı", not: "Aday noktaların aynı sırtta yığılmaması için"}
   aktarim:
-    value: {yakin_km: 30, orta_km: 80, azami_komsu: 3, idw_us: 2, rakim_farki_m: 400, karmasiklik_farki: 0.04, kiyi_benzerlik: true}
+    value: {yakin_km: 30, orta_km: 30, azami_komsu: 3, idw_us: 2, rakim_farki_m: 400, karmasiklik_farki: 0.04, kiyi_benzerlik: true, karmasiklik_esik: 0.083}
     birim: "km, m, GWA değişkenlik katsayısı farkı"
     kaynak: "Proje kararı; eşikler A4 'birini dışarıda bırak' çapraz doğrulamasıyla sınandı (docs/v2_A_veri_altyapisi.md)"
-    not: "Benzer santral: rakım farkı ≤ 400 m, karmaşıklık farkı ≤ 0,04 ve aynı kıyı sınıfı (kıyı < 20 km / iç). Yakın: ≤ 30 km (yüksek güven), 30–80 km (orta), yoksa yalnız GWA (düşük)"
+    not: "Benzer santral: rakım farkı ≤ 400 m, karmaşıklık farkı ≤ 0,04 ve aynı kıyı sınıfı (kıyı < 20 km / iç). Komşu yalnız ≤ 30 km'de kullanılır (yüksek güven); A4 çapraz doğrulamasında 30–80 km'deki komşular (KF RMSE 9,1 puan) ulusal medyan artıktan (7,7) kötü çıktı. Komşu yoksa GWA × ulusal medyan artık matrisi: arazi karmaşıklığı ≤ 0,083 (atlasın alt üçte biri) ise orta, değilse düşük güven"

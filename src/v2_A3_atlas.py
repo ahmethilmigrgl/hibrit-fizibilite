@@ -51,7 +51,13 @@ def main() -> None:
             continue
         u = veri.uretim_cek(ist, "2014-01-01", "2026-09-30", santral_id=int(r["epias_id"]))
         era5 = era5_cds.indir(r["enlem"], r["boylam"])
-        sk = K.kalibre_et(u["toplam"], era5, cr, r["osm_mw"] if pd.notna(r["osm_mw"]) else None)
+        try:
+            sk = K.kalibre_et(u["toplam"], era5, cr, r["osm_mw"] if pd.notna(r["osm_mw"]) else None)
+        except K.KSinirDisi:
+            satir.append(
+                {"epias_id": r["epias_id"], "ad": r["epias_ad"], "enlem": r["enlem"], "boylam": r["boylam"], "sinif": "k_sinir_disi"}
+            )
+            continue
         if sk is None:
             satir.append(
                 {"epias_id": r["epias_id"], "ad": r["epias_ad"], "enlem": r["enlem"], "boylam": r["boylam"], "sinif": "veri_yetersiz"}
@@ -71,7 +77,8 @@ def main() -> None:
                 "boylam": r["boylam"],
                 "osm_mw": r["osm_mw"],
                 **sk.ozet,
-                "sinif": K.kalite_sinifi(sk.ozet),
+                "sinif": K.kalite_sinifi(sk.ozet, gw / v100),
+                "R_artik": sk.ozet["k_sabit"] / (gw / v100),
                 "era5_100m": v100,
                 "gwa_100m": gw,
                 "gwa_era5_orani": gw / v100,
@@ -126,35 +133,39 @@ def harita(d: pd.DataFrame) -> None:
     import matplotlib.colors as mc
 
     P = gwa._yukle()
-    fig, ax = plt.subplots(figsize=(13, 6.2))
     z = np.where(P["ws_ort"] > 0, P["ws_ort"] / P["olcek"], np.nan)
     n, m = z.shape
-    ax.imshow(z, extent=[P["sol"], P["sol"] + m * P["adim"], P["ust"] - n * P["adim"], P["ust"]], cmap="Greys", vmin=3, vmax=11, alpha=0.55)
-    norm = mc.TwoSlopeNorm(vmin=0.7, vcenter=1.0, vmax=1.4)
-    sc = ax.scatter(
-        d["boylam"],
-        d["enlem"],
-        c=d["k_sabit"],
-        cmap="RdBu_r",
-        norm=norm,
-        s=18 + d["osm_mw"].fillna(20) / 3,
-        edgecolor="white",
-        linewidth=0.6,
-        zorder=3,
-    )
-    cb = fig.colorbar(sc, ax=ax, shrink=0.8)
-    cb.set_label("Sabit hız kalibrasyon katsayısı k (ERA5 → gözlenen)")
-    ax.set_xlim(25.6, 44.9)
-    ax.set_ylim(35.8, 42.2)
-    ax.set_aspect(1.25)
-    ax.set_xlabel("Boylam")
-    ax.set_ylabel("Enlem")
+    kapsam = [P["sol"], P["sol"] + m * P["adim"], P["ust"] - n * P["adim"], P["ust"]]
+    fig, axs = plt.subplots(2, 1, figsize=(12, 10.5))
+    paneller = [
+        ("k_sabit", "Sabit hız katsayısı k = gözlenen / ERA5 (log ölçek)", "YlOrRd", mc.LogNorm(vmin=0.8, vmax=3.2)),
+        ("R_artik", "GWA düzeltmesinden arta kalan R = k / (GWA/ERA5)", "RdBu_r", mc.TwoSlopeNorm(vmin=0.7, vcenter=1.0, vmax=1.4)),
+    ]
+    for ax, (kol, baslik_, cmap, norm) in zip(axs, paneller):
+        ax.imshow(z, extent=kapsam, cmap="Greys", vmin=2, vmax=12, alpha=0.45)
+        sc = ax.scatter(
+            d["boylam"],
+            d["enlem"],
+            c=d[kol],
+            cmap=cmap,
+            norm=norm,
+            s=22 + d["osm_mw"].fillna(20) / 3,
+            edgecolor="black",
+            linewidth=0.4,
+            zorder=3,
+        )
+        cb = fig.colorbar(sc, ax=ax, shrink=0.85)
+        cb.set_label(kol)
+        ax.set_title(baslik_, loc="left")
+        ax.set_xlim(25.6, 44.9)
+        ax.set_ylim(35.8, 42.2)
+        ax.set_aspect(1.25)
     g.baslik(
         fig,
-        "Türkiye RES kalibrasyon atlası: ERA5 hız katsayısı k",
-        f"{len(d)} santral (temiz + kullanılabilir). Mavi: ERA5 hızı fazla tahmin ediyor (k < 1); kırmızı: az tahmin. Zemin: GWA 100 m ortalama hız.",
+        "Türkiye RES kalibrasyon atlası: ERA5 iç ve dağlık kesimde rüzgârı ciddi düşük gösteriyor",
+        f"{len(d)} santral. Üst: k kıyıda ~1,4, içeride ~2,3. Alt: GWA düzeltmesi sonrası artık R çoğunlukla 0,9–1,3 (GWA farkın çoğunu açıklıyor).",
     )
-    fig.tight_layout(rect=(0, 0, 1, 0.9))
+    fig.tight_layout(rect=(0, 0.01, 1, 0.94))
     g.kaynak_notu(
         fig,
         "Kaynak: EPİAŞ Şeffaflık Platformu (santral üretimi), ERA5 (Copernicus), Global Wind Atlas 3.0 (DTU), konumlar © OpenStreetMap katkıcıları. Kendi hesaplamam.",

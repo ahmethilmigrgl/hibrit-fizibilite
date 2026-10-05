@@ -68,7 +68,7 @@ def test_ezine_ortam_npv_v1_ile_ayni():
     n1 = nakit_akislari(t, o1.tablo(t), o1.c, o1.beklenen_girdi(58.0))["npv"][0]
     n2 = nakit_akislari(t, o2.tablo(t), o2.c, o2.beklenen_girdi(58.0))["npv"][0]
     assert o2.baglanti == 50.0
-    assert abs(n1 - n2) < 1.0   # USD
+    assert abs(n1 - n2) < 1.0  # USD
 
 
 @pytest.mark.veri

@@ -82,10 +82,10 @@ def nokta(enlem: float, boylam: float) -> dict[str, float]:
     return d
 
 
-def duzeltme_katsayisi(enlem: float, boylam: float, era5_v100_ort: float, sinirlar: tuple[float, float] = (0.6, 1.8)) -> float:
+def duzeltme_katsayisi(enlem: float, boylam: float, era5_v100_ort: float, sinirlar: tuple[float, float] = (0.5, 3.2)) -> float:
     """
     GWA düzeltme katsayısı c = GWA 100 m ortalama hız / ERA5 100 m ortalama hız (aynı nokta). Aşırı değerler sınırlanır:
-    çok yüksek c genellikle ERA5'in sahil/dağ hücresinde deniz ya da vadi ağırlığından gelir ve tek katsayıyla düzeltilemez.
+    Türkiye atlasında santral noktalarında GWA/ERA5 oranı 0,85–3,0 aralığında (iç ve dağlık kesimde ERA5 hücre ortalaması çok düşük); sınırlar bunu kapsar.
     """
     c = nokta(enlem, boylam)["ws_ort"] / era5_v100_ort
     return float(np.clip(c, *sinirlar))

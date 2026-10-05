@@ -72,8 +72,11 @@ def rakim(noktalar: list[tuple[float, float]]) -> list[float]:
     eksik = [k for k in dict.fromkeys(anahtar) if k not in onb]
     for i in range(0, len(eksik), 100):
         parca = eksik[i : i + 100]
-        r = requests.get("https://api.open-meteo.com/v1/elevation", timeout=60,
-                         params={"latitude": ",".join(k.split(",")[0] for k in parca), "longitude": ",".join(k.split(",")[1] for k in parca)})
+        r = requests.get(
+            "https://api.open-meteo.com/v1/elevation",
+            timeout=60,
+            params={"latitude": ",".join(k.split(",")[0] for k in parca), "longitude": ",".join(k.split(",")[1] for k in parca)},
+        )
         r.raise_for_status()
         onb.update(dict(zip(parca, r.json()["elevation"])))
     RAKIM_ONBELLEK.parent.mkdir(parents=True, exist_ok=True)
