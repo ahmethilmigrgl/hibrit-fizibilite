@@ -29,6 +29,9 @@ başvuru için hazırlanıyor. Sonuçlar, varsayımlar ve formülasyonlar mülak
 - **Klasörler:**
   - `data/raw` — ham indirilen veri (git'e eklenmez)
   - `data/processed` — işlenmiş veri (git'e eklenmez)
+  - `data/atlas` — **istisna: git'e girer.** Uygulamaya gömülen küçük türetilmiş paketler (atlas, GWA, sınırlar, piyasa
+    paketi); her dosyanın kaynağı ve lisansı `data/atlas/README.md`'de (OSM türevleri ODbL, GWA CC BY 4.0). Santral bazında
+    ham saatlik EPİAŞ verisi buraya konmaz.
   - `src` — Python modülleri/scriptleri
   - `tests` — pytest testleri (`.venv/bin/python -m pytest -q`)
   - `results` — dashboard ve rapor için küçük, toplulaştırılmış sonuçlar (repoya girer, < 1 MB)

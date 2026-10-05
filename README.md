@@ -173,6 +173,6 @@ Details, licences and what each source is used for: [DATA_SOURCES.md](DATA_SOURC
   stored in this repository; raw hourly EPİAŞ data are not redistributed.
 
 ## License
-The MIT licence ([LICENSE](LICENSE)) applies **to the code only**. Data and data-derived results remain subject to the
+The MIT licence ([LICENSE](LICENSE)) applies **to the code only**. The embedded data packages in `data/atlas/` carry their own licences (OSM-derived files ODbL 1.0, Global Wind Atlas derivatives CC BY 4.0, boundaries ODbL/CC BY-SA); see [data/atlas/README.md](data/atlas/README.md). Data and data-derived results remain subject to the
 terms of their sources (Copernicus/C3S licence, PVGIS reuse conditions, EPİAŞ Transparency Platform terms); see
 [DATA_SOURCES.md](DATA_SOURCES.md).

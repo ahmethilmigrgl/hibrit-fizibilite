@@ -165,6 +165,6 @@ Ayrıntılar, lisanslar ve her kaynağın ne için kullanıldığı: [DATA_SOURC
   sonuçlar var; ham saatlik EPİAŞ verisi yeniden dağıtılmıyor.
 
 ## Lisans
-MIT lisansı ([LICENSE](LICENSE)) **yalnızca koda** uygulanır. Veriler ve veriden türetilen sonuçlar kaynaklarının
+MIT lisansı ([LICENSE](LICENSE)) **yalnızca koda** uygulanır. `data/atlas/` içindeki gömülü veri paketleri kendi lisanslarına tabidir (OSM türevleri ODbL 1.0, Global Wind Atlas türevleri CC BY 4.0, sınırlar ODbL/CC BY-SA); bkz. [data/atlas/README.md](data/atlas/README.md). Veriler ve veriden türetilen sonuçlar kaynaklarının
 koşullarına tabidir (Copernicus/C3S lisansı, PVGIS yeniden kullanım koşulları, EPİAŞ Şeffaflık Platformu koşulları);
 bkz. [DATA_SOURCES.md](DATA_SOURCES.md).
