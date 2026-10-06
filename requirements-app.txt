@@ -1,9 +1,19 @@
-# Yalnızca dashboard (app.py) için hafif bağımlılıklar — Streamlit Community Cloud bu dosyayı kullanır.
+# v2 uygulaması (app.py) çalışma anı bağımlılıkları — Streamlit Community Cloud bu dosyayı kullanır (dashboard/requirements.txt ile aynı tutun).
+# Uygulama çalışırken optimizasyon (Pyomo + HiGHS), üretim modeli (pvlib, windpowerlib) ve harita (folium) gerekir; CDS/EPİAŞ istemcileri gerekmez.
 streamlit==1.65.0
 plotly==7.1.0
 numpy==2.4.6
 pandas==3.0.6
+pyarrow==25.0.1
 scipy==1.17.1
 numpy-financial==1.0.0
 pyyaml==6.0.3
 python-dotenv==1.2.4
+requests==2.34.2
+pyomo==6.10.1
+highspy==1.15.1
+pvlib==0.16.1
+windpowerlib==0.2.2
+matplotlib==3.11.2
+folium==0.20.0
+streamlit-folium==0.27.4

@@ -17,6 +17,9 @@ kendi lisanslarına tabidir** (MIT'in kapsamında değildir). Ayrıntılı kayna
 | `piyasa/saatlik.parquet` | **Ulusal** saatlik PTF (TL, USD), Türkiye geneli rüzgâr/güneş üretimi, SFK/PFK/SMF | EPİAŞ Şeffaflık Platformu | EPİAŞ koşulu: kaynak gösterilerek çoğaltılabilir ve kullanılabilir. Atıf: "Kaynak: EPİAŞ Şeffaflık Platformu (seffaflik.epias.com.tr)" |
 | `piyasa/yillik.csv`, `ozet.json` | Yıllık özetler, kurulu güç (TEİAŞ) | EPİAŞ, TEİAŞ | Aynı |
 | `piyasa/parametreler.json` | Fiyat senaryosu ve Monte Carlo parametreleri | config.yaml (kendi varsayımlarım) | CC BY 4.0 |
+| `santral_turbinleri.csv` | Kalibre santral başına OSM türbin adedi, birim güç, üretici, rotor/göbek ve eşlenen windpowerlib türbin vekili | OpenStreetMap türbin düğümleri ve santral ilişkileri (Overpass), EPİAŞ kapasitesi, windpowerlib/OEP | **ODbL 1.0** |
+| `santral_turbin_konumlari.csv` | Kalibre santrallerin türbin konumları (OSM) | OpenStreetMap | **ODbL 1.0** |
+| `on_tarama.parquet` | Türkiye ön tarama haritası: 0,25° kara hücresi başına RES/GES KF, güven, başabaş fiyatları, standart tasarım NPV'leri (uygulama açılış haritası) | ERA5 + PVGIS gridleri, GWA, atlas, piyasa paketi ile kendi modelim | CC BY 4.0 (atıflar: Copernicus/ERA5, PVGIS, GWA, EPİAŞ; komşu santral adları OSM/EPİAŞ) |
 
 **ODbL bildirimi:** ODbL 1.0 ile işaretli dosyalar OpenStreetMap verisinden türetilmiş veritabanlarıdır ve Open Database
 License 1.0 (https://opendatacommons.org/licenses/odbl/1-0/) ile paylaşılır. Bu dosyaları kullanan ya da değiştiren

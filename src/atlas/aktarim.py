@@ -33,9 +33,11 @@ KULLANILIR = ("temiz", "kullanilabilir")
 
 @lru_cache(maxsize=1)
 def atlas() -> tuple[pd.DataFrame, dict]:
-    df = pd.read_csv(ATLAS / "kalibrasyon_atlasi.csv")
+    from src import veri_katmani
+
+    df = pd.read_csv(veri_katmani.yol("atlas/kalibrasyon_atlasi.csv"))
     df = df[df["sinif"].isin(KULLANILIR)].reset_index(drop=True)
-    z = np.load(ATLAS / "kalibrasyon_matrisleri.npz")
+    z = np.load(veri_katmani.yol("atlas/kalibrasyon_matrisleri.npz"))
     mat = {int(k[2:]): z[k].astype(float) for k in z.files if k.startswith("k_")}
     return df, mat
 
@@ -57,18 +59,16 @@ def gwa_hizi(enlem: float, boylam: float, mod: str, adet: int = 12, yaricap_km: 
     return gwa250.turbin_yerlesimi(enlem, boylam, yaricap_km, adet, asgari_aralik_m)["ortalama"]
 
 
-@lru_cache(maxsize=8)
-def santral_c(mod: str) -> dict[int, float]:
-    """Atlas santrallerinin GWA düzeltmesi c_i = GWA_i / ERA5_i (aynı GWA moduyla; yerleşimde türbin sayısı kurulu güçten)."""
-    a = deger(config_oku()["v2"]["aktarim"])
+@lru_cache(maxsize=1)
+def santral_c() -> dict[int, float]:
+    """
+    Atlas santrallerinin GWA düzeltmesi c_i = GWA_i / ERA5_i. GWA_i santralin GERÇEK türbin konumlarındaki 250 m hücrelerin
+    ortalamasıdır (OSM; konum yoksa 3 km yerleşim kuralı) ve sahanın GWA modundan bağımsızdır: santralin gözlenen
+    performansı türbinlerinin durduğu yerin rüzgârını yansıtır. (Önceki sürümde santral c'si sahanın moduyla birlikte
+    değişiyordu; bu, türbin yerleşimi seçeneğinin etkisini oranda yok ediyordu.)
+    """
     df, _ = atlas()
-    c = {}
-    for r in df.itertuples():
-        mw = r.osm_mw if r.osm_mw == r.osm_mw else 30.0
-        adet = int(np.clip(round(mw / 3.0), 3, 30))
-        v = gwa_hizi(r.enlem, r.boylam, mod, adet, a["santral_yaricap_km"], a["asgari_aralik_m"])
-        c[int(r.epias_id)] = float(np.clip(v / r.era5_100m, 0.5, 3.2))
-    return c
+    return {int(r.epias_id): float(np.clip(r.c_turbin, 0.5, 3.2)) for r in df.itertuples()}
 
 
 def tanimlayicilar(enlem: float, boylam: float) -> dict:
@@ -107,7 +107,7 @@ def tahmin(
     """
     12 × 24 k matrisi ve açıklama (güven seviyesi, kullanılan santraller).
     gwa_hiz: sahanın GWA 100 m hızı (yerleşim ya da nokta); verilmezse gmod'a göre hesaplanır.
-    gmod: santral R'lerinin ve (verilmezse) sahanın GWA modu — 'nokta1km' / 'nokta250' / 'yerlesim'.
+    gmod: yalnız sahanın GWA modu — 'nokta1km' / 'nokta250' / 'yerlesim' (santral c'leri her zaman türbin konumlarından).
     """
     cfg = cfg or config_oku()
     a = deger(cfg["v2"]["aktarim"])
@@ -116,7 +116,7 @@ def tahmin(
     if gwa_hiz is None:
         gwa_hiz = gwa_hizi(enlem, boylam, gmod, 16, 2.0, a["asgari_aralik_m"])
     c = float(np.clip(gwa_hiz / era5_v100, 0.5, 3.2))
-    ci = santral_c(gmod)
+    ci = santral_c()
     if yontem == "yok":
         return np.ones((12, 24)), {"yontem": yontem, "guven": "—"}
     if yontem == "gwa":
@@ -126,7 +126,7 @@ def tahmin(
     if k.empty:
         guven = "düşük"
         if yontem == "gwa_olcekli":  # komşu yok: sahanın GWA düzeltmesi × ulusal medyan artık matrisi (sistematik sapma + ortalama şekil)
-            return c * ulusal_artik(haric, gmod), {"yontem": "gwa × ulusal artık (komşu yok)", "c": c, "guven": guven, "komsu": []}
+            return c * ulusal_artik(haric), {"yontem": "gwa × ulusal artık (komşu yok)", "c": c, "guven": guven, "komsu": []}
         return np.full((12, 24), c), {"yontem": "gwa (komşu yok)", "c": c, "guven": guven, "komsu": []}
     w = 1.0 / np.maximum(k["mesafe_km"].to_numpy(), 1.0) ** a["idw_us"]
     w = w / w.sum()
@@ -140,10 +140,10 @@ def tahmin(
     return K, {"yontem": yontem, "c": c, "guven": guven, "komsu": k["ad"].tolist(), "mesafe_km": k["mesafe_km"].round(1).tolist()}
 
 
-def ulusal_artik(haric: int | None = None, gmod: str = "yerlesim") -> np.ndarray:
+def ulusal_artik(haric: int | None = None) -> np.ndarray:
     """Atlastaki tüm kullanılabilir santrallerin GWA sonrası artık matrislerinin (R = K / c) hücre bazında medyanı."""
     df, mat = atlas()
-    ci = santral_c(gmod)
+    ci = santral_c()
     d = df if haric is None else df[df["epias_id"] != haric]
     return np.median([mat[int(i)] / ci[int(i)] for i in d["epias_id"]], axis=0)
 

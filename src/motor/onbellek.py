@@ -29,6 +29,10 @@ class ZamanAsimi(MotorHatasi):
     pass
 
 
+class SiraDolu(MotorHatasi):
+    pass
+
+
 def anahtar(enlem: float, boylam: float, mod: str, varsayimlar: dict, surum: str) -> str:
     a = [round(float(enlem), 2), round(float(boylam), 2), mod, varsayimlar, surum]
     return hashlib.sha1(json.dumps(a, sort_keys=True, default=str).encode()).hexdigest()
@@ -68,16 +72,47 @@ def temizle(azami_mb: float | None = None) -> int:
     return silinen
 
 
-def tek_tam_analiz(is_, zaman_asimi: float | None = None):
-    """Tam analizi kilit altında çalıştırır; bekleme + çalışma toplamı zaman aşımını geçerse ZamanAsimi."""
+_SIRA: list[int] = []  # bekleyen işlerin kimlikleri (süreç içi; geliş sırasıyla)
+_SIRA_KILIDI = threading.Lock()
+
+
+def sira_durumu() -> dict:
+    """Arayüz için: çalışan iş var mı ve kaç iş bekliyor."""
+    return {"calisan": _KILIT.locked(), "bekleyen": len(_SIRA)}
+
+
+def tek_tam_analiz(is_, zaman_asimi: float | None = None, bekleme=None, sira_azami: int | None = None):
+    """
+    Tam analizi kilit altında çalıştırır; bekleme + çalışma toplamı zaman aşımını geçerse ZamanAsimi.
+    bekleme(sira_no): sırada beklerken saniyede bir çağrılır (1 = sıradaki ilk iş). sira_azami: bekleyen iş sınırı;
+    aşılırsa SiraDolu.
+    """
     zaman_asimi = zaman_asimi or deger(config_oku()["v2"]["motor"])["tam_zaman_asimi_s"]
     t0 = time.monotonic()
-    if not _KILIT.acquire(timeout=zaman_asimi):
-        raise ZamanAsimi(
-            "sira",
-            "Şu anda başka bir tam analiz çalışıyor ve sıra zaman aşımına uğradı. Lütfen birkaç dakika sonra tekrar deneyin.",
-            "Another full analysis is running and the queue timed out. Please try again in a few minutes.",
-        )
+    kimlik = id(object())
+    with _SIRA_KILIDI:
+        if sira_azami is not None and _KILIT.locked() and len(_SIRA) >= sira_azami:
+            raise SiraDolu(
+                "sira_dolu",
+                f"Tam analiz sırası dolu ({len(_SIRA)} iş bekliyor). Lütfen birkaç dakika sonra tekrar deneyin.",
+                f"The full-analysis queue is full ({len(_SIRA)} jobs waiting). Please try again in a few minutes.",
+            )
+        _SIRA.append(kimlik)
+    try:
+        while not _KILIT.acquire(timeout=1.0):
+            if bekleme is not None:
+                with _SIRA_KILIDI:
+                    no = _SIRA.index(kimlik) + 1
+                bekleme(no)
+            if time.monotonic() - t0 > zaman_asimi:
+                raise ZamanAsimi(
+                    "sira",
+                    "Şu anda başka bir tam analiz çalışıyor ve sıra zaman aşımına uğradı. Lütfen birkaç dakika sonra tekrar deneyin.",
+                    "Another full analysis is running and the queue timed out. Please try again in a few minutes.",
+                )
+    finally:
+        with _SIRA_KILIDI:
+            _SIRA.remove(kimlik)
     KLASOR.mkdir(parents=True, exist_ok=True)
     kilit_dosyasi = open(KLASOR / ".tam_analiz.lock", "w")
 

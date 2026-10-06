@@ -137,10 +137,10 @@ def nedenler(tas: pd.DataFrame, uo: dict, milp: dict | None, bas: dict, f_seviye
     if milp is not None and tas["npv_musd"].max() <= 0:
         n.append(
             {
-                "tr": f"Hiçbir tasarım pozitif NPV vermiyor (en iyisi {tas['npv_musd'].max():+.1f} M$): bu varsayımlarla en iyi karar "
-                "yatırım yapmamak (NPV 0). Değerlendirmeyi değiştirecek olan fiyat beklentisi, CAPEX ya da sözleşmeli gelirdir.",
-                "en": f"No design has a positive NPV (best {tas['npv_musd'].max():+.1f} M$): under these assumptions the best decision "
-                "is not to invest (NPV 0). Price expectations, CAPEX or contracted revenue would change this.",
+                "tr": f"Seçilen fiyat senaryosunda hiçbir standart tasarım pozitif NPV vermiyor (en iyisi {tas['npv_musd'].max():+.1f} M$). "
+                "Sonucu en çok fiyat beklentisi, CAPEX ve sözleşmeli gelir değiştirir; başabaş fiyatı bunun ölçüsüdür.",
+                "en": f"No standard design has a positive NPV in the selected price scenario (best {tas['npv_musd'].max():+.1f} M$). "
+                "Price expectations, CAPEX and contracted revenue move this most; the break-even price measures it.",
             }
         )
     if milp is not None:
@@ -169,6 +169,33 @@ def nedenler(tas: pd.DataFrame, uo: dict, milp: dict | None, bas: dict, f_seviye
     return n
 
 
+def tam_analize_deger(basabas: float | None, fiyat_: float, milp_npv: float, cfg: dict) -> dict:
+    """
+    "Tam analize değer mi?" (yatırım kararı DEĞİL): en iyi standart tasarımın başabaş fiyatının senaryo fiyatına oranı
+    config v2.uygulama.tam_analize_deger eşikleriyle; temsilî gün optimumu pozitifse her durumda "deger".
+    """
+    e = deger(cfg["v2"]["uygulama"])["tam_analize_deger"]
+    oran = basabas / fiyat_ if basabas else float("inf")
+    if milp_npv > 0 or oran <= e["evet"]:
+        k = "deger"
+    elif oran <= e["sinirda"]:
+        k = "sinirda"
+    else:
+        k = "degmez"
+    metin = {
+        "deger": ("Tam analize değer", "Worth a full analysis"),
+        "sinirda": ("Sınırda: tam analiz varsayımlara duyarlı olacak", "Borderline: a full analysis will be assumption-sensitive"),
+        "degmez": ("Bu varsayımlarla tam analize değmez", "Not worth a full analysis under these assumptions"),
+    }[k]
+    return {
+        "karar": k,
+        "tr": metin[0],
+        "en": metin[1],
+        "basabas_orani": None if not math.isfinite(oran) else oran,
+        "esikler": e,
+    }
+
+
 def hizli_tarama(h: Hazirlik, kv: KullaniciVarsayimlari, ilerleme=None) -> dict:
     ilerleme = ilerleme or (lambda *_: None)
     sure, t0 = {}, time.perf_counter()
@@ -186,6 +213,14 @@ def hizli_tarama(h: Hazirlik, kv: KullaniciVarsayimlari, ilerleme=None) -> dict:
             bas[anahtar] = basabas_fiyat(k, h.cfg, h.u, h.v, kv.kanibalizasyon) if k else None
         except ValueError:
             bas[anahtar] = None
+    en_iyi_std = max(tas, key=lambda x: x["npv_musd"])
+    if en_iyi_std["tasarim"] in ("RES", "GES"):
+        bas["en_iyi"] = bas[en_iyi_std["tasarim"].lower()]
+    else:
+        try:
+            bas["en_iyi"] = basabas_fiyat(en_iyi_std["_k"], h.cfg, h.u, h.v, kv.kanibalizasyon)
+        except ValueError:
+            bas["en_iyi"] = None
     sure["tasarimlar_s"] = time.perf_counter() - t1
     ilerleme(0.6, "Temsilî günlerle hızlı kapasite optimizasyonu")
     t2 = time.perf_counter()
@@ -208,16 +243,20 @@ def hizli_tarama(h: Hazirlik, kv: KullaniciVarsayimlari, ilerleme=None) -> dict:
     )
     sure["optimizasyon_s"] = time.perf_counter() - t2
     tablo = pd.DataFrame([{k: v for k, v in x.items() if k != "_k"} for x in tas])
+    deger_mi = tam_analize_deger(bas.get("en_iyi"), f_seviye, milp.get("NPV tahmini [M USD]", -1.0), h.cfg)
     ozet = {
         **uo,
         "fiyat_seviyesi": f_seviye,
         "basabas_res": bas.get("res"),
         "basabas_ges": bas.get("ges"),
+        "en_iyi_standart": en_iyi_std["tasarim"],
+        "basabas_en_iyi": bas.get("en_iyi"),
+        "tam_analize_deger": deger_mi,
         "lcoe_res": next((x["lcoe_res"] for x in tas if x["tasarim"] == "RES"), None),
         "lcoe_ges": next((x["lcoe_ges"] for x in tas if x["tasarim"] == "GES"), None),
         "yakalanma_res": next((float(x["res_yakalanan"] / x["ort_ptf"]) for x in tas if x["tasarim"] == "RES"), None),
         "yakalanma_ges": next((float(x["ges_yakalanan"] / x["ort_ptf"]) for x in tas if x["tasarim"] == "GES"), None),
-        "en_iyi_tasarim": tablo.loc[tablo["npv_musd"].idxmax(), "tasarim"] if tablo["npv_musd"].max() > 0 else "Yatırım yok",
+        "en_iyi_tasarim": tablo.loc[tablo["npv_musd"].idxmax(), "tasarim"] if tablo["npv_musd"].max() > 0 else "Pozitif NPV'li tasarım yok",
         "milp": {k: milp[k] for k in ("RES [MW]", "GES [MWac]", "BESS [MW]", "BESS [MWh]", "NPV tahmini [M USD]") if k in milp},
     }
     return {

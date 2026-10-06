@@ -68,12 +68,32 @@ class SantralKalibrasyonu:
     yillik: pd.DataFrame
 
 
-def kalibre_et(uretim_mw: pd.Series, era5: pd.DataFrame, cfg_ruzgar: dict, osm_mw: float | None) -> SantralKalibrasyonu | None:
+def supheli_saatler(m, g: np.ndarray, gecerli: np.ndarray, k: float) -> np.ndarray:
+    """Talimat (YAT/kesinti) ya da arıza şüphesi: model KF > 0,5 iken gözlenen < 0,1 × model."""
+    model_k = m.kf(k)
+    return gecerli & (model_k > 0.5) & (g < 0.1 * model_k)
+
+
+def kalibre_et(
+    uretim_mw: pd.Series,
+    era5: pd.DataFrame,
+    cfg_ruzgar: dict,
+    osm_mw: float | None,
+    turbin: str = VEKIL_TURBIN,
+    gobek: float = VEKIL_GOBEK,
+    supheli_haric: bool = True,
+) -> SantralKalibrasyonu | None:
+    """
+    turbin/gobek: santralin kendi türbin vekili (src/atlas/turbinler.py). supheli_haric: talimat/arıza şüpheli saatler k
+    uydurmasından çıkarılır (iki geçiş: önce tüm saatlerle k, şüpheliler işaretlenir, sonra onlarsız yeniden). Böylece
+    sistem kaynaklı kesinti ve uzun arızalar k'ya "düşük rüzgâr" olarak girip yeni sahaya taşınmaz (kesinti finans
+    modelinde ayrıca uygulanır).
+    """
     mw = uretim_mw.loc[:"2025-12-31 23:00"].astype(float)
     if mw.max() <= 0:
         return None
     kf_g = V1.degisken_kapasiteli_kf(mw)
-    m = kal.referans_model(era5, cfg_ruzgar, VEKIL_TURBIN, VEKIL_GOBEK)
+    m = kal.referans_model(era5, cfg_ruzgar, turbin, gobek)
     g = kf_g.reindex(m.indeks).clip(upper=1.05).to_numpy()
     gecerli = ~np.isnan(g)
     if gecerli.sum() < 2 * 8760 or np.nanmean(g) < 0.05:
@@ -81,6 +101,9 @@ def kalibre_et(uretim_mw: pd.Series, era5: pd.DataFrame, cfg_ruzgar: dict, osm_m
     try:
         with _aralik(*ARALIK):
             k = kal.sabit_k(m, g, gecerli)
+            if supheli_haric:
+                gecerli = gecerli & ~supheli_saatler(m, g, gecerli, k)
+                k = kal.sabit_k(m, g, gecerli)
         # Ay × saat hücreleri santralin kendi k'sine göre görece aralıkta (v1 Ezine: 0,5–2,0 ≈ 0,47k–1,87k): zayıf rüzgârlı
         # hücrelerde güç eğrisi düz olduğundan mutlak geniş aralık hücre katsayısını sınıra kaçırır
         with _aralik(0.5 * k, 1.8 * k):
@@ -94,15 +117,15 @@ def kalibre_et(uretim_mw: pd.Series, era5: pd.DataFrame, cfg_ruzgar: dict, osm_m
     yil = (m.indeks + pd.Timedelta(hours=3)).year
     kap_yil = mw.groupby(mw.index.tz_convert("Europe/Istanbul").year).quantile(0.999)
     kap_yil = kap_yil[kap_yil > 1]
-    model_k = m.kf(k)
-    supheli = gecerli & (model_k > 0.5) & (g < 0.1 * model_k)
+    supheli = supheli_saatler(m, g, ~np.isnan(g), k)
     gay = pd.DataFrame({"g": g, "ay": m.ay, "saat": m.saat})[gecerli].groupby(["ay", "saat"])["g"].mean()
     gozlenen = gay.reindex(pd.MultiIndex.from_product([range(1, 13), range(24)])).to_numpy().reshape(12, 24)
     ozet = {
         "k_sabit": k,
         "k_matris_ort": float(km.mean()),
         "k_gunici_genlik": float(km.mean(0).max() - km.mean(0).min()),
-        "gozlenen_kf": float(np.nanmean(g[gecerli])),
+        "gozlenen_kf": float(np.nanmean(g[gecerli])),  # şüpheli (talimat/arıza) saatler hariç
+        "gozlenen_kf_tum": float(np.nanmean(g)),
         "veri_yili": float(gecerli.sum() / 8760),
         "ilk_yil": int(yil[gecerli].min()),
         "son_yil": int(yil[gecerli].max()),
@@ -114,7 +137,9 @@ def kalibre_et(uretim_mw: pd.Series, era5: pd.DataFrame, cfg_ruzgar: dict, osm_m
         "kapasite_orani": float(kap_yil.max() / osm_mw) if (osm_mw and len(kap_yil)) else np.nan,
         "kapasite_degisimi": int((kap_yil.pct_change().abs() > 0.08).sum()),
         "kapasite_dusus_yili": int((kap_yil < 0.5 * kap_yil.max()).sum()),
-        "talimat_suphesi": float(supheli.sum() / gecerli.sum()),
+        "talimat_suphesi": float(supheli.sum() / (~np.isnan(g)).sum()),
+        "turbin": turbin,
+        "gobek": gobek,
     }
     yillik = pd.DataFrame({"g": g, "m": kf_m, "yil": yil})[gecerli].groupby("yil").mean()
     return SantralKalibrasyonu(ozet, km, gozlenen, yillik)

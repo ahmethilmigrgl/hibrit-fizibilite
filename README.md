@@ -9,7 +9,11 @@
 **Documents (Turkish):** [Investment memo (PDF)](outputs/08/Yatirim_Memosu.pdf) · [Presentation (PDF)](outputs/08/Sunum.pdf) ·
 [Full report (PDF)](outputs/RAPOR.pdf) · [Excel financial model](outputs/08/Ezine_Hibrit_Finansal_Model.xlsx)
 
-This model sizes solar (PV), wind and battery storage behind a **50 MW grid connection** at Çanakkale-Ezine, Türkiye, to
+**v2 (branch `v2-genel`, release candidate):** a **Türkiye-wide site screening and analysis app**. Pick any point on land and
+get a quick scan in seconds or a full optimisation + Monte Carlo analysis in minutes; see [Türkiye-wide app](#türkiye-wide-app-v2).
+The original Ezine study (v1.0.0) remains as a case study below.
+
+The case study sizes solar (PV), wind and battery storage behind a **50 MW grid connection** at Çanakkale-Ezine, Türkiye, to
 **maximise project NPV**. It then stress-tests that answer under uncertainty. The pipeline goes end to end:
 
 - **Generation:** hourly profiles from satellite and reanalysis data, with wind calibrated against nearby operating wind farms.
@@ -21,7 +25,33 @@ This model sizes solar (PV), wind and battery storage behind a **50 MW grid conn
 It is a portfolio project. Every assumption is sourced in `config.yaml`, and every optimisation model is written out
 mathematically in `docs/`.
 
-## Key findings
+## Türkiye-wide app (v2)
+
+Run locally with one command (after the environment and data packages are in place, see [How to run](#how-to-run)):
+
+```bash
+.venv/bin/streamlit run app.py          # → http://localhost:8501
+```
+
+- **Opening screen:** a pre-screening map of all 1,464 land cells (0.25°) of Türkiye. The default layer is the break-even
+  price of the best standard design; wind/solar capacity factors and break-evens are selectable. Low-confidence cells are
+  hatched, and calibrated wind farms form their own layer.
+- **Site selection:** click the map, type coordinates, or choose a province/district to see its windiest candidate points.
+  The selected point shows its GWA wind speed, confidence level and the calibrated wind farms it relies on.
+- **Quick scan (seconds):** capacity factors with an uncertainty band, capture rates, LCOE, break-even price, the rank among
+  Türkiye's cells, standard designs, a representative-day optimisation and a "worth a full analysis?" check.
+- **Full analysis (1–6 min):** full-year capacity MILP, run-time dispatch tables, converging Monte Carlo, revenue structures
+  (merchant / annual YEKDEM option / PPA), schedule by project stage, recommendation and triggers, and an HTML/PDF site report.
+- **Sharing:** every result reopens from a share link (URL parameters + result cache).
+- **Data:** the app reads only local, pre-built data packages through one data-access layer (`src/veri_katmani.py`): the ERA5
+  grid, the PVGIS solar grid, Global Wind Atlas, the calibration atlas and the market package. It never calls external APIs
+  or uses personal credentials at run time.
+- **Docs:** [data infrastructure](docs/v2_A_veri_altyapisi.md), [analysis engine](docs/v2_B_analiz_motoru.md),
+  [app](docs/v2_C_arayuz.md).
+
+<p align="center"><img src="docs/img/v2/01_acilis_harita_masaustu.png" width="85%" alt="Pre-screening map"></p>
+
+## Case study (v1.0.0): key findings
 
 | # | Finding | Number |
 |---|---|---|
@@ -59,7 +89,7 @@ mathematically in `docs/`.
   <em>Opportunity window: NPV if secondary-reserve revenue lasts only N years.</em>
 </p>
 
-## Dashboard
+## Case-study dashboard (v1)
 
 <p align="center"><img src="docs/img/dashboard.gif" width="85%" alt="Dashboard"></p>
 
@@ -123,9 +153,14 @@ cp .env.example .env              # CDS (ERA5) and EPİAŞ credentials — only 
 .venv/bin/python calistir.py --asama 5 6        # re-run risk + packaging from cached data
 .venv/bin/python -m pytest -q                   # tests: NPV/IRR/LCOE, battery SOC, DST conversion, capacity factors
 
-# Dashboard only — needs no credentials and no raw data (reads results/)
-uv pip install -r requirements-app.txt --python .venv/bin/python
-.venv/bin/streamlit run app.py
+# v2 app — no credentials needed at run time; needs the local data packages:
+#   data/atlas (in the repo) + data/grid (built offline, not in the repo):
+.venv/bin/python src/v2_O2_era5_grid.py       # ERA5 Türkiye grid (CDS key, offline, ~7 h)
+.venv/bin/python src/v2_C1_pvgis_grid.py      # PVGIS solar grid (keyless, ~1 h)
+.venv/bin/python src/v2_C1_rakim_grid.py      # elevation grid (keyless, ~10 s)
+.venv/bin/python -c "from src.kaynaklar import gwa250; gwa250.karolari_hazirla()"   # GWA 250 m tiles
+.venv/bin/python src/v2_C2_on_tarama.py       # pre-screening map (~10 min)
+.venv/bin/streamlit run app.py                # → http://localhost:8501
 ```
 
 Credentials are read only from `.env`. They are never printed or committed. Raw and processed data (`data/`) are not
@@ -134,7 +169,8 @@ in the repository; the dashboard and report use small aggregated files in `resul
 ## Project structure
 
 ```
-├── app.py                  Streamlit dashboard (6 tabs, TR/EN)
+├── app.py                  v2 app entry point (pages: screening & analysis, Ezine case study, method; TR/EN)
+├── uygulama/               v2 app pages and helpers (map, site selection, results; v1 dashboard as sayfa_vaka.py)
 ├── calistir.py             Single entry point for the whole pipeline
 ├── config.yaml             Every assumption with value, unit, source and note
 ├── src/
@@ -143,7 +179,10 @@ in the repository; the dashboard and report use small aggregated files in `resul
 │   ├── piyasa/             EPİAŞ client, market analysis
 │   ├── finans/             Price scenarios, cash-flow model, debt
 │   ├── optimizasyon/       Battery/hybrid LPs, representative days, capacity MILP
-│   └── risk/               Dispatch tables, vectorised valuation, Monte Carlo, saturation, design explorer
+│   ├── risk/               Dispatch tables, vectorised valuation, Monte Carlo, saturation, design explorer
+│   ├── motor/              v2 analysis engine: analiz_et(site, "hizli" | "tam", assumptions) + cache, queue, report
+│   ├── atlas/, kaynaklar/  v2 calibration atlas, transfer rule, turbine proxies; data sources (ERA5/PVGIS grids, GWA, boundaries)
+│   └── veri_katmani.py     v2 single data-access layer (local now; remote hosting later)
 ├── tests/                  pytest suite (CI: .github/workflows/ci.yml)
 ├── docs/                   Formulations per stage, RAPOR.md (report), MODEL_DOGRULAMA.md (validation)
 ├── outputs/                Figures and tables per stage, RAPOR.pdf; 08/: memo, deck, Excel model
@@ -169,6 +208,9 @@ Details, licences and what each source is used for: [DATA_SOURCES.md](DATA_SOURC
   ECMWF is responsible for any use that may be made of the Copernicus information or data it contains.
   Dataset: *ERA5 hourly time-series data on single levels from 1940 to present*, DOI [10.24381/1cf1ad76](https://doi.org/10.24381/1cf1ad76).
 - **PVGIS:** PVGIS © European Communities, 2001-2026 (PVGIS-SARAH3 database).
+- **Global Wind Atlas 3.0** (DTU, World Bank Group, Vortex, ESMAP; CC BY 4.0) — https://globalwindatlas.info
+- **OpenStreetMap** wind-farm and turbine data © OpenStreetMap contributors (ODbL); boundaries: geoBoundaries (Runfola et al. 2020).
+- **Copernicus DEM GLO-90** © DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA; all rights reserved.
 - **EPİAŞ:** Source: EPİAŞ Transparency Platform (seffaflik.epias.com.tr). Only derived and aggregated results are
   stored in this repository; raw hourly EPİAŞ data are not redistributed.
 

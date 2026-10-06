@@ -2,7 +2,7 @@
 Global Wind Atlas 3 — 250 m Türkiye 100 m ortalama hız, 1° karolar (CC BY 4.0). Uygulama yalnız gereken karoyu indirir.
 
 Çevrimdışı: karolari_hazirla() 250 m GeoTIFF'ten data/grid/gwa_tr/v1/karolar/ üretir (rasterio gerekir).
-Çalışma zamanı: nokta(), pencere() yalnız numpy + hf_veri (karo yoksa 1 km pakete düşer).
+Çalışma zamanı: nokta(), pencere() yalnız numpy + veri_katmani (karo yoksa 1 km pakete düşer).
 """
 
 from __future__ import annotations
@@ -13,7 +13,7 @@ from functools import lru_cache
 import numpy as np
 
 from src.ayarlar import HAM_VERI, KOK
-from src.kaynaklar import gwa, hf_veri
+from src.kaynaklar import gwa
 
 ADIM = 0.0025  # 250 m (derece)
 KARO = 1.0  # 1° karo
@@ -57,9 +57,10 @@ def karolari_hazirla() -> int:
 
 @lru_cache(maxsize=16)
 def _karo(e0: int, b0: int) -> dict | None:
-    try:
-        p = hf_veri.dosya(f"gwa_tr/v1/karolar/{_karo_adi(e0, b0)}")
-    except (FileNotFoundError, OSError):
+    from src import veri_katmani
+
+    p = veri_katmani.yol(f"grid/gwa_tr/v1/karolar/{_karo_adi(e0, b0)}", zorunlu=False)
+    if p is None:
         return None
     z = np.load(p)
     return {k: z[k] for k in z.files}

@@ -11,6 +11,7 @@ from functools import lru_cache
 import numpy as np
 import pandas as pd
 
+from src import veri_katmani
 from src.ayarlar import KOK, deger
 from src.finans.model import Varsayimlar
 from src.finans.veri import UretimProfili, profil_df_den
@@ -101,7 +102,7 @@ def _profil_anahtari(saha: Saha, cfg: dict, kv: KullaniciVarsayimlari, y1: int, 
 def guven_bilgisi(kal: dict) -> dict:
     """Profil kalibrasyon bilgisinden güven seviyesi ve tipik hata (data/atlas/guven_seviyeleri.csv)."""
     seviye = kal.get("guven") if kal.get("mod") == "atlas" else ("kalibre (v1)" if kal.get("mod") == "v1" else "düşük")
-    t = pd.read_csv(KOK / "data" / "atlas" / "guven_seviyeleri.csv", index_col=0)
+    t = pd.read_csv(veri_katmani.yol("atlas/guven_seviyeleri.csv"), index_col=0)
     satir = t.loc[seviye] if seviye in t.index else t.loc["düşük"]
     return {
         "seviye": seviye,
@@ -114,7 +115,7 @@ def guven_bilgisi(kal: dict) -> dict:
     }
 
 
-def hazirla(saha_girdi: Saha | dict, kv: KullaniciVarsayimlari, ilerleme=None) -> Hazirlik:
+def hazirla(saha_girdi: Saha | dict, kv: KullaniciVarsayimlari, ilerleme=None, profil_onbellegi: bool = True) -> Hazirlik:
     ilerleme = ilerleme or (lambda *_: None)
     uyari: list[Uyari] = []
     saha = saha_hazirla(saha_girdi, kv)
@@ -122,22 +123,25 @@ def hazirla(saha_girdi: Saha | dict, kv: KullaniciVarsayimlari, ilerleme=None) -
     y1, y2 = deger(cfg["v2"]["motor"])["profil_yillari"]
     anahtar = _profil_anahtari(saha, cfg, kv, y1, y2)
     yol = PROFIL_ONBELLEK / f"{anahtar}.parquet"
-    ilerleme(0.05, "Üretim profilleri hazırlanıyor (PVGIS, ERA5)")
-    if yol.exists():
+    ilerleme(0.05, "Üretim profilleri hazırlanıyor (ERA5 ve PVGIS gridleri)")
+    if profil_onbellegi and yol.exists():
         df = pd.read_parquet(yol)
         bilgi = json.loads((yol.with_suffix(".json")).read_text())
     else:
         try:
             df, bilgi = genel.profil_uret(saha, cfg, y1, y2, ruzgar_kaynagi=kv.ruzgar_kaynagi, kalibrasyon=kv.kalibrasyon)
+        except veri_katmani.VeriYok as ex:
+            raise MotorHatasi("veri_yok", ex.tr, ex.en) from ex
         except Exception as ex:  # ağ/veri hatası
             raise MotorHatasi(
                 "veri",
                 f"Saha için hava verisi alınamadı ({type(ex).__name__}). Lütfen biraz sonra tekrar deneyin.",
                 f"Weather data could not be retrieved for the site ({type(ex).__name__}). Please try again later.",
             ) from ex
-        PROFIL_ONBELLEK.mkdir(parents=True, exist_ok=True)
-        df.to_parquet(yol)
-        yol.with_suffix(".json").write_text(json.dumps(bilgi, default=str, ensure_ascii=False))
+        if profil_onbellegi:
+            PROFIL_ONBELLEK.mkdir(parents=True, exist_ok=True)
+            df.to_parquet(yol)
+            yol.with_suffix(".json").write_text(json.dumps(bilgi, default=str, ensure_ascii=False))
     if df["res_kf"].isna().mean() > 0.01 or len(df) < 8760 * (y2 - y1 + 1) * 0.98:
         raise MotorHatasi(
             "eksik", "Saha için üretim profili eksik (veri boşluğu).", "Generation profile is incomplete for the site (data gap)."

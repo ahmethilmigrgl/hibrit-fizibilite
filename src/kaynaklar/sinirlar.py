@@ -57,8 +57,15 @@ def hazirla() -> None:
 
 @lru_cache(maxsize=1)
 def _yukle() -> dict:
-    z = np.load(PAKET)
+    from src import veri_katmani
+
+    z = np.load(veri_katmani.yol(str(PAKET.relative_to(veri_katmani.DATA))))
     return {k: z[k] for k in z.files}
+
+
+# geoBoundaries'teki birkaç ilçe adı Türkçe yazımla gösterilir (paket değişmez; maske ters eşlemeyle bulunur)
+AD_DUZELTME = {"Imbros": "Gökçeada", "Ayvacik": "Ayvacık"}
+_TERS = {v: k for k, v in AD_DUZELTME.items()}
 
 
 def konum(enlem: float, boylam: float) -> dict | None:
@@ -69,17 +76,21 @@ def konum(enlem: float, boylam: float) -> dict | None:
     if not (0 <= i < p["izgara"].shape[0] and 0 <= j < p["izgara"].shape[1]):
         return None
     k = int(p["izgara"][i, j])
-    return None if k == 0 else {"il": str(p["il"][k - 1]), "ilce": str(p["ilce"][k - 1]), "ilce_no": k}
+    if k == 0:
+        return None
+    ilce = str(p["ilce"][k - 1])
+    return {"il": str(p["il"][k - 1]), "ilce": AD_DUZELTME.get(ilce, ilce), "ilce_no": k}
 
 
 def ilceler(il: str | None = None) -> list[tuple[str, str]]:
     """(il, ilçe) listesi; il verilirse yalnız o ilin ilçeleri."""
     p = _yukle()
-    return sorted((str(a), str(b)) for a, b in zip(p["il"], p["ilce"]) if il is None or a == il)
+    return sorted((str(a), AD_DUZELTME.get(str(b), str(b))) for a, b in zip(p["il"], p["ilce"]) if il is None or a == il)
 
 
 def ilce_maskesi(il: str, ilce: str) -> np.ndarray:
     p = _yukle()
+    ilce = _TERS.get(ilce, ilce)
     k = [i for i, (a, b) in enumerate(zip(p["il"], p["ilce"]), start=1) if a == il and b == ilce]
     if not k:
         raise ValueError(f"İlçe bulunamadı: {il} / {ilce}")

@@ -1,0 +1,7 @@
+﻿mod,durum,duvar_s,cpu_s,adim_hazirlik,adim_uretim_s,adim_tasarimlar_s,adim_optimizasyon_s,adim_toplam,adim_tablolar_s,adim_monte_carlo_s,adim_toplam_analiz_s
+hizli,soğuk,13.5,3.0,11.4,0.1,1.1,0.9,13.5,,,
+hizli,ılık,1.9,2.0,0.1,0.1,1.1,0.6,1.9,,,
+hizli,sıcak (sonuç önbelleği),0.0,0.0,0.1,0.1,1.1,0.6,1.9,,,
+tam,soğuk,249.5,419.1,0.1,,,87.5,248.2,160.3,0.3,248.1
+tam,ılık,89.7,100.9,0.1,,,88.3,88.7,0.0,0.3,88.7
+tam,sıcak (sonuç önbelleği),0.0,0.0,0.1,,,90.2,90.6,0.0,0.3,90.5

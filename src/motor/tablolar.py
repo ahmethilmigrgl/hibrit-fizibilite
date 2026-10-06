@@ -36,6 +36,8 @@ def izgara(seviye: str, o, sigma: float = 0.125) -> dict:
     """sigma: RES model çarpanının göreli belirsizliği (güven seviyesinden); M ızgarası 1 ± 2σ ([0,5; 1,5])."""
     if seviye == "v1":
         return {"H": [0.55, 0.62, 0.70, round(o.oran0, 4)], "M": [0.80, 0.94, 1.08], "A": [0.0, *A_DUSUK, 0.25, 0.6, 1.0], "W": None}
+    if seviye == "kucuk":  # yalnız testler (MOTOR_KUCUK=1)
+        return {"H": [0.55, round(o.oran0, 4)], "M": [0.9, 1.1], "A": [0.0, 1.0], "W": 3}
     H = [0.55, round(o.oran0, 4)]
     W = None if seviye == "hafif" else 5
     d = float(min(0.5, max(0.2, 2 * sigma)))

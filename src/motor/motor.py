@@ -7,6 +7,7 @@ Sonuçlar önbelleklenir (anahtar: 0,01° koordinat + varsayımlar + veri sürü
 
 from __future__ import annotations
 
+import os
 import time
 from dataclasses import asdict
 
@@ -24,13 +25,19 @@ def analiz_et(
     ilerleme=None,
     onbellek_kullan: bool = True,
     zaman_asimi: float | None = None,
+    bekleme=None,
+    sira_azami: int | None = None,
 ) -> Sonuc:
+    """
+    saha: Saha ya da {"ad", "enlem", "boylam", ...}; mod: "hizli" | "tam"; ilerleme(oran, mesaj).
+    Tam analizde bekleme(sira_no) sırada beklerken çağrılır; sira_azami aşılırsa SiraDolu.
+    """
     kv = kullanici_varsayimlari or KullaniciVarsayimlari()
     ilerleme = ilerleme or (lambda *_: None)
     if mod not in ("hizli", "tam"):
         raise MotorHatasi("mod", "Mod 'hizli' ya da 'tam' olmalı.", "Mode must be 'hizli' or 'tam'.")
     uyarilar = dogrula(kv)
-    surum = deger(config_oku()["v2"]["motor"])["veri_surumu"]
+    surum = deger(config_oku()["v2"]["motor"])["veri_surumu"] + ("-kucuk" if os.environ.get("MOTOR_KUCUK") == "1" else "")
     enlem = saha["enlem"] if isinstance(saha, dict) else saha.enlem
     boylam = saha["boylam"] if isinstance(saha, dict) else saha.boylam
     anahtar = onbellek.anahtar(enlem, boylam, mod, kv.sozluk(), surum)
@@ -92,5 +99,17 @@ def analiz_et(
         return sonuc
 
     if mod == "tam":
-        return onbellek.tek_tam_analiz(calis, zaman_asimi)
+        return onbellek.tek_tam_analiz(calis, zaman_asimi, bekleme=bekleme, sira_azami=sira_azami)
     return calis()
+
+
+def onbellekten(saha, mod: str, kullanici_varsayimlari: KullaniciVarsayimlari | None = None) -> Sonuc | None:
+    """Paylaşım bağlantısı: aynı nokta (0,01°) + varsayımlar + veri sürümü önbellekteyse sonucu döndürür, yoksa None."""
+    kv = kullanici_varsayimlari or KullaniciVarsayimlari()
+    surum = deger(config_oku()["v2"]["motor"])["veri_surumu"] + ("-kucuk" if os.environ.get("MOTOR_KUCUK") == "1" else "")
+    enlem = saha["enlem"] if isinstance(saha, dict) else saha.enlem
+    boylam = saha["boylam"] if isinstance(saha, dict) else saha.boylam
+    s = onbellek.oku(onbellek.anahtar(enlem, boylam, mod, kv.sozluk(), surum))
+    if s is not None:
+        s.sure_s["onbellekten"] = True
+    return s

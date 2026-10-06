@@ -1,0 +1,92 @@
+﻿epias_id,ad,osm_id,turbin_kaynagi,turbin_adedi,birim_mw,birim_kaynagi,uretici,rotor_osm,gobek_osm,turbin,gobek,sp_hedef,sp_secilen,kural
+1491,ENERJİSA ÇANAKKALE RES,w1096301810,osm_uyelik,13,2.457,kapasite/adet,Siemens,,,E-92/2350,85.000,360.000,353.511,sinif
+1920,SÜLOĞLU RES,r9649554,osm_uyelik,12,3.000,osm_etiket,,,,GE103/2750,95.000,330.000,330.041,sinif
+1712,UŞAK RES,r10922604,osm_uyelik,50,3.605,kapasite/adet,,,,SWT120/3600,100.000,300.000,318.310,sinif
+2412,ÜÇPINAR RES,r12005821,osm_uyelik,33,3.000,osm_etiket,,,,GE103/2750,95.000,330.000,330.041,sinif
+2066,YALOVA RES,r12249833,osm_uyelik,36,1.417,kapasite/adet,,,,V90/2000/GS,80.000,330.000,314.380,sinif
+921,AKSU RES,r12250124,osm_uyelik,25,3.480,kapasite/adet,,,,V117/3300,100.000,300.000,306.939,sinif
+1518,BALIKESİR RES,r12257451,osm_uyelik,52,2.963,kapasite/adet,,,,GE103/2750,95.000,330.000,330.041,sinif
+1511,POYRAZ RES,r12257527,osm_uyelik,34,2.284,kapasite/adet,,,,E-92/2350,85.000,360.000,353.511,sinif
+2191,KANGAL RES,r12257557,osm_uyelik,70,2.295,kapasite/adet,,,,E-92/2350,85.000,360.000,353.511,sinif
+1484,ALİAĞA BERGAMA RES,r12261170,osm_uyelik,14,3.000,varsayilan (etiketli santral medyanı),,,,GE103/2750,95.000,330.000,330.041,sinif
+1506,YUNTDAĞI RES,r12261171,osm_uyelik,29,2.339,kapasite/adet,,,,E-92/2350,85.000,360.000,353.511,sinif
+1507,ŞAMLI RES,r12263164,osm_uyelik,43,2.866,kapasite/adet,,,,GE103/2750,95.000,330.000,330.041,sinif
+1895,MUT RES,r12263367,osm_uyelik,18,3.056,kapasite/adet,,,,GE103/2750,95.000,330.000,330.041,sinif
+1255,ŞENKÖY RES,r12263410,osm_uyelik,12,2.839,kapasite/adet,,,,GE103/2750,95.000,330.000,330.041,sinif
+2199,KARAÇAYIR RES,r12265606,osm_uyelik,6,1.500,osm_etiket,,,,V100/1800,80.000,330.000,229.183,sinif
+1679,SİNCİK RES,r12265781,osm_uyelik,11,2.500,osm_etiket,,,,E-92/2350,85.000,360.000,353.511,sinif
+2161,KARTALDAĞI RES,r12265819,osm_uyelik,19,3.379,kapasite/adet,,,,V117/3300,100.000,300.000,306.939,sinif
+2285,AKDAĞ RES,r12265844,osm_uyelik,9,2.616,kapasite/adet,,,,E-92/2350,85.000,360.000,353.511,sinif
+2084,BEREKETLİ RES,r12267205,osm_uyelik,10,4.038,kapasite/adet,,,,E-141/4200,115.000,270.000,268.981,sinif
+1252,KİLLİK RES,r12267252,osm_uyelik,34,2.814,kapasite/adet,,,,GE103/2750,95.000,330.000,330.041,sinif
+2328,BAĞLAR RES,r12267615,osm_uyelik,29,3.531,kapasite/adet,,,,V117/3300,100.000,300.000,306.939,sinif
+1939,ADARES RES,r12267640,osm_uyelik,5,4.400,kapasite/adet,,,,E-141/4200,115.000,270.000,268.981,sinif
+1459,TURGUTTEPE RES,r12267653,osm_uyelik,12,2.000,kapasite/adet,,,,V90/2000/GS,80.000,330.000,314.380,sinif
+2031,AKBÜK2 RES,r12267665,osm_uyelik,10,2.000,osm_etiket,,,,V90/2000/GS,80.000,330.000,314.380,sinif
+1944,SUAY AKBÜK RES,r12267755,osm_uyelik,9,2.456,kapasite/adet,,,,E-92/2350,85.000,360.000,353.511,sinif
+1943,EGE RES,r12269443,osm_uyelik,4,3.000,varsayilan (etiketli santral medyanı),,,,GE103/2750,95.000,330.000,330.041,sinif
+1878,KORU RES,r12269565,osm_uyelik,16,3.434,kapasite/adet,,,,V117/3300,100.000,300.000,306.939,sinif
+1680,HASANBEYLİ RES,r12273005,osm_uyelik,20,2.963,kapasite/adet,,,,GE103/2750,95.000,330.000,330.041,sinif
+2180,BERGRES RES,r12273208,osm_uyelik,22,3.200,osm_etiket,GE Energy,,,GE103/2750,100.000,300.000,330.041,sinif+uretici
+1508,ŞAH RES,r12275505,osm_uyelik,36,1.500,osm_etiket,,,,V100/1800,80.000,330.000,229.183,sinif
+1710,BALABANLI RES,r12275554,osm_uyelik,25,3.808,kapasite/adet,,,,SWT130/3600,115.000,270.000,271.223,sinif
+1526,SAYALAR RES,r12275615,osm_uyelik,23,3.000,varsayilan (etiketli santral medyanı),,,,GE103/2750,95.000,330.000,330.041,sinif
+757,GÜNAYDIN RES,r12277131,osm_uyelik,8,2.575,kapasite/adet,,,,E-92/2350,85.000,360.000,353.511,sinif
+1512,KELTEPE RES,r12277132,osm_uyelik,27,1.111,kapasite/adet,,,,E48/800,60.000,440.000,442.097,sinif
+1460,DATÇA RES,r12277602,osm_uyelik,40,1.055,kapasite/adet,,,,E48/800,60.000,440.000,442.097,sinif
+2224,KAROVA RES,r12286915,osm_uyelik,13,2.327,kapasite/adet,,,,E-92/2350,85.000,360.000,353.511,sinif
+2300,KURTİNİ RES,r12287155,osm_uyelik,4,3.600,kapasite/adet,,,,SWT120/3600,100.000,300.000,318.310,sinif
+1215,DAĞPAZARI RES,r12287185,osm_uyelik,13,3.673,kapasite/adet,,,,SWT120/3600,100.000,300.000,318.310,sinif
+1216,ÇATALCA RES,r13379779,osm_uyelik,30,3.067,kapasite/adet,,,,V112/3300,95.000,330.000,334.956,sinif
+2612,SİBEL RES,r14577612,yok,0,3.000,varsayilan (etiketli santral medyanı),,,,GE103/2750,95.000,330.000,330.041,sinif
+2496,MERYEM RES,r14577613,osm_uyelik,10,3.200,osm_etiket,GE Energy,130.000,110.000,GE130/3200,110.000,241.087,241.087,rotor+uretici+gobek_osm
+1728,ÇANTA RES,r14577617,osm_uyelik,21,2.567,kapasite/adet,,,,E-92/2350,85.000,360.000,353.511,sinif
+1487,DÜZOVA RES,r14577618,osm_uyelik,18,2.842,kapasite/adet,,,,GE103/2750,95.000,330.000,330.041,sinif
+1194,BURGAZ RES,r14577621,osm_uyelik,18,0.855,kapasite/adet,,,,E48/800,60.000,440.000,442.097,sinif
+2114,KARACABEY RES,r14577622,osm_uyelik,12,2.500,osm_etiket,Nordex,,,N90/2500,85.000,360.000,392.975,sinif+uretici
+1489,SARES RES,r14577624,osm_uyelik,10,2.748,kapasite/adet,,,,GE103/2750,95.000,330.000,330.041,sinif
+2113,FATMA RES,r14577629,osm_uyelik,25,2.800,osm_etiket,,,,GE103/2750,95.000,330.000,330.041,sinif
+1514,ÇATALTEPE RES,r14577631,osm_uyelik,13,2.133,kapasite/adet,,,,V90/2000/GS,80.000,330.000,314.380,sinif
+2068,ZELİHA RES,r14577634,osm_uyelik,8,3.000,osm_etiket,,,,GE103/2750,95.000,330.000,330.041,sinif
+1760,SİLİVRİ RES,r14577635,osm_uyelik,26,4.133,kapasite/adet,,,,E-141/4200,115.000,270.000,268.981,sinif
+1162,SEBENOBA RES,r14577636,osm_uyelik,25,2.400,kapasite/adet,,,,E-92/2350,85.000,360.000,353.511,sinif
+1513,KAPIDAĞ RES,r14577638,osm_uyelik,14,2.747,kapasite/adet,,,,GE103/2750,95.000,330.000,330.041,sinif
+1537,EDİNCİK RES,r14577639,osm_uyelik,30,2.590,kapasite/adet,,,,E-92/2350,85.000,360.000,353.511,sinif
+1509,SUSURLUK RES,r14577640,osm_uyelik,29,2.629,kapasite/adet,,,,E-92/2350,85.000,360.000,353.511,sinif
+2420,BOZYAKA RES,r14577641,osm_uyelik,8,2.462,kapasite/adet,,,,E-92/2350,85.000,360.000,353.511,sinif
+1946,ADA2 RES,r14577645,osm_uyelik,2,2.355,kapasite/adet,,,,E-92/2350,85.000,360.000,353.511,sinif
+969,SOMA RES,r14577648,osm_uyelik,46,2.500,osm_etiket,Nordex,90.000,80.000,N90/2500,80.000,392.975,392.975,rotor+uretici+gobek_osm
+2054,AMASYA RES,r14577650,osm_uyelik,14,3.000,osm_etiket,,,,GE103/2750,95.000,330.000,330.041,sinif
+2538,MADRANBABA RES,r14577652,osm_uyelik,10,2.000,kapasite/adet,,,,V90/2000/GS,80.000,330.000,314.380,sinif
+1519,AYYILDIZ RES,r14577654,osm_uyelik,9,3.133,kapasite/adet,,,,V112/3300,95.000,330.000,334.956,sinif
+1492,ÇAMSEKİ RES,r14577656,osm_uyelik,11,3.000,varsayilan (etiketli santral medyanı),,,,GE103/2750,95.000,330.000,330.041,sinif
+1182,ŞENBÜK RES,r14577658,osm_uyelik,9,4.211,kapasite/adet,,,,E-141/4200,115.000,270.000,268.981,sinif
+1833,ÇERÇİKAYA RES,r14577659,osm_uyelik,19,3.000,osm_etiket,,,,GE103/2750,95.000,330.000,330.041,sinif
+776,METRİSTEPE RES,r14577660,osm_uyelik,16,2.486,kapasite/adet,,,,E-92/2350,85.000,360.000,353.511,sinif
+1915,DİLEK RES,r14577661,osm_uyelik,12,2.453,kapasite/adet,,,,E-92/2350,85.000,360.000,353.511,sinif
+2140,KINIK RES,r14577662,osm_uyelik,17,3.135,kapasite/adet,,,,V112/3300,95.000,330.000,334.956,sinif
+1472,AKBÜK RES,r14577664,osm_uyelik,15,2.067,kapasite/adet,,,,V90/2000/GS,80.000,330.000,314.380,sinif
+1253,KAYADÜZÜ RES,r14577666,osm_uyelik,30,2.730,kapasite/adet,,,,GE103/2750,95.000,330.000,330.041,sinif
+2526,KİRAZLI RES,r14577667,osm_uyelik,14,3.732,kapasite/adet,,,,SWT120/3600,100.000,300.000,318.310,sinif
+1523,AKHİSAR RES,r14577668,osm_uyelik,22,2.770,kapasite/adet,,,,GE103/2750,95.000,330.000,330.041,sinif
+1542,GEYCEK RES,r14577669,osm_uyelik,70,2.400,osm_etiket,,,,E-92/2350,85.000,360.000,353.511,sinif
+1929,BAĞARASI RES,r14577670,osm_uyelik,20,2.400,kapasite/adet,,,,E-92/2350,85.000,360.000,353.511,sinif
+1947,KANİJE RES,r14577671,osm_uyelik,22,3.045,kapasite/adet,,,,GE103/2750,95.000,330.000,330.041,sinif
+1175,BELEN RES,r14577672,osm_uyelik,17,2.706,kapasite/adet,,,,GE103/2750,95.000,330.000,330.041,sinif
+2160,BARBAROS RES,r14577673,osm_uyelik,4,3.000,osm_etiket,GE,,,GE103/2750,95.000,330.000,330.041,sinif+uretici
+1571,ATİK RES,r14577674,osm_uyelik,9,2.000,kapasite/adet,,,,V90/2000/GS,80.000,330.000,314.380,sinif
+1972,YAHYALI RES,r14577675,osm_uyelik,45,1.360,kapasite/adet,,,,V90/2000/GS,80.000,330.000,314.380,sinif
+2452,YAMAÇTEPE RES,r14577676,osm_uyelik,10,3.000,osm_etiket,,,,GE103/2750,95.000,330.000,330.041,sinif
+2039,ULUBORLU RES,r14577677,osm_uyelik,35,1.700,osm_etiket,GE Energy,,,V90/2000/GS,80.000,330.000,314.380,sinif
+1517,BANDIRMA3 RES,r14577679,osm_uyelik,16,2.625,kapasite/adet,,,,E-92/2350,85.000,360.000,353.511,sinif
+1977,SÖKE RES,r14577680,osm_uyelik,15,3.797,kapasite/adet,,,,SWT120/3600,100.000,300.000,318.310,sinif
+1470,ÇATALBÜK RES,r14577681,osm_uyelik,15,2.000,kapasite/adet,,,,V90/2000/GS,80.000,330.000,314.380,sinif
+1709,GERES RES,r14585945,osm_uyelik,12,2.500,kapasite/adet,,,,E-92/2350,85.000,360.000,353.511,sinif
+2123,KIRKAĞAÇ RES,r16191928,osm_uyelik,16,2.850,osm_etiket,GE Energy,,,GE103/2750,95.000,330.000,330.041,sinif+uretici
+1854,HARMANLIK RES,r16858370,osm_uyelik,16,3.450,osm_etiket,Vestas,,,V117/3300,100.000,300.000,306.939,sinif+uretici
+1498,KOZBEYLİ RES,r17591750,osm_uyelik,15,2.333,kapasite/adet,,,,E-92/2350,85.000,360.000,353.511,sinif
+2316,EBER RES,r18476822,osm_uyelik,18,3.758,kapasite/adet,,,,SWT120/3600,100.000,300.000,318.310,sinif
+2040,YAYLAKÖY RES,r19338555,osm_uyelik,5,3.000,kapasite/adet,,,,GE103/2750,95.000,330.000,330.041,sinif
+1899,ÇEŞME RES,r19339642,osm_uyelik,6,3.000,osm_etiket,,,,GE103/2750,95.000,330.000,330.041,sinif
+1761,KAVAKLI RES,r19556179,osm_uyelik,10,3.300,osm_etiket,Vestas,,,V117/3300,100.000,300.000,306.939,sinif+uretici
+1502,SAMURLU RES,r19710500,osm_uyelik,19,2.368,kapasite/adet,,,,E-92/2350,85.000,360.000,353.511,sinif

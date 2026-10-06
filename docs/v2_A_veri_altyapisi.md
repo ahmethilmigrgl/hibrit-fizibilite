@@ -194,6 +194,9 @@ Yüksek seviyede RMSE'yi birkaç uç değer büyütüyor (medyan 2,4); Monte Car
 
 ## 5a. Ön adım güncellemesi (Ö3–Ö4): 250 m GWA, türbin yerleşimi ve güven seviyeleri
 
+> **Güncellendi (Faz C ön adımı, §5b):** Bu bölümdeki güven seviyeleri ve yerleşim karşılaştırması ortak vekil türbinle
+> (kapalı döngü) ölçülmüştü. Güncel tanım ve sayılar §5b'de.
+
 > Bu bölüm §5'teki güven seviyesi tablosunun yerini alır.
 
 **250 m GWA:**
@@ -264,6 +267,85 @@ Yüksek seviyede RMSE'yi birkaç uç değer büyütüyor (medyan 2,4); Monte Car
   değerleri: Enerjisa 0,95, Çamseki 0,92, Sares 0,84.
 - Atlas, Ezine'de "yakın santraller gibi üretir" diyor; v1 ise Enerjisa'nın katsayısını aynen taşımıştı. İkisi arasındaki
   ~7 puan, Ezine sahası için gerçek bir belirsizlik. Yüksek güvenin P90'ı (7,5 puan) bu farkı kapsıyor.
+
+## 5b. Faz C ön adımı: atlas aktarımı kontrolü ve düzeltme
+
+**Şüphe (kullanıcı):**
+- Ezine'de atlas KF'si %30,2. Bu, Enerjisa Çanakkale RES'in gözlenen KF'siyle aynı. Ancak o santral 80 m'de E-92 kullanıyor, tasarım ise 120 m'de E-141.
+- Türbin yerleşimi açılınca GWA hızı 6,44'ten 6,98 m/s'ye çıkıyor, KF ise değişmiyor.
+- Aktarım hız yerine doğrudan KF üzerinden yapılıyor olabilir.
+
+**Kontrol** (`src/v2_C0_ezine_kontrol.py`, aynı Open-Meteo ERA5 verisi):
+
+1. **Aktarım hız uzayında; KF kopyalanmıyor.**
+   - K matrisi, sahanın ERA5 hızının göbek yüksekliğine taşınmış hâlini çarpar. Sonra hız seçilen türbinin güç eğrisinden geçer (`ruzgar.ruzgar_kapasite_faktoru`).
+   - Aynı atlas K'sı (ort. 0,927) E-92 / 80 m ile %22,7, E-141 / 120 m ile %30,2 veriyor.
+   - %30,2'nin Enerjisa'nın gözlenen %30,4'üne yakın olması tesadüf.
+   - Şüphenin bu kısmı yanlış.
+2. **Hata 1 — yerleşim oranda yok oluyordu.**
+   - Santral düzeltmesi c_i = GWA_i / ERA5_i, sahanın GWA moduyla birlikte hesaplanıyordu (`santral_c(gmod)`).
+   - Yerleşim açılınca hem sahanın hem santrallerin GWA'sı yükseliyor, K = c_saha × R değişmiyordu: Ezine'de c +%8,4, K 0,927 → 0,928.
+   - Doğrusu: santralin gözlenen performansı türbinlerinin durduğu yerin rüzgârını yansıtır. c_i her zaman gerçek türbin konumlarından alınmalı, sahanın seçeneğinden bağımsız olmalı.
+3. **Hata 2 — vekil türbin.**
+   - Santral k matrisleri tüm santraller için ortak bir vekille (E-92/2350, 80 m) çıkarılıyordu.
+   - Eski/küçük türbinli bir santralin düşük verimi "düşük rüzgâr" olarak k'ya giriyor ve yeni sahaya taşınıyordu.
+   - Önceki çapraz doğrulama bunu göremezdi: kalibrasyon ve test aynı vekille yapıldığı için hata kendini götürüyordu (kapalı döngü).
+4. **Kesinti ve kullanılabilirlik.**
+   - Talimat (YAT) ya da arıza şüpheli saatler (model KF > 0,5 iken gözlenen < 0,1 × model) k uydurmasına giriyordu.
+   - Sistem kesintisi finans modelinde ayrıca uygulandığı için bu bir çift sayımdı.
+
+**Düzeltmeler:**
+
+| Düzeltme | Uygulama |
+|---|---|
+| **Santral türbinleri** | `src/v2_C0_santral_turbinleri.py`. OSM'den 4.122 rüzgâr türbini düğümü alındı. Santral ilişki üyeliği ve poligonuyla 95/96 santrale atandı. Birim güç OSM etiketinden (26 santral), yoksa EPİAŞ kapasitesi / türbin adedinden (65); makul dışıysa (> 4,5 MW, eksik haritalama) etiketli medyandan (5). Kütüphane eşlemesi `src/atlas/turbinler.py`: özgül güç (rotor varsa ondan, yoksa güç sınıfından) ve birim güce en yakın windpowerlib eğrisi; üretici biliniyorsa ve özgül güç ±%16 içindeyse onun türbini. Göbek OSM'den ya da sınıftan (`config v2.santral_turbin`). |
+| **Kesik eğri** | Kütüphanedeki V90/2000 güç eğrisi 16,5 m/s'de bitiyor (kesme hızı 25). Rüzgârlı santrallerde k aranan aralığın dışına çıkıyordu. 20 m/s'den önce biten eğriler aday listesinden çıkarıldı (V90/2000/GS kullanılıyor). |
+| **Kalibrasyon** | Santralin kendi türbini ve göbeğiyle; şüpheli saatler iki geçişte çıkarıldı (`kalibre_et`). Kullanılabilir santral sayısı yine 90. |
+| **c_i** | Gerçek türbin konumlarındaki 250 m GWA ortalaması / ERA5 (`gwa_turbin`, `c_turbin` sütunları; `santral_c()` mod parametresi kaldırıldı). |
+| **Çapraz doğrulama** | Dışarıda bırakılan santral **kendi türbini ve göbeğiyle** tahmin ediliyor. Saha GWA'sı üç şekilde: nokta (santral noktasındaki 250 m hücre), yerleşim (2 km, santralin türbin adedi kadar en rüzgârlı hücre), gerçek türbin konumları (kâhin, alt sınır). |
+
+**Ezine önce/sonra** (E-141/4200 @ 120 m, aynı veri):
+
+| Durum | GWA [m/s] | K ort. önce → sonra | KF önce → sonra |
+|---|---|---|---|
+| Yerleşim kapalı (nokta) | 6,44 | 0,927 → 0,914 | %30,2 → **%29,3** |
+| Yerleşim 2 km | 6,98 | 0,928 → 0,991 | %30,2 → **%33,9** |
+| Yerleşim 3 km | 7,18 | — → 1,019 | — → **%35,5** |
+| v1 kalibre matris | — | 1,074 | %37,8 (v1 nihai %37,7) |
+
+**v1 ile kalan fark** (2 km'de 3,9 puan) bir hata değil:
+- v1 sahayı komşu santrallerin üzerindeymiş gibi doğrudan kalibre ediyordu.
+- Atlas, seçilen noktanın 2 km içindeki en iyi hücrelerinin daha az rüzgârlı olduğunu görüyor:
+  - Enerjisa türbinlerinden %2 daha az (7,12 m/s);
+  - Sares türbinlerinden %18 daha az (8,56 m/s).
+- 3 km'lik yerleşimde fark 2,3 puana iniyor.
+- Komşu santrallerin R değerleri: Sares 0,93, Enerjisa 1,01, Çamseki 0,92 (ulusal medyan 0,96).
+
+**Çapraz doğrulama önce/sonra** (GWA ölçekli kural, 90 santral, mutlak KF hatası, puan):
+
+| Saha GWA modu | Önce (vekil, kapalı döngü): RMSE / P90 | Sonra (kendi türbini): RMSE / P90 / ort. hata |
+|---|---|---|
+| Nokta 250 m | 9,00 / 16,3 | 9,18 / 14,8 / −4,1 |
+| **Yerleşim 2 km** | 6,99 / 11,4 | **7,17 / 11,4 / −1,1** |
+| Gerçek türbin konumları (kâhin) | — | 6,66 / 10,5 / −0,9 |
+
+**Varsayılan türbin yerleşimi: açık.**
+- Yerleşim, noktaya göre RMSE'yi 2,0 puan, yanlılığı 3,1 puan düşürüyor.
+- Kâhin alt sınırına (gerçek türbin konumları) 0,5 puan yaklaşıyor.
+- Sezgisi: geliştiriciler türbinleri sırtlara koyar; noktanın kendisi genellikle sırtta değildir.
+
+**Güven seviyeleri yeniden tanımlandı.** "Orta" seviye (komşu 15–30 km) gerçek aktarım altında n = 9 ile yüksekten iyi çıktı (medyan 2,1 vs 4,1; bootstrap GA 1,6–7,5). Denenen hiçbir mesafe eşiği medyanda sıralamayı korumadı. İki seviye:
+
+| Seviye | Tanım | n | Medyan (GA) | P90 (GA) | Ort. hata |
+|---|---|---|---|---|---|
+| Yüksek | benzer kalibre santral ≤ 30 km | 37 | 3,8 (2,9–6,9) | 9,8 (8,0–12,8) | −1,3 |
+| Düşük | yok (GWA × ulusal medyan R) | 53 | 5,6 (4,6–7,8) | 11,5 (10,6–12,6) | −0,8 |
+
+**Eski "yüksek" seviyenin daha iyi görünmesinin nedeni.** Eski yüksek seviyenin medyanı 2,1 puandı. Bu kapalı döngüden geliyordu: vekil türbin hatası hem kalibrasyonda hem testte vardı ve birbirini götürüyordu. Yeni sayılar, farklı türbine aktarımın gerçek hatasıdır.
+
+**Rakım.** Uygulama çalışırken Open-Meteo'ya bağlanmamak için 0,02°'lik Copernicus DEM GLO-90 ızgarası kullanılıyor (`src/v2_C1_rakim_grid.py`). API değerlerine göre medyan fark 39 m, P90 100 m; benzerlik eşiği 400 m.
+
+**Yeniden üretilen tablolar** (beş saha, tutarlılık): bkz. `docs/v2_C_arayuz.md §2`.
 
 ## 6. A5 — Sahaya bağlı parametreler
 

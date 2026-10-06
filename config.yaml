@@ -334,19 +334,51 @@ v2:
     birim: "km, m, GWA değişkenlik katsayısı farkı"
     kaynak: "Proje kararı; eşikler A4 'birini dışarıda bırak' çapraz doğrulamasıyla sınandı (docs/v2_A_veri_altyapisi.md)"
     not: "Benzer santral: rakım farkı ≤ 400 m, karmaşıklık farkı ≤ 0,04 ve aynı kıyı sınıfı (kıyı < 20 km / iç). Komşu yalnız ≤ 30 km'de kullanılır (yüksek güven); A4 çapraz doğrulamasında 30–80 km'deki komşular (KF RMSE 9,1 puan) ulusal medyan artıktan (7,7) kötü çıktı. Komşu yoksa GWA × ulusal medyan artık matrisi: arazi karmaşıklığı ≤ 0,083 (atlasın alt üçte biri) ise orta, değilse düşük güven"
+  santral_turbin:
+    value:
+      siniflar:   # birim güç üst sınırı [MW] → varsayılan özgül güç [W/m²] ve göbek [m] (OSM'de rotor/göbek yoksa)
+        - {mw_ust: 1.2, ozgul_guc: 440, gobek: 60}
+        - {mw_ust: 2.2, ozgul_guc: 330, gobek: 80}
+        - {mw_ust: 2.7, ozgul_guc: 360, gobek: 85}
+        - {mw_ust: 3.2, ozgul_guc: 330, gobek: 95}
+        - {mw_ust: 3.8, ozgul_guc: 300, gobek: 100}
+        - {mw_ust: 99, ozgul_guc: 270, gobek: 115}
+      guc_toleransi: 0.25
+      guc_agirligi: 0.5
+      uretici_sp_toleransi: 0.15
+      birim_makul: [0.6, 4.5]
+      uretici_onek: {Nordex: ["N"], Vestas: ["V"], GE: ["GE"], "GE Energy": ["GE"], Enercon: ["E-", "E48"], Siemens: ["SWT"], "Siemens Gamesa": ["SWT"], Senvion: ["S1", "MM"], Suzlon: []}
+    birim: "MW, W/m², m"
+    kaynak: "OSM türbin düğümleri (generator:output:electricity, manufacturer, rotor:diameter, height:hub; © OpenStreetMap katkıcıları, ODbL) + windpowerlib/OEP türbin kütüphanesi. Sınıf varsayılanları TAHMİN: Türkiye filosunda ilgili güç sınıfının yaygın platformları (≤1,2 MW: E-48/E-53; 1,5–2 MW: V90, GE 1.5, MM92; 2,3–2,5 MW: E-82, N90/N100, GE 2.5; 3 MW: V90/V112, E-101; 3,3–3,6 MW: V117/V126, N131; ≥4 MW: E-138, N149, V136)"
+    not: "Kalibrasyonda her santral kendi türbin vekiliyle modellenir (Faz C ön adım; önceki sürüm tüm santraller için ortak E-92/2350 @ 80 m kullanıyordu). Seçim: birim güç ±%25 içindeki kütüphane türbinleri (üretici biliniyorsa, özgül gücü hedefin ±%16'sı içindeyse onunkiler) arasında |ln(SP/SP_hedef)| + 0,5·|ln(P/P_birim)| en küçük olan. Kapasite faktörü normalize güç eğrisine bağlı olduğundan belirleyici olan özgül güç ve göbek yüksekliğidir. EPİAŞ kapasitesi / OSM türbin adedi birim_makul dışındaysa (eksik haritalama ya da kapasite artırımı) birim güç, OSM etiketli santrallerin medyanı alınır"
   veri_deposu:
     value: {repo_id: "KULLANICI/hibrit-fizibilite-veri", revizyon: "v1", tur: "dataset"}
     birim: "Hugging Face veri deposu"
     kaynak: "Proje kararı (Ö2)"
     not: "ERA5 Türkiye nokta gridi (era5_tr/v1) ve GWA 250 m karoları (gwa_tr/v1). repo_id yükleme sonrası kullanıcı adıyla güncellenecek. Uygulama önce yerel önbelleğe (data/onbellek/hf), sonra yerel üretim klasörüne (data/grid), en son HF'ye bakar; anahtar gerekmez (herkese açık depo)"
+  uygulama:
+    value:
+      istek_siniri: {hizli: {azami: 30, pencere_s: 3600}, tam: {azami: 3, pencere_s: 3600}}
+      tam_sira_azami: 3
+      tam_analize_deger: {evet: 1.10, sinirda: 1.25}
+      aday_sayisi: 5
+      aday_aralik_km: 3.0
+    birim: "istek / saniye penceresi; iş; fiyat oranı; adet; km"
+    kaynak: "Proje kararı (Faz C7, C4)"
+    not: "istek_siniri: oturum başına kayan pencere (hızlı tarama / tam analiz). tam_sira_azami: aynı anda çalışan 1 tam analizin arkasında bekleyebilecek en fazla iş; fazlası reddedilir. tam_analize_deger: en iyi standart tasarımın başabaş fiyatı / senaryo fiyatı ≤ evet → 'değer', ≤ sinirda → 'sınırda', aksi 'değmez' (deterministik optimum pozitifse her durumda 'değer'). aday_sayisi/aday_aralik_km: il/ilçe seçiminde gösterilen en rüzgârlı GWA noktaları ve aralarındaki en az mesafe"
+  veri_erisim:
+    value: {mod: "yerel"}
+    birim: "yerel | uzak"
+    kaynak: "Proje kararı (Faz C1)"
+    not: "Uygulama ve motorun çalışma anındaki tüm veri okumaları src/veri_katmani.py üzerinden. yerel: yalnız data/atlas ve data/grid (ağ çağrısı yok; eksik veri → iki dilli hata). uzak: yerelde yoksa barındırma servisinden indirilir (ileride; hf_veri)"
   guven:
-    value: {yuksek_km: 15, orta_km: 30}
-    birim: "km, m, GWA değişkenlik katsayısı farkı / eşiği"
-    kaynak: "Ö4: A4 çapraz doğrulamasının kuyruk incelemesiyle yeniden tanımlandı (docs/v2_A_veri_altyapisi.md §5)"
-    not: "Yüksek: benzer komşu santral ≤ 15 km; orta: en yakın benzer komşu 15–30 km; düşük: 30 km içinde benzer santral yok (GWA × ulusal medyan artık). Komşusuz santrallerde hatayı arazi karmaşıklığı ayırt etmedi (Spearman 0,01); eski karmaşıklık tabanlı orta/düşük ayrımı kaldırıldı. Seçilen tanım medyan ve %90'lık hatada sıralı (bootstrap aralıkları A4_guven_bootstrap.csv)"
+    value: {yuksek_km: 30, orta_km: 30}
+    birim: "km"
+    kaynak: "Faz C ön adım: santraller KENDİ türbin vekilleriyle kalibre edilip kendi türbinleriyle tahmin edildiğinde (A4, yerleşim modu) yeniden tanımlandı (docs/v2_A_veri_altyapisi.md §5b)"
+    not: "İki seviye. Yüksek: 30 km içinde benzer kalibre santral var (n = 37; mutlak KF hatası medyanı 3,8, %90'lık 9,8 puan); düşük: yok (GWA × ulusal medyan artık; n = 53; 5,6 / 11,5). Eski 'orta' seviyesi (15–30 km, n = 9) medyanda yüksekten iyi çıktı (2,1 vs 4,1; bootstrap GA 1,6–7,5): ayrı seviye istatistiksel olarak desteklenmiyor, sıralama koşulu (medyan ve P90'da) yalnız iki seviyeyle sağlanıyor. orta_km = yuksek_km olduğundan 'orta' üretilmez"
   motor:
     value:
-      veri_surumu: "v2A-2026-10"
+      veri_surumu: "v2C-2026-10"
       profil_yillari: [2014, 2023]
       gunes_model_hatasi: 0.04
       kesinti_kurtarma: 0.158

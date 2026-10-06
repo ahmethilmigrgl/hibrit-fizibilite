@@ -68,6 +68,22 @@ def paketle(df: pd.DataFrame) -> dict[str, np.ndarray]:
     }
 
 
+def sicrama_temizle(v: np.ndarray, esik: float = 40.0, kat: float = 2.5) -> np.ndarray:
+    """
+    Tek saatlik fiziksel olmayan sıçramalar (CDS ERA5 zaman serisi ürününde nadir; ör. 6 → 63 → 16 m/s, aynı saatte 10 m hızı
+    0,8 m/s): hız > esik ve iki komşu saatin en büyüğünün 'kat' katından fazlaysa komşuların ortalamasıyla değiştirilir.
+    Grid bütünlük kontrolünde 1.464 hücrede 3 saat bulundu (src/v2_C1_grid_butunluk.py).
+    """
+    v = np.asarray(v, dtype=float).copy()
+    if len(v) < 3:
+        return v
+    komsu = np.maximum(np.r_[v[1], v[:-1]], np.r_[v[1:], v[-2]])
+    s = (v > esik) & (v > kat * komsu)
+    if s.any():
+        v[s] = 0.5 * (np.r_[v[1], v[:-1]] + np.r_[v[1:], v[-2]])[s]
+    return v
+
+
 def ac(z: dict | Path) -> pd.DataFrame:
     """Nokta dosyası → v1 rüzgâr modelinin beklediği tablo (u = hız, v = 0; t2m K, sp Pa; UTC indeks)."""
     if isinstance(z, Path):
@@ -75,7 +91,14 @@ def ac(z: dict | Path) -> pd.DataFrame:
     n = len(z["v100"])
     idx = pd.date_range(str(z["bas"]), periods=n, freq="h", tz="UTC", name="zaman_utc")
     return pd.DataFrame(
-        {"u100": z["v100"] / 100.0, "v100": 0.0, "u10": z["v10"] / 100.0, "v10": 0.0, "t2m": z["t2m"] / 50.0, "sp": z["sp"] * 2.0},
+        {
+            "u100": sicrama_temizle(z["v100"] / 100.0),
+            "v100": 0.0,
+            "u10": sicrama_temizle(z["v10"] / 100.0),
+            "v10": 0.0,
+            "t2m": z["t2m"] / 50.0,
+            "sp": z["sp"] * 2.0,
+        },
         index=idx,
     )
 

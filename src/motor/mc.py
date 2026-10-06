@@ -13,6 +13,7 @@ v2 farkları:
 
 from __future__ import annotations
 
+import os
 from dataclasses import replace
 
 import numpy as np
@@ -158,6 +159,8 @@ def metrik(x: np.ndarray) -> dict:
 def yakinsayan_mc(o, t, tb_T, tb_Y, yapilar, cod_kaynak: np.ndarray, sigma, sfk, tohum: int = 42, ilerleme=None) -> dict:
     mot = deger(o.cfg["v2"]["motor"])
     n = mot["mc_baslangic"]
+    if os.environ.get("MOTOR_KUCUK") == "1":  # yalnız testler
+        n, mot = 500, {**mot, "mc_azami": 500}
     gecmis = []
     while True:
         cod = np.random.default_rng(tohum + 99).choice(cod_kaynak, n, replace=True)

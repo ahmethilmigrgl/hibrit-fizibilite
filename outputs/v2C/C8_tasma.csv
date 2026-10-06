@@ -1,0 +1,13 @@
+﻿ekran,gorunum,scroll_genislik,gorunum_genislik,yatay_tasma,tasan_oge,ornek
+01_acilis_harita,masaustu,1366,1366,False,0,
+02_saha_karti,masaustu,1366,1366,False,0,
+03_hizli_tarama,masaustu,1366,1366,False,0,
+04_tam_analiz,masaustu,1366,1366,False,0,
+05_vaka_calismasi,masaustu,1366,1366,False,0,
+06_yontem,masaustu,1366,1366,False,0,
+01_acilis_harita,mobil,390,390,False,0,
+02_saha_karti,mobil,390,390,False,0,
+03_hizli_tarama,mobil,390,390,False,0,
+04_tam_analiz,mobil,390,390,False,0,
+05_vaka_calismasi,mobil,390,390,False,0,
+06_yontem,mobil,390,390,False,0,

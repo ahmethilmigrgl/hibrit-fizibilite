@@ -153,3 +153,13 @@ tüm v2 işi `v2-genel` dalında.
    (`sfk_milp_carpani`). Doğrulama `src/v2_B5_regresyon.py` (Ezine vs v1 baz vaka), `src/v2_B5_dogrulama.py
    tutarlilik|tarama|sure` → `outputs/v2B/`. Testler `tests/test_v2_motor.py`. 2 çekirdek benzetimi:
    `MOTOR_CEKIRDEK=2 OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1`.
+- **Faz C — Web uygulaması (yerel):** ✅ bkz. `docs/v2_C_arayuz.md`. Giriş `app.py` (st.navigation: `uygulama/sayfa_analiz.py`
+   açılış haritası + saha seçimi + analiz, `sayfa_vaka.py` v1 Ezine, `sayfa_yontem.py`); yardımcılar `uygulama/ortak.py`
+   (TR/EN, `md()` $ kaçışı, istek sınırı), `servis.py`, `harita.py`. **Tüm çalışma anı veri okumaları `src/veri_katmani.py`**
+   (`config v2.veri_erisim.mod = "yerel"`; dış API yok). Gridler `data/grid/` (repoda yok): ERA5 (`v2_O2`), PVGIS GES KF
+   (`v2_C1_pvgis_grid.py`), rakım (`v2_C1_rakim_grid.py`, Copernicus DEM), GWA 250 m. Ön tarama `src/v2_C2_on_tarama.py` →
+   `data/atlas/on_tarama.parquet`. **Ön adım düzeltmesi:** santraller kendi türbin vekiliyle kalibre (`src/v2_C0_santral_turbinleri.py`,
+   `src/atlas/turbinler.py`, `config v2.santral_turbin`), santral c'si gerçek türbin konumlarından (`santral_c()` modsuz),
+   güven iki seviye (≤30 km yüksek), türbin yerleşimi varsayılan açık. Testler: `tests/test_v2_uygulama.py` (AppTest;
+   `MOTOR_KUCUK=1` yalnız testte küçük tam analiz), tarayıcı `src/v2_C8_tarayici.py` (Playwright + Chrome) → `docs/img/v2/`.
+   Yöntem sayfası sayıları `results/v2_dogrulama.json` (`src/v2_C9_sonuclari_paketle.py`). Hugging Face/yayın bu fazda yok.

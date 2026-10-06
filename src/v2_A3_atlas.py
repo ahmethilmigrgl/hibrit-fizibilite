@@ -25,7 +25,7 @@ import pandas as pd
 import src.gorsel as g
 from src.atlas import kalibrasyon as K
 from src.ayarlar import CIKTILAR, HAM_VERI, KOK, config_oku
-from src.kaynaklar import arazi, era5_cds, gwa
+from src.kaynaklar import arazi, era5_cds, gwa, gwa250
 from src.piyasa import veri
 from src.piyasa.epias import EpiasIstemcisi
 
@@ -42,6 +42,8 @@ def main() -> None:
     e = e[e["epias_id"].notna()].copy()
     e["epias_id"] = e["epias_id"].astype(int)
     ist = EpiasIstemcisi()
+    tr = pd.read_csv(ATLAS / "santral_turbinleri.csv").set_index("epias_id")  # src/v2_C0_santral_turbinleri.py
+    konum = pd.read_csv(ATLAS / "santral_turbin_konumlari.csv")
     satir, matris, gozlenen = [], {}, {}
     for _, r in e.iterrows():
         klasor = HAM_VERI / "epias" / f"uretim_santral_{r['epias_id']}"
@@ -52,7 +54,9 @@ def main() -> None:
         u = veri.uretim_cek(ist, "2014-01-01", "2026-09-30", santral_id=int(r["epias_id"]))
         era5 = era5_cds.indir(r["enlem"], r["boylam"])
         try:
-            sk = K.kalibre_et(u["toplam"], era5, cr, r["osm_mw"] if pd.notna(r["osm_mw"]) else None)
+            t = tr.loc[r["epias_id"]] if r["epias_id"] in tr.index else None
+            turbin, gobek = (t["turbin"], float(t["gobek"])) if t is not None else (K.VEKIL_TURBIN, K.VEKIL_GOBEK)
+            sk = K.kalibre_et(u["toplam"], era5, cr, r["osm_mw"] if pd.notna(r["osm_mw"]) else None, turbin, gobek)
         except K.KSinirDisi:
             satir.append(
                 {"epias_id": r["epias_id"], "ad": r["epias_ad"], "enlem": r["enlem"], "boylam": r["boylam"], "sinif": "k_sinir_disi"}
@@ -68,6 +72,13 @@ def main() -> None:
             gw = gwa.nokta(r["enlem"], r["boylam"])["ws_ort"]
         except ValueError:
             gw = np.nan
+        # Santralin temsilî GWA hızı: gerçek türbin konumlarındaki 250 m hücrelerin ortalaması (yoksa yerleşim kuralı)
+        kn = konum[konum["epias_id"] == r["epias_id"]]
+        if len(kn):
+            gw_t, gw_t_kaynak = float(np.mean([gwa250.nokta(a, b) for a, b in zip(kn["enlem"], kn["boylam"])])), "turbin_konumlari"
+        else:
+            adet = int(np.clip(round((r["osm_mw"] if pd.notna(r["osm_mw"]) else 30.0) / 3.0), 3, 30))
+            gw_t, gw_t_kaynak = gwa250.turbin_yerlesimi(r["enlem"], r["boylam"], 3.0, adet, 500)["ortalama"], "yerlesim_3km"
         satir.append(
             {
                 "epias_id": r["epias_id"],
@@ -78,10 +89,13 @@ def main() -> None:
                 "osm_mw": r["osm_mw"],
                 **sk.ozet,
                 "sinif": K.kalite_sinifi(sk.ozet, gw / v100),
-                "R_artik": sk.ozet["k_sabit"] / (gw / v100),
+                "R_artik": sk.ozet["k_sabit"] / (gw_t / v100),
                 "era5_100m": v100,
                 "gwa_100m": gw,
                 "gwa_era5_orani": gw / v100,
+                "gwa_turbin": gw_t,
+                "gwa_turbin_kaynagi": gw_t_kaynak,
+                "c_turbin": gw_t / v100,
                 "kiyi_km": arazi.kiyi_km(r["enlem"], r["boylam"]),
                 "karmasiklik": arazi.karmasiklik(r["enlem"], r["boylam"]),
             }

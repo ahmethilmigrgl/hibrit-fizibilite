@@ -64,7 +64,9 @@ def hazirla(n: int = 4) -> Path:
 
 @lru_cache(maxsize=1)
 def _yukle() -> dict:
-    z = np.load(PAKET)
+    from src import veri_katmani
+
+    z = np.load(veri_katmani.yol(str(PAKET.relative_to(veri_katmani.DATA))))
     return {k: z[k] for k in z.files}
 
 

@@ -9,7 +9,11 @@
 **Belgeler:** [Yatırım memosu (PDF)](outputs/08/Yatirim_Memosu.pdf) · [Sunum (PDF)](outputs/08/Sunum.pdf) ·
 [Rapor (PDF)](outputs/RAPOR.pdf) · [Rapor (Markdown)](docs/RAPOR.md) · [Excel finansal model](outputs/08/Ezine_Hibrit_Finansal_Model.xlsx)
 
-Bu model, Çanakkale-Ezine'de **50 MW şebeke bağlantısının** arkasındaki güneş (GES), rüzgâr (RES) ve batarya (BESS)
+**v2 (`v2-genel` dalı, sürüm adayı):** Türkiye'nin herhangi bir kara noktası için **saha tarama ve analiz uygulaması**.
+Bir nokta seçin; saniyeler içinde hızlı tarama ya da dakikalar içinde optimizasyon + Monte Carlo ile tam analiz alın
+(bkz. [Türkiye geneli uygulama](#türkiye-geneli-uygulama-v2)). İlk Ezine çalışması (v1.0.0) aşağıda vaka çalışması olarak duruyor.
+
+Vaka çalışması, Çanakkale-Ezine'de **50 MW şebeke bağlantısının** arkasındaki güneş (GES), rüzgâr (RES) ve batarya (BESS)
 kapasitelerini **proje NPV'sini en yüksek yapacak** şekilde boyutlandırıyor ve bu cevabı belirsizlik altında stres
 testine sokuyor. Hat uçtan uca şu aşamalardan oluşuyor:
 
@@ -23,7 +27,33 @@ testine sokuyor. Hat uçtan uca şu aşamalardan oluşuyor:
 Portföy projesidir. Tüm varsayımlar kaynaklarıyla `config.yaml`'da, tüm optimizasyon modellerinin matematiksel
 formülasyonları `docs/` altında.
 
-## Ana bulgular
+## Türkiye geneli uygulama (v2)
+
+Ortam ve veri paketleri hazırsa ([Nasıl çalıştırılır](#nasıl-çalıştırılır)) tek komutla yerelde açılır:
+
+```bash
+.venv/bin/streamlit run app.py          # → http://localhost:8501
+```
+
+- **Açılış ekranı:** Türkiye'nin 1.464 kara hücresinin (0,25°) ön tarama haritası. Varsayılan katman en iyi standart tasarımın
+  başabaş fiyatı; RES/GES kapasite faktörü ve başabaş fiyatları seçilebilir. Düşük güvenli hücreler ayrı işaretli;
+  kalibre santraller ayrı katman.
+- **Saha seçimi:** haritadan tıklama, koordinat girme ya da il/ilçe seçip ilçenin en rüzgârlı aday noktalarından birini seçme.
+  Seçilen noktada GWA hızı, güven seviyesi ve dayandığı kalibre santraller anında görünür.
+- **Hızlı tarama (saniyeler):** kapasite faktörleri ve belirsizlik bandı, yakalanma oranları, LCOE, başabaş fiyatı, Türkiye
+  hücreleri arasındaki sıra, standart tasarımlar, temsilî gün optimizasyonu ve "tam analize değer mi?" değerlendirmesi.
+- **Tam analiz (1–6 dk):** tam yıl kapasite MILP'i, çalışma anında işletme tabloları, yakınsamalı Monte Carlo, gelir yapıları
+  (tüccar / yıllık YEKDEM opsiyonu / PPA), proje aşamasına göre takvim, öneri ve tetikleyiciler, HTML/PDF saha raporu.
+- **Paylaşım:** her sonuç bir bağlantıyla (URL parametreleri + sonuç önbelleği) yeniden açılır.
+- **Veri:** Uygulama yalnız yerel, önceden hazırlanmış veri paketlerini tek bir veri katmanı (`src/veri_katmani.py`) üzerinden
+  okur: ERA5 gridi, PVGIS güneş gridi, Global Wind Atlas, kalibrasyon atlası, piyasa paketi. Çalışma anında dış API ya da
+  kişisel kimlik bilgisi kullanmaz.
+- **Belgeler:** [veri altyapısı](docs/v2_A_veri_altyapisi.md), [analiz motoru](docs/v2_B_analiz_motoru.md),
+  [uygulama](docs/v2_C_arayuz.md).
+
+<p align="center"><img src="docs/img/v2/01_acilis_harita_masaustu.png" width="85%" alt="Ön tarama haritası"></p>
+
+## Vaka çalışması (v1.0.0): ana bulgular
 
 | # | Bulgu | Sayı |
 |---|---|---|
@@ -61,7 +91,7 @@ formülasyonları `docs/` altında.
   <em>Fırsat penceresi: SFK geliri yalnızca N yıl sürerse NPV.</em>
 </p>
 
-## Dashboard
+## Vaka çalışması dashboard'u (v1)
 
 <p align="center"><img src="docs/img/dashboard.gif" width="85%" alt="Dashboard"></p>
 
@@ -121,9 +151,14 @@ cp .env.example .env              # CDS (ERA5) ve EPİAŞ bilgileri — yalnızc
 .venv/bin/python calistir.py --asama 5 6        # önbellekten risk + paketleme
 .venv/bin/python -m pytest -q                   # testler
 
-# Yalnızca dashboard — kimlik bilgisi ve ham veri gerekmez (results/ okunur)
-uv pip install -r requirements-app.txt --python .venv/bin/python
-.venv/bin/streamlit run app.py
+# v2 uygulaması — çalışma anında kimlik bilgisi gerekmez; yerel veri paketleri gerekir:
+#   data/atlas (repoda) + data/grid (çevrimdışı üretilir, repoda yok):
+.venv/bin/python src/v2_O2_era5_grid.py       # ERA5 Türkiye gridi (CDS anahtarı, çevrimdışı, ~7 saat)
+.venv/bin/python src/v2_C1_pvgis_grid.py      # PVGIS güneş gridi (anahtarsız, ~1 saat)
+.venv/bin/python src/v2_C1_rakim_grid.py      # rakım ızgarası (anahtarsız, ~10 s)
+.venv/bin/python -c "from src.kaynaklar import gwa250; gwa250.karolari_hazirla()"   # GWA 250 m karoları
+.venv/bin/python src/v2_C2_on_tarama.py       # ön tarama haritası (~10 dk)
+.venv/bin/streamlit run app.py                # → http://localhost:8501
 ```
 
 Kimlik bilgileri yalnızca `.env`'den okunur, hiçbir zaman yazdırılmaz ve repoya girmez. Ham ve işlenmiş veri (`data/`)
@@ -132,10 +167,12 @@ repoda yok; dashboard ve rapor `results/` altındaki küçük, toplulaştırılm
 ## Proje yapısı
 
 ```
-├── app.py                  Streamlit dashboard (6 sekme, TR/EN)
+├── app.py                  v2 uygulama giriş noktası (sayfalar: saha tarama ve analiz, Ezine vaka çalışması, yöntem; TR/EN)
+├── uygulama/               v2 sayfaları ve yardımcıları (harita, saha seçimi, sonuçlar; v1 dashboard'u sayfa_vaka.py)
 ├── calistir.py             Tüm hattın tek giriş noktası
 ├── config.yaml             Tüm varsayımlar (değer, birim, kaynak, not)
-├── src/                    Aşama betikleri (00–08) ve modüller (uretim, piyasa, finans, optimizasyon, risk)
+├── src/                    Aşama betikleri (00–08, v2_*) ve modüller (uretim, piyasa, finans, optimizasyon, risk; v2: motor,
+│                           atlas, kaynaklar, veri_katmani.py — tek veri erişim katmanı)
 ├── tests/                  pytest testleri (CI: .github/workflows/ci.yml)
 ├── docs/                   Aşama bazında formülasyonlar, RAPOR.md, MODEL_DOGRULAMA.md
 ├── outputs/                Aşama bazında grafikler ve tablolar, RAPOR.pdf; 08/: memo, sunum, Excel modeli
@@ -161,6 +198,9 @@ Ayrıntılar, lisanslar ve her kaynağın ne için kullanıldığı: [DATA_SOURC
   ECMWF is responsible for any use that may be made of the Copernicus information or data it contains.
   Veri seti: *ERA5 hourly time-series data on single levels from 1940 to present*, DOI [10.24381/1cf1ad76](https://doi.org/10.24381/1cf1ad76).
 - **PVGIS:** PVGIS © European Communities, 2001-2026 (PVGIS-SARAH3 veritabanı).
+- **Global Wind Atlas 3.0** (DTU, Dünya Bankası, Vortex, ESMAP; CC BY 4.0) — https://globalwindatlas.info
+- **OpenStreetMap** santral ve türbin verisi © OpenStreetMap katkıcıları (ODbL); sınırlar: geoBoundaries (Runfola et al. 2020).
+- **Copernicus DEM GLO-90** © DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA; all rights reserved.
 - **EPİAŞ:** Kaynak: EPİAŞ Şeffaflık Platformu (seffaflik.epias.com.tr). Repoda yalnız türetilmiş ve toplulaştırılmış
   sonuçlar var; ham saatlik EPİAŞ verisi yeniden dağıtılmıyor.
 

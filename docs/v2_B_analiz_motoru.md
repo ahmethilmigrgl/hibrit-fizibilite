@@ -148,6 +148,9 @@ Ayrıntılar:
 
 ## 6. Güven seviyeleri ve rüzgâr belirsizliği
 
+> **Güncellendi (Faz C ön adımı):** Atlas aktarımı düzeltildi; güven artık iki seviye (yüksek ≤ 30 km: medyan 3,8 / P90 9,8
+> puan; düşük: 5,6 / 11,5). Beş saha ve tutarlılık tabloları yeniden üretildi: `docs/v2_C_arayuz.md §2`. Aşağıdaki tablolar Faz B anındadır.
+
 Güven seviyeleri Faz A Ö4'ten gelir; bkz. `docs/v2_A_veri_altyapisi.md §5a`, `data/atlas/guven_seviyeleri.csv`. Değerler bırakılan-dışarı çapraz doğrulama ile ölçülen mutlak KF hatasıdır (puan); parantez içinde bootstrap %90 güven aralıkları:
 
 | Seviye | Tanım | n | Medyan | P90 |

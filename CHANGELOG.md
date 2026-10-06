@@ -15,6 +15,48 @@ Proje aşamalar halinde geliştirildi. Her aşama bir commit; revizyonlar ve ön
 | Tutarlılık 2 | YEKDEM yıllık opsiyon, ortak batarya sürücüsü, inşaata hazır takvim | +1,5 M$ | Durum tespiti + ≤1,5 M$ teklif |
 | **Nihai (Aşama 9 A)** | **Fiyat ortalaması: 58 $/MWh medyan değil beklenen değer** | **−1,7 M$** | **Rafa kaldır, tetikleyicileri izle** |
 
+## [2.0.0-rc] — 2026-10-06 (dal `v2-genel`, yayınlanmadı)
+
+Türkiye geneli saha tarama ve analiz uygulaması. Ayrıntı: `docs/v2_A_veri_altyapisi.md`, `docs/v2_B_analiz_motoru.md`,
+`docs/v2_C_arayuz.md`.
+
+### Faz C — Web uygulaması (yerel Streamlit)
+- **Ön adım — atlas aktarımı düzeltildi** (`docs/v2_A §5b`):
+  - Aktarım hız uzayındaydı; KF kopyalanmıyordu.
+  - Ama santral GWA referansı sahanın moduna bağlıydı (türbin yerleşimi etkisizdi) ve santraller ortak bir vekil türbinle
+    (E-92/80 m) kalibre ediliyordu.
+  - Artık her santral OSM'den çıkarılan kendi türbin vekili ve gerçek türbin konumlarıyla kalibre ediliyor; talimat/arıza
+    saatleri k'dan çıkarıldı.
+  - Ezine (E-141/120 m): yerleşim 2 km %30,2 → %33,9 (v1 kalibre %37,8).
+  - Güven seviyeleri ikiye indi: yüksek (≤ 30 km) medyan 3,8 / P90 9,8 puan; düşük 5,6 / 11,5.
+  - Türbin yerleşimi varsayılan açık (çapraz doğrulamada RMSE 9,2 → 7,2).
+- **Veri katmanı** (`src/veri_katmani.py`): Çalışma anında yalnız yerel paketler okunuyor. PVGIS GES KF gridi ve Copernicus DEM
+  rakım ızgarası eklendi; uygulama hiçbir dış API'ye bağlanmıyor.
+- **Ön tarama haritası:** 1.464 kara hücresi için başabaş fiyatları ve KF'ler (`data/atlas/on_tarama.parquet`).
+- **Uygulama** (`app.py`, `uygulama/`):
+  - Saha seçimi üç yoldan: harita, koordinat, il/ilçe adayları.
+  - Hızlı tarama: başabaş fiyatı, Türkiye yüzdeliği ve "tam analize değer mi?" değerlendirmesi.
+  - Tam analiz: sıra numarası, ilerleme, öneri, güven etkisi ve HTML/PDF rapor.
+  - Paylaşım bağlantısı; vaka çalışması ve yöntem sayfaları; TR/EN.
+  - İstek sınırları ve gizlilik notu.
+- **Motor:**
+  - Tam analiz sırası (sıra numarası, azami uzunluk) ve önbellekten okuma (`onbellekten`).
+  - Hızlı taramada en iyi standart tasarımın başabaşı; tam analizde güven seviyesinin E[NPV]'ye etkisi.
+  - Hızlı tarama metinlerinden karar dili çıkarıldı.
+- **Testler:** AppTest (`tests/test_v2_uygulama.py`); Playwright ile masaüstü/390 px ekran görüntüleri ve taşma kontrolü
+  (`src/v2_C8_tarayici.py`).
+
+### Faz B — Analiz motoru (`58a6eeb`)
+- `analiz_et(saha, hizli|tam, varsayımlar)`.
+- Hızlı tarama ~2 s; tam analiz 2 çekirdekte ~4 dk.
+- MILP'te SFK doyum beklentisi; sonuç önbelleği ve tek tam analiz kilidi.
+- Ezine regresyonu v1 ile bir standart hata içinde.
+
+### Faz A — Veri altyapısı (`9ba4f3f`, `6165d28` ve öncesi)
+- Open-Meteo / ERA5 gridi, Global Wind Atlas (1 km, 250 m).
+- 90 santrallik kalibrasyon atlası ve aktarım kuralı.
+- Sahaya bağlı parametreler, ulusal piyasa paketi.
+
 ## [1.0.0] — 2026-10-04
 
 ### Aşama 9 — Yayın öncesi kalite turu

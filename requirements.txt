@@ -24,3 +24,8 @@ openpyxl==3.1.5
 pytest==8.4.2
 markdown==3.9
 python-pptx==1.0.2
+# v2 (Faz A–C): coğrafi işlemler ve uygulama haritası
+rasterio==1.4.4
+shapely==2.1.2
+folium==0.20.0
+streamlit-folium==0.27.4

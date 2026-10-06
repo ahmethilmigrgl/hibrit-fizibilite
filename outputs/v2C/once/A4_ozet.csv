@@ -1,0 +1,9 @@
+﻿,gmod,yontem,santral,ort_hata,mutlak_medyan,rmse,mutlak_p90,gunici_rmse_medyan,korelasyon_medyan
+yontem,nokta1km,gwa,90.000,-3.619,5.686,8.139,13.724,8.930,0.760
+yontem,nokta1km,gwa_olcekli,90.000,-0.724,4.756,7.754,14.408,6.293,0.781
+yontem,nokta250,gwa,90.000,-2.507,6.502,8.935,14.562,9.803,0.759
+yontem,nokta250,gwa_olcekli,90.000,-0.747,5.437,8.998,16.323,7.511,0.773
+yontem,yerlesim,dogrudan,90.000,1.390,5.516,7.783,12.806,7.811,0.771
+yontem,yerlesim,gwa,90.000,3.295,5.703,7.717,12.016,8.559,0.751
+yontem,yerlesim,gwa_olcekli,90.000,-0.583,4.559,6.986,11.390,6.332,0.779
+yontem,yerlesim,yok,90.000,-20.663,21.367,22.702,30.954,21.871,0.677

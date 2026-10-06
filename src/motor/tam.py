@@ -6,6 +6,7 @@ yakınsayan Monte Carlo ve v1 karar kuralının genişletilmiş haliyle otomatik
 
 from __future__ import annotations
 
+import os
 import time
 
 import numpy as np
@@ -28,6 +29,11 @@ YAPI_AD = {
 ASAMA_ANAHTAR = {"insaata_hazir": "insaata_hazir_B1_cod", "on_lisans": "gelistirme_B1_cod"}
 
 
+def kucuk() -> bool:
+    """Yalnız testler için (MOTOR_KUCUK=1): 24 temsilî günlük MILP, küçük tablo ızgarası, 500 senaryoluk Monte Carlo."""
+    return os.environ.get("MOTOR_KUCUK") == "1"
+
+
 def tasarim_sec(h: Hazirlik, o, kv: KullaniciVarsayimlari, seviye, f=None) -> tuple[Tasarim, dict]:
     asgari_sfk = deger(h.cfg["gelir_yigini"]["yan_hizmet"]["asgari_guc"])
     if kv.sabit_tasarim:
@@ -36,7 +42,7 @@ def tasarim_sec(h: Hazirlik, o, kv: KullaniciVarsayimlari, seviye, f=None) -> tu
     else:
         kal = {"dz", "yekg"} | ({"yh"} if kv.sfk_katilimi else set())
         o.opt["mip_bosluk"] = 0.005  # tam analiz: %0,5 MIP boşluğu (v1 %0,1); değer farkı ihmal edilebilir, süre kısalır
-        milp = o.milp(kal, seviye, K=None, zaman=240, yh_carpan=sfk_milp_carpani(o))
+        milp = o.milp(kal, seviye, K=24 if kucuk() else None, zaman=240, yh_carpan=sfk_milp_carpani(o))
         d = {
             "res_mw": milp["RES [MW]"],
             "ges_mw": round(milp["GES [MWac]"], 1),
@@ -113,7 +119,7 @@ def tam_analiz(h: Hazirlik, kv: KullaniciVarsayimlari, ilerleme=None) -> dict:
     yapilar = [y for y in ("tuccar", "yekdem_opsiyon", "ppa") if y in kv.gelir_yapilari]
     if "yekdem_opsiyon" in yapilar and "tuccar" not in yapilar:
         yapilar = ["tuccar", *yapilar]  # COD 2030 sonrası YEKDEM'siz durum için gerekli
-    seviye_tablo = "v1" if kv.kalibrasyon == "v1" else "hafif"
+    seviye_tablo = "v1" if kv.kalibrasyon == "v1" else ("kucuk" if kucuk() else "hafif")
     tb_T = tablolar.tablo(o, t, seviye_tablo, sigma=sigma or 0.06)
     tb_Y = tablolar.tablo(o, t, seviye_tablo, yekdem=True, sigma=sigma or 0.06) if "yekdem_opsiyon" in yapilar else None
     sure["tablolar_s"] = time.perf_counter() - t1
@@ -130,6 +136,16 @@ def tam_analiz(h: Hazirlik, kv: KullaniciVarsayimlari, ilerleme=None) -> dict:
     bb = basabas(met[en_iyi]["e_npv"], float(f.seviye), egim)
     x = r["npv"][en_iyi]
     sfk_kosullu = {s: float(x[r["senaryo"] == s].mean()) for s in np.unique(r["senaryo"])}
+    # Güven seviyesinin etkisi: rüzgâr model çarpanının (m ~ LogNormal(σ), σ güven seviyesinden) alt/orta/üst üçte birinde E[NPV]
+    q1, q2 = np.quantile(r["m"], [1 / 3, 2 / 3])
+    guven_etkisi = {
+        "sigma": sigma,
+        "m_esik": [float(q1), float(q2)],
+        "e_npv_alt": float(x[r["m"] <= q1].mean()),
+        "e_npv_orta": float(x[(r["m"] > q1) & (r["m"] <= q2)].mean()),
+        "e_npv_ust": float(x[r["m"] > q2].mean()),
+        "kf_degisim_alt_ust": [float(np.mean(r["m"][r["m"] <= q1]) - 1), float(np.mean(r["m"][r["m"] > q2]) - 1)],
+    }
     tetik = []
     if bb is not None:
         tetik.append(
@@ -204,6 +220,7 @@ def tam_analiz(h: Hazirlik, kv: KullaniciVarsayimlari, ilerleme=None) -> dict:
         "takvim": takvim,
         "capex_musd": capex,
         "sfk_kosullu_e_npv": sfk_kosullu,
+        "guven_etkisi": guven_etkisi,
         "res_sigma": sigma,
         "tablo_izgarasi": seviye_tablo,
         "yekdem_katilim": r["ek"].get("yekdem_opsiyon", {}).get("katilim_yil"),

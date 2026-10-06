@@ -12,7 +12,7 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
-from src.ayarlar import ISLENMIS_VERI, KOK
+from src.ayarlar import ISLENMIS_VERI
 
 SAAT = 8760
 
@@ -37,7 +37,7 @@ class UretimProfili:
 
 def piyasa_serisi(kolon: str) -> pd.Series:
     """
-    Saatlik ulusal piyasa serisi (UTC). Önce çevrimdışı işlenmiş veri (data/processed), yoksa uygulamaya gömülü piyasa paketi
+    Saatlik ulusal piyasa serisi (UTC). Önce uygulamaya gömülü piyasa paketi (veri katmanı), yoksa çevrimdışı işlenmiş veri (data/processed)
     (data/atlas/piyasa/saatlik.parquet; v2 web uygulaması kişisel EPİAŞ anahtarı olmadan bununla çalışır).
     """
     kaynak = {
@@ -46,10 +46,14 @@ def piyasa_serisi(kolon: str) -> pd.Series:
         "sfk_fiyat_usd": "yan_hizmet_2023_guncel.parquet",
         "pfk_fiyat_usd": "yan_hizmet_2023_guncel.parquet",
     }
-    yol = ISLENMIS_VERI / kaynak.get(kolon, "")
-    if kolon in kaynak and yol.exists():
-        return pd.read_parquet(yol)[kolon]
-    return pd.read_parquet(KOK / "data" / "atlas" / "piyasa" / "saatlik.parquet")[kolon].astype(float)
+    from src import veri_katmani
+
+    paket = veri_katmani.yol("atlas/piyasa/saatlik.parquet", zorunlu=False)
+    if paket is not None:  # uygulama ve geliştirme aynı seriyi kullanır (işlenmiş veriyle fark < 1e-7)
+        d = pd.read_parquet(paket)
+        if kolon in d:
+            return d[kolon].astype(float)
+    return pd.read_parquet(ISLENMIS_VERI / kaynak[kolon])[kolon]
 
 
 def profil_df_den(df: pd.DataFrame) -> UretimProfili:
