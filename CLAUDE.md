@@ -140,5 +140,16 @@ tüm v2 işi `v2-genel` dalında.
    **Faz A durumu (2026-10-05):** ✅ kod ve analiz; bkz. `docs/v2_A_veri_altyapisi.md`. Modüller: `src/saha.py`,
    `src/kaynaklar/` (open_meteo, gwa, sinirlar, arazi, era5_cds), `src/atlas/` (kalibrasyon, aktarim), `src/uretim/genel.py`;
    betikler `src/v2_A*.py`. Atlas: 90 kalibre santral; aktarım kuralı GWA ölçekli (komşu ≤ 30 km), güven seviyeleri
-   `data/atlas/guven_seviyeleri.csv`. Açık kararlar (kullanıcı): `data/atlas/` commit edilsin mi (v1 kuralı "data/ commit
-   edilmez"), yedek ERA5 grid indirmesi (~7–8 saat CDS), GEM tracker (form ile kullanıcı indirir).
+   `data/atlas/guven_seviyeleri.csv` (mesafeye dayalı: yüksek ≤15 km, orta 15–30, düşük komşu yok; bootstrap GA'lı).
+   **Faz A açık konular kapatıldı (Ö1–Ö4):** `data/atlas` commit istisnası + `data/atlas/README.md` lisans notu;
+   ERA5 Türkiye grid indirmesi (`src/v2_O2_era5_grid.py`, devam ettirilebilir, `data/grid/era5_tr/v1/indirme.log`,
+   1.464 kara hücresi) + Hugging Face düzeni (`src/kaynaklar/hf_veri.py`, kart `hf/README.md`, yükleme `src/v2_hf_yukle.py`
+   — kullanıcı HF_TOKEN ile çalıştırır); GWA 250 m (`src/kaynaklar/gwa250.py`, 17 MB karo) + türbin yerleşimi seçeneği
+   (`Saha.turbin_yerlesimi`, yarıçap 2 km); güven seviyeleri yeniden tanımlandı.
+- **Faz B — Analiz motoru:** ✅ bkz. `docs/v2_B_analiz_motoru.md`. `src/motor/` → `analiz_et(saha, "hizli"|"tam",
+   KullaniciVarsayimlari, ilerleme)` → `Sonuc` (JSON + parquet + grafik verisi + iki dilli gerekçeler). Hızlı tarama ~2 s
+   (profil önbellekte), tam analiz çalışma zamanı "hafif" işletme tablolarıyla; sonuç önbelleği + tek tam analiz kilidi +
+   zaman aşımı (`onbellek.py`); saha raporu HTML/PDF (`rapor.py`). MILP'in SFK geliri doyum beklentisiyle ölçeklenir
+   (`sfk_milp_carpani`). Doğrulama `src/v2_B5_regresyon.py` (Ezine vs v1 baz vaka), `src/v2_B5_dogrulama.py
+   tutarlilik|tarama|sure` → `outputs/v2B/`. Testler `tests/test_v2_motor.py`. 2 çekirdek benzetimi:
+   `MOTOR_CEKIRDEK=2 OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1`.

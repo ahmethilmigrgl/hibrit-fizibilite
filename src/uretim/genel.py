@@ -28,11 +28,33 @@ V2_KLASOR = ISLENMIS_VERI / "v2"
 
 
 def hava_verisi(saha: Saha, y1: int, y2: int, kaynak: str, cfg: dict) -> pd.DataFrame:
+    """
+    kaynak: "grid" (Türkiye ERA5 nokta gridi; yerel ya da Hugging Face), "open_meteo", "cds" (çevrimdışı) ya da
+    "otomatik" (grid → yoksa Open-Meteo). Grid yalnız 2014–2023'ü kapsar.
+    """
+    if kaynak in ("grid", "otomatik"):
+        from src.kaynaklar import era5_grid, hf_veri
+
+        try:
+            d = era5_grid.ac(hf_veri.dosya(f"era5_tr/{era5_grid.GRID_SURUMU}/noktalar/{era5_grid.dosya_adi(saha.enlem, saha.boylam)}"))
+            d = d.loc[f"{y1}-01-01" : f"{y2}-12-31 23:00"]
+            if len(d) >= 8760 * (y2 - y1 + 1) - 48:
+                d.attrs["kaynak"] = "era5_grid"
+                return d
+        except (FileNotFoundError, OSError):
+            pass
+        if kaynak == "grid":
+            raise FileNotFoundError("ERA5 grid noktası bulunamadı")
+        kaynak = "open_meteo"
     if kaynak == "open_meteo":
-        return open_meteo.indir(saha.enlem, saha.boylam, f"{y1}-01-01", f"{y2}-12-31").drop(columns=["om_enlem", "om_boylam"])
+        d = open_meteo.indir(saha.enlem, saha.boylam, f"{y1}-01-01", f"{y2}-12-31").drop(columns=["om_enlem", "om_boylam"])
+        d.attrs["kaynak"] = "open_meteo"
+        return d
     if kaynak == "cds":
         d = ruzgar.era5_coklu_yil(saha.kod, saha.enlem, saha.boylam, y1, y2, cfg["uretim"]["ruzgar"])
-        return d[~d.index.duplicated()][["u100", "v100", "u10", "v10", "t2m", "sp"]]
+        d = d[~d.index.duplicated()][["u100", "v100", "u10", "v10", "t2m", "sp"]]
+        d.attrs["kaynak"] = "cds"
+        return d
     raise ValueError(f"Bilinmeyen rüzgâr kaynağı: {kaynak}")
 
 
@@ -91,7 +113,7 @@ def profil_uret(
     bilgi = {
         "saha": saha.ad,
         "kod": saha.kod,
-        "ruzgar_kaynagi": ruzgar_kaynagi,
+        "ruzgar_kaynagi": hava.attrs.get("kaynak", ruzgar_kaynagi),  # fiilen kullanılan kaynak
         "kalibrasyon": kal,
         "turbin": deger(cr["turbin_modeli"]),
         "gobek": deger(cr["gobek_yuksekligi"]),

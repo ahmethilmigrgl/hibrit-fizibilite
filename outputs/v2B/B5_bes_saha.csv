@@ -1,0 +1,6 @@
+﻿saha,il/ilçe,tarife,turbin,gwa_100m,guven,res_kf_%,ges_kf_%,res_yakalanma,ges_yakalanma,lcoe_res,lcoe_ges,basabas_res,basabas_ges,npv_RES,npv_GES,npv_RES+GES,optimum,karar,optimum_npv,uyarilar,sure_s
+Kıyı rüzgârlı: İzmir-Karaburun,İzmir/Karaburun,4,E-141/4200@120,7.380,yüksek,22.136,20.902,1.037,0.722,83.827,50.441,94.512,88.140,-28.396,-14.864,-32.215,RES 0/GES 0/BESS 30,Yatırım yok,-5.568,,2.885
+İç Anadolu rüzgârlı: Sivas-Kangal,Sivas/Kangal,11,E-141/4200@120,7.150,düşük,31.018,20.677,1.049,0.719,61.773,52.249,69.105,91.246,-11.892,-16.339,-16.096,RES 0/GES 0/BESS 0,Yatırım yok,-6.921,guven,2.607
+Güneşli güney: Karaman,Karaman/Karaman merkez,8,E-141/4200@135,4.860,düşük,16.227,21.794,1.059,0.721,113.461,48.916,125.574,85.366,-40.184,-13.992,-43.418,RES 0/GES 0/BESS 0,Yatırım yok,-6.292,guven,2.304
+Düşük rüzgârlı: Ankara-Polatlı,Ankara/Polatlı,3,E-141/4200@135,5.030,düşük,18.273,20.412,1.096,0.719,100.615,51.482,106.739,89.916,-33.689,-15.439,-37.807,RES 0/GES 0/BESS 30,Yatırım yok,-4.414,guven,2.502
+Dağlık: Erzurum-Palandöken,Erzurum/Palandöken,11,E-126/4200@105,7.800,düşük,27.625,19.053,1.005,0.720,68.885,56.384,81.916,98.544,-21.562,-18.550,-26.846,RES 0/GES 0/BESS 0,Yatırım yok,-6.921,guven,2.642

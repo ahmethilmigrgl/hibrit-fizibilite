@@ -1,0 +1,4 @@
+﻿saha,guven,hizli_tasarim,tam_tasarim,hizli_optimum_npv_deterministik,tam_milp_npv_deterministik,hizli_en_iyi_standart,hizli_karar,tam_yedek_tasarim,tam_E[NPV]_en_iyi_yapi,tam_en_iyi_yapi,tam_karar,hizli_s,tam_s
+Çanakkale-Ezine,yüksek,RES 0.0 / GES 0 / BESS 0/0,RES 8.4 / GES 0 / BESS 30/60,-6.05,-4.94,RES,Yatırım yok,,-7.60,yekdem_opsiyon,rafa_kaldir,2.16,260.06
+Sivas-Gürün,yüksek,RES 58.8 / GES 0 / BESS 30/57,RES 58.8 / GES 0 / BESS 32/60,-1.64,1.18,RES,Yatırım yok,,-3.77,yekdem_opsiyon,rafa_kaldir,3.02,325.25
+Balıkesir-Susurluk,yüksek,RES 58.8 / GES 0 / BESS 31/60,RES 58.8 / GES 0 / BESS 32/60,4.85,4.16,RES,"Optimum (temsilî gün, +batarya)",,-3.10,yekdem_opsiyon,rafa_kaldir,2.49,308.65

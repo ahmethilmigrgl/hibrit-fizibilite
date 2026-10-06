@@ -344,3 +344,21 @@ v2:
     birim: "km, m, GWA değişkenlik katsayısı farkı / eşiği"
     kaynak: "Ö4: A4 çapraz doğrulamasının kuyruk incelemesiyle yeniden tanımlandı (docs/v2_A_veri_altyapisi.md §5)"
     not: "Yüksek: benzer komşu santral ≤ 15 km; orta: en yakın benzer komşu 15–30 km; düşük: 30 km içinde benzer santral yok (GWA × ulusal medyan artık). Komşusuz santrallerde hatayı arazi karmaşıklığı ayırt etmedi (Spearman 0,01); eski karmaşıklık tabanlı orta/düşük ayrımı kaldırıldı. Seçilen tanım medyan ve %90'lık hatada sıralı (bootstrap aralıkları A4_guven_bootstrap.csv)"
+  motor:
+    value:
+      veri_surumu: "v2A-2026-10"
+      profil_yillari: [2014, 2023]
+      gunes_model_hatasi: 0.04
+      kesinti_kurtarma: 0.158
+      kesinti_deger_faktoru: 0.89
+      hizli_sure_hedefi_s: 90
+      tam_sure_hedefi_s: 600
+      tam_zaman_asimi_s: 900
+      onbellek_azami_mb: 500
+      mc_baslangic: 2000
+      mc_azami: 16000
+      mc_hedef_se_musd: 0.25
+      karar: {yatirim_p_asgari: 0.65, yatirim_cvar_capex_orani: -0.25}
+    birim: "çeşitli"
+    kaynak: "Proje kararı (Faz B). Kesinti kurtarma payı ve değer faktörü: v1 outputs/07/kesinti_batarya_kurtarma.csv (Ezine referans santralleri)"
+    not: "Karar kuralı v1'in genişletilmesi: E[NPV] > 0, P(NPV>0) ≥ 0,65 ve CVaR %5 ≥ −0,25 × CAPEX → yatırım yap; yalnız E[NPV] > 0 → durum tespiti + sınırlı teklif (azami prim = E[NPV]); aksi halde rafa kaldır"
