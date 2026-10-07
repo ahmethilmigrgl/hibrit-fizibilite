@@ -22,9 +22,13 @@ from src.risk.gezgin import gezgin_degerle, gezgin_yukle
 R = KOK / "results"
 REPO_URL = "https://github.com/KULLANICI/hibrit-fizibilite"  # yayından sonra güncellenecek
 
-# Palet (outputs/ grafikleriyle aynı; renk körlüğü için doğrulanmış kategorik sıra)
-RES, GES, HIBRIT, BATARYA, KOYU, SOLUK = "#2a78d6", "#eb6834", "#1baf7a", "#7f6bd1", "#1d4f91", "#8a8984"
-TASARIM_RENK = {"A": RES, "C": BATARYA, "D": HIBRIT, "E": KOYU, "F1": GES, "F2": "#b8860b", "F2a": "#c9a227"}
+# Palet (outputs/ grafikleriyle aynı; renk körlüğü için doğrulanmış kategorik sıra): tasarım belirteçlerinden; koyu temada
+# ortak grafik şablonu bu renkleri koyu tonlara çevirir (uygulama/tasarim/grafik.py)
+from uygulama.tasarim import grafik as _grafik
+from uygulama.tasarim.tokenlar import VERI as _V
+
+RES, GES, HIBRIT, BATARYA, KOYU, SOLUK = (_V[k] for k in ("res", "ges", "hibrit", "batarya", "koyu", "soluk"))
+TASARIM_RENK = {"A": RES, "C": BATARYA, "D": HIBRIT, "E": KOYU, "F1": GES, "F2": _V["altin"], "F2a": _V["altin2"]}
 SENARYO_RENK = {"Yavaş doyum": HIBRIT, "Baz doyum": RES, "Hızlı doyum": GES, "SFK'ya katılamama": SOLUK}
 
 dil = st.session_state.get("dil", "TR")
@@ -64,25 +68,13 @@ def tablo(df: pd.DataFrame, **kw) -> None:
 
 
 def ciz(fig: go.Figure, **kw) -> None:
-    """st.plotly_chart: dile göre sayı ayıraçları (Plotly 'separators': önce ondalık, sonra binlik)."""
-    fig.update_layout(separators=",." if dil == "TR" else ".,")
-    st.plotly_chart(fig, **kw)
+    """Ortak grafik şablonu (uygulama/tasarim/grafik.py): tema, dile göre sayı ayıraçları, sade araç çubuğu."""
+    kw.pop("use_container_width", None)
+    _grafik.ciz(fig, dil=dil, **kw)
 
 
 def sekil(fig: go.Figure, baslik: str = "", y: str = "", x: str = "", yukseklik: int = 380) -> go.Figure:
-    fig.update_layout(
-        title=dict(text=birim(baslik), x=0, font=dict(size=15)),
-        height=yukseklik,
-        margin=dict(l=10, r=10, t=50, b=10),
-        plot_bgcolor="white",
-        paper_bgcolor="white",
-        legend=dict(orientation="h", y=-0.2),
-        font=dict(family="Inter, Arial", size=12),
-        hovermode="x unified",
-    )
-    fig.update_xaxes(title=birim(x), showgrid=False, linecolor="#d0cfca")
-    fig.update_yaxes(title=birim(y), gridcolor="#ecebe7", zerolinecolor="#b9b8b2")
-    return fig
+    return _grafik.sekil(fig, birim(baslik), birim(y), birim(x), yukseklik)
 
 
 @st.cache_data
@@ -819,9 +811,10 @@ with sekmeler[5]:
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         ),
     ]
-    for sutun, (ad, yol, tur) in zip(st.columns(len(belgeler)), belgeler):
-        dosya = KOK / yol
-        if dosya.exists():
-            sutun.download_button(ad, dosya.read_bytes(), file_name=dosya.name, mime=tur, width="stretch")
-        else:  # dosya dağıtımda yoksa GitHub bağlantısı
-            sutun.markdown(f"[{ad}]({REPO_URL}/blob/main/{yol})")
+    with st.container(key="indir_kartlari"):
+        for sutun, (ad, yol, tur) in zip(st.columns(len(belgeler)), belgeler):
+            dosya = KOK / yol
+            if dosya.exists():
+                sutun.download_button(ad, dosya.read_bytes(), file_name=dosya.name, mime=tur, width="stretch", icon=":material/download:")
+            else:  # dosya dağıtımda yoksa GitHub bağlantısı
+                sutun.link_button(ad, f"{REPO_URL}/blob/main/{yol}", width="stretch", icon=":material/open_in_new:")

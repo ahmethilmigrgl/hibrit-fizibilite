@@ -163,3 +163,8 @@ tüm v2 işi `v2-genel` dalında.
    güven iki seviye (≤30 km yüksek), türbin yerleşimi varsayılan açık. Testler: `tests/test_v2_uygulama.py` (AppTest;
    `MOTOR_KUCUK=1` yalnız testte küçük tam analiz), tarayıcı `src/v2_C8_tarayici.py` (Playwright + Chrome) → `docs/img/v2/`.
    Yöntem sayfası sayıları `results/v2_dogrulama.json` (`src/v2_C9_sonuclari_paketle.py`). Hugging Face/yayın bu fazda yok.
+- **Arayüz tasarım sistemi "Eşik" (dal `v2-arayuz`):** ✅ bkz. `docs/v2_tasarim_sistemi.md`. Görünüm `uygulama/tasarim/` altında
+   (`tokenlar.py` tek renk/yazı kaynağı, `stil.py` CSS + tema düğmesi, `bilesenler.py`, `grafik.py` ortak Plotly şablonu).
+   Açık tema = yatırım raporu, koyu tema = kontrol odası. **Renk kodu yalnız `tokenlar.py`'de**; değişince
+   `.venv/bin/python src/v2_tasarim_tema.py` (`.streamlit/config.toml` + logolar üretilir, elle düzenlenmez). Harita altlığı
+   karosuz (`data/atlas/altlik_tr.geojson`), yazı tipleri yerel (`static/fonts`, OFL). Testler `tests/test_v2_tasarim.py`.

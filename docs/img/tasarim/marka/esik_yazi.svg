@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 40" width="200" height="40" role="img" aria-label="Eşik">
+  <g transform="translate(2,4)">
+  <!-- Üç sütun: rüzgâr, güneş, batarya. Yatay çizgi: başabaş eşiği; eşiği aşan kısım vurgu rengi. -->
+  <g fill="currentColor" opacity="0.4">
+    <rect x="4.5" y="16" width="6" height="12" rx="1"/>
+    <rect x="13" y="16" width="6" height="12" rx="1"/>
+    <rect x="21.5" y="19" width="6" height="9" rx="1"/>
+  </g>
+  <g fill="var(--vurgu, #0f6b57)">
+    <rect x="4.5" y="3" width="6" height="11" rx="1"/>
+    <rect x="13" y="8" width="6" height="6" rx="1"/>
+  </g>
+  <rect x="1.5" y="14.2" width="29" height="1.8" rx=".9" fill="currentColor"/>
+  </g>
+  <text x="44" y="28" font-family="'IBM Plex Sans','Public Sans',system-ui,sans-serif" font-size="23" font-weight="600" letter-spacing="-0.3" fill="currentColor">Eşik</text>
+  <text x="44" y="38" font-family="'IBM Plex Mono',ui-monospace,monospace" font-size="6.6" letter-spacing="1.4" fill="currentColor" opacity="0.6">HİBRİT SAHA ANALİZİ</text>
+</svg>

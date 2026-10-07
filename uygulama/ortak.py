@@ -15,11 +15,12 @@ import streamlit as st
 
 from src.ayarlar import config_oku, deger
 
-# v1 dashboard paleti (renk körlüğü için doğrulanmış kategorik sıra) + harita için tek tonlu sıralı skala
-RES, GES, HIBRIT, BATARYA, KOYU, SOLUK = "#2a78d6", "#eb6834", "#1baf7a", "#7f6bd1", "#1d4f91", "#8a8984"
-# Başabaş fiyatı: düşük = iyi. Tek tonlu (mavi) sıralı skala, açıktan koyuya; renk körlüğünde sıralama korunur (viridis
-# yerine v1 mavisiyle tutarlı). Koyu = düşük başabaş (daha cazip).
-SIRALI = ["#08306b", "#1d4f91", "#2a78d6", "#5c9be3", "#9cc3ef", "#d7e7f8"]
+# Kanonik veri paleti (v1, renk körlüğü için doğrulanmış kategorik sıra) tasarım belirteçlerinden; koyu temada grafik
+# şablonu (uygulama/tasarim/grafik.py) bu renkleri otomatik olarak koyu tonlara çevirir.
+from uygulama.tasarim import grafik as _grafik
+from uygulama.tasarim.tokenlar import VERI as _VERI
+
+RES, GES, HIBRIT, BATARYA, KOYU, SOLUK = (_VERI[k] for k in ("res", "ges", "hibrit", "batarya", "koyu", "soluk"))
 
 
 def dil() -> str:
@@ -68,24 +69,12 @@ def tablo(df: pd.DataFrame, **kw) -> None:
 
 
 def ciz(fig: go.Figure, **kw) -> None:
-    fig.update_layout(separators=",." if dil() == "TR" else ".,")
-    st.plotly_chart(fig, **kw)
+    """Ortak grafik şablonu + dile göre sayı ayıraçları + sade araç çubuğu (uygulama/tasarim/grafik.py)."""
+    _grafik.ciz(fig, dil=dil(), **kw)
 
 
-def sekil(fig: go.Figure, baslik: str = "", y: str = "", x: str = "", yukseklik: int = 340) -> go.Figure:
-    fig.update_layout(
-        title=dict(text=baslik, x=0, font=dict(size=14)),
-        height=yukseklik,
-        margin=dict(l=10, r=10, t=44, b=10),
-        plot_bgcolor="white",
-        paper_bgcolor="white",
-        legend=dict(orientation="h", y=-0.22),
-        font=dict(family="Inter, Arial", size=12),
-        hovermode="x unified",
-    )
-    fig.update_xaxes(title=x, showgrid=False, linecolor="#d0cfca")
-    fig.update_yaxes(title=y, gridcolor="#ecebe7", zerolinecolor="#b9b8b2")
-    return fig
+def sekil(fig: go.Figure, baslik: str = "", y: str = "", x: str = "", yukseklik: int = 340, alt: str = "") -> go.Figure:
+    return _grafik.sekil(fig, baslik, y, x, yukseklik, alt)
 
 
 def uyari_bandi() -> None:
@@ -99,7 +88,7 @@ def uyari_bandi() -> None:
             "connection capacity and local conditions are not modelled. The wind estimate relies on reanalysis data and "
             "neighbouring wind-farm calibration rather than on-site measurement.",
         ),
-        icon="⚠️",
+        icon=":material/warning:",
     )
 
 
@@ -117,16 +106,21 @@ ATIFLAR_EN = (
 
 
 def altbilgi() -> None:
-    st.divider()
-    st.caption(
-        ATIFLAR_EN
+    import html
+
+    st.html(
+        '<div class="esik-alt">'
+        + html.escape(ATIFLAR_EN)
         + " "
-        + T(
-            "Kaynak: EPİAŞ Şeffaflık Platformu (seffaflik.epias.com.tr). Kod MIT lisanslı; veriler kaynaklarının koşullarına tabi "
-            "(DATA_SOURCES.md). Gizlilik: kişisel veri toplanmaz (Yöntem sayfası).",
-            "Source: EPİAŞ Transparency Platform (seffaflik.epias.com.tr). Code under MIT; data subject to their sources' terms "
-            "(DATA_SOURCES.md). Privacy: no personal data is collected (see Method page).",
+        + html.escape(
+            T(
+                "Kaynak: EPİAŞ Şeffaflık Platformu (seffaflik.epias.com.tr). Kod MIT lisanslı; veriler kaynaklarının koşullarına tabi "
+                "(DATA_SOURCES.md). Gizlilik: kişisel veri toplanmaz (Yöntem sayfası).",
+                "Source: EPİAŞ Transparency Platform (seffaflik.epias.com.tr). Code under MIT; data subject to their sources' terms "
+                "(DATA_SOURCES.md). Privacy: no personal data is collected (see Method page).",
+            )
         )
+        + "</div>"
     )
 
 

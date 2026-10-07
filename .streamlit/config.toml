@@ -1,10 +1,154 @@
-[theme]
-base = "light"
-primaryColor = "#1baf7a"
-backgroundColor = "#ffffff"
-secondaryBackgroundColor = "#f5f5f2"
-textColor = "#0b0b0b"
-font = "sans serif"
+# Bu dosya src/v2_tasarim_tema.py tarafından uygulama/tasarim/tokenlar.py'den üretilir; elle düzenlemeyin.
+
+[client]
+toolbarMode = "viewer"
 
 [server]
 headless = true
+enableStaticServing = true
+
+[theme]
+showWidgetBorder = true
+headingFontSizes = ["2.4rem", "1.75rem", "1.3rem", "1.1rem", "1rem", "0.9rem"]
+
+[[theme.fontFaces]]
+family = "Public Sans"
+url = "app/static/fonts/public-sans-latin-wght-normal.woff2"
+weight = "100 900"
+unicodeRange = "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD"
+
+[[theme.fontFaces]]
+family = "Public Sans"
+url = "app/static/fonts/public-sans-latin-ext-wght-normal.woff2"
+weight = "100 900"
+unicodeRange = "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF"
+
+[[theme.fontFaces]]
+family = "Newsreader"
+url = "app/static/fonts/newsreader-latin-wght-normal.woff2"
+weight = "200 800"
+unicodeRange = "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD"
+
+[[theme.fontFaces]]
+family = "Newsreader"
+url = "app/static/fonts/newsreader-latin-ext-wght-normal.woff2"
+weight = "200 800"
+unicodeRange = "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF"
+
+[[theme.fontFaces]]
+family = "IBM Plex Sans"
+url = "app/static/fonts/ibm-plex-sans-latin-wght-normal.woff2"
+weight = "100 700"
+unicodeRange = "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD"
+
+[[theme.fontFaces]]
+family = "IBM Plex Sans"
+url = "app/static/fonts/ibm-plex-sans-latin-ext-wght-normal.woff2"
+weight = "100 700"
+unicodeRange = "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF"
+
+[[theme.fontFaces]]
+family = "IBM Plex Mono"
+url = "app/static/fonts/ibm-plex-mono-latin-400-normal.woff2"
+weight = "400"
+unicodeRange = "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD"
+
+[[theme.fontFaces]]
+family = "IBM Plex Mono"
+url = "app/static/fonts/ibm-plex-mono-latin-ext-400-normal.woff2"
+weight = "400"
+unicodeRange = "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF"
+
+[[theme.fontFaces]]
+family = "IBM Plex Mono"
+url = "app/static/fonts/ibm-plex-mono-latin-500-normal.woff2"
+weight = "500"
+unicodeRange = "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD"
+
+[[theme.fontFaces]]
+family = "IBM Plex Mono"
+url = "app/static/fonts/ibm-plex-mono-latin-ext-500-normal.woff2"
+weight = "500"
+unicodeRange = "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF"
+
+[[theme.fontFaces]]
+family = "IBM Plex Mono"
+url = "app/static/fonts/ibm-plex-mono-latin-600-normal.woff2"
+weight = "600"
+unicodeRange = "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD"
+
+[[theme.fontFaces]]
+family = "IBM Plex Mono"
+url = "app/static/fonts/ibm-plex-mono-latin-ext-600-normal.woff2"
+weight = "600"
+unicodeRange = "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF"
+
+[theme.light]
+primaryColor = "#0f6b57"
+backgroundColor = "#f8f6f1"
+secondaryBackgroundColor = "#f0ede5"
+textColor = "#1b1f1d"
+borderColor = "#e2ddd2"
+linkColor = "#0f6b57"
+codeTextColor = "#1b1f1d"
+codeBackgroundColor = "#f0ede5"
+dataframeBorderColor = "#e2ddd2"
+dataframeHeaderBackgroundColor = "#f0ede5"
+dataframeHeaderTextColor = "#585f5b"
+font = "Public Sans, system-ui, sans-serif"
+headingFont = "Newsreader, Georgia, serif"
+codeFont = "IBM Plex Mono, ui-monospace, monospace"
+headingFontWeights = [500, 600]
+baseRadius = "4px"
+buttonRadius = "4px"
+greenColor = "#1d7a4c"
+greenTextColor = "#1d7a4c"
+greenBackgroundColor = "#e8f3ec"
+orangeColor = "#8f5b00"
+orangeTextColor = "#8f5b00"
+orangeBackgroundColor = "#fbf2df"
+redColor = "#b3261e"
+redTextColor = "#b3261e"
+redBackgroundColor = "#fbecea"
+blueColor = "#2958a8"
+blueTextColor = "#2958a8"
+blueBackgroundColor = "#eaf0f9"
+yellowColor = "#8f5b00"
+yellowTextColor = "#8f5b00"
+yellowBackgroundColor = "#fbf2df"
+chartCategoricalColors = ["#2a78d6", "#eb6834", "#15966a", "#7f6bd1", "#1d4f91", "#8a8984"]
+
+[theme.dark]
+primaryColor = "#f5b53d"
+backgroundColor = "#0b0f0e"
+secondaryBackgroundColor = "#18201d"
+textColor = "#e7ece9"
+borderColor = "#26312c"
+linkColor = "#f5b53d"
+codeTextColor = "#e7ece9"
+codeBackgroundColor = "#18201d"
+dataframeBorderColor = "#26312c"
+dataframeHeaderBackgroundColor = "#18201d"
+dataframeHeaderTextColor = "#9aa8a1"
+font = "IBM Plex Sans, system-ui, sans-serif"
+headingFont = "IBM Plex Sans, system-ui, sans-serif"
+codeFont = "IBM Plex Mono, ui-monospace, monospace"
+headingFontWeights = [600, 600]
+baseRadius = "6px"
+buttonRadius = "6px"
+greenColor = "#3fcf8e"
+greenTextColor = "#3fcf8e"
+greenBackgroundColor = "#11261c"
+orangeColor = "#ffa45c"
+orangeTextColor = "#ffa45c"
+orangeBackgroundColor = "#2a1d11"
+redColor = "#ff6f7d"
+redTextColor = "#ff6f7d"
+redBackgroundColor = "#2c1418"
+blueColor = "#6cb6ff"
+blueTextColor = "#6cb6ff"
+blueBackgroundColor = "#112033"
+yellowColor = "#ffa45c"
+yellowTextColor = "#ffa45c"
+yellowBackgroundColor = "#2a1d11"
+chartCategoricalColors = ["#5aa9ff", "#ff8a50", "#3fcf8e", "#a993ff", "#8ab4f0", "#9aa39e"]
