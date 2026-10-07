@@ -15,6 +15,27 @@ Proje aşamalar halinde geliştirildi. Her aşama bir commit; revizyonlar ve ön
 | Tutarlılık 2 | YEKDEM yıllık opsiyon, ortak batarya sürücüsü, inşaata hazır takvim | +1,5 M$ | Durum tespiti + ≤1,5 M$ teklif |
 | **Nihai (Aşama 9 A)** | **Fiyat ortalaması: 58 $/MWh medyan değil beklenen değer** | **−1,7 M$** | **Rafa kaldır, tetikleyicileri izle** |
 
+## [2.0.0-rc2] — 2026-10-07 (dal `v2-genel`, yayınlanmadı)
+
+### Arayüz tasarım sistemi birleştirildi (`v2-arayuz` → `v2-genel`)
+- **"Eşik" tasarım sistemi:** açık/koyu tema, belirteçler (`uygulama/tasarim/tokenlar.py`), bileşenler, ortak Plotly
+  şablonu, yerel yazı tipleri (OFL), karosuz altlık harita, logo. Bkz. `docs/v2_tasarim_sistemi.md`.
+- **Çakışmalar** (`CLAUDE.md`, `uygulama/harita.py`, `uygulama/sayfa_analiz.py`):
+  - Hesaplama ve sonuçlar `v2-genel`'den, görünüm `v2-arayuz`'dan alındı.
+  - Revizyon R öğeleri yeni bileşenlere taşındı: ada ve üst sınır harita kenarları (belirteç renkleri), lejant anahtarları,
+    saha kartında `uyari_kutusu`, sonuç uyarılarında görünür kutu, ilk 10 tablosu (`karsilastirma_tablosu` + "Adaları dahil
+    et").
+  - Ada hücrelerinde yüzdelik notu "(sıralama adalar hariç)".
+  - `.streamlit/config.toml` tema betiğiyle yeniden üretildi.
+- **CSV düzeltmesi:** `results/karar_yolculugu.csv` ondalık virgüllü metinleri ("58,8 MW", "≤1,5 M$") tırnaksız
+  olduğundan Vaka sayfasında sütunlar kayıyordu. Metin alanları tırnaklandı, okuyucu açıklaştı. Tüm `results/` ve
+  `data/atlas/` CSV'leri için alan sayısı testi eklendi (başka bozuk dosya yok).
+- **Doğrulama:**
+  - 124 test.
+  - Açık/koyu × 1440/390 px'de 48 ekran ve 4 yükleniyor çekimi (`docs/img/tasarim/birlesim/`, özel uyarı ekranları `07_*`);
+    taşma yok.
+  - Süreler kötüleşmedi: açılış 2,2 s, hızlı tarama 4,6 s, tam analiz 66 s (2 çekirdek, soğuk tablolar).
+
 ## [2.0.0-rc] — 2026-10-06 (dal `v2-genel`, yayınlanmadı)
 
 Türkiye geneli saha tarama ve analiz uygulaması. Ayrıntı: `docs/v2_A_veri_altyapisi.md`, `docs/v2_B_analiz_motoru.md`,

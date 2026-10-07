@@ -7,7 +7,7 @@
 06_yontem,masaustu,1366,1366,False,0,
 01_acilis_harita,mobil,390,390,False,0,
 02_saha_karti,mobil,390,390,False,0,
-03_hizli_tarama,mobil,390,390,False,0,
+03_hizli_tarama,mobil,390,390,False,15,TABLE:402; THEAD:402; TR:402; TH:402; TBODY:402; TR:402; TD:402; TR:402
 04_tam_analiz,mobil,390,390,False,0,
 05_vaka_calismasi,mobil,390,390,False,0,
 06_yontem,mobil,390,390,False,0,

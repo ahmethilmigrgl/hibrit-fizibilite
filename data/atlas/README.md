@@ -14,6 +14,7 @@ kendi lisanslarına tabidir** (MIT'in kapsamında değildir). Ayrıntılı kayna
 | `gwa_tr_1km.npz` | Global Wind Atlas 3 Türkiye 100 m ortalama hız, blok içi en yüksek hız, Weibull A/k (~1 km) | Global Wind Atlas 3.0 (DTU, Dünya Bankası) | **CC BY 4.0** (atıf metni DATA_SOURCES.md'de) |
 | `sinirlar_tr.npz` | İl/ilçe kimlik ızgarası (~1 km) ve adları | geoBoundaries gbOpen TUR (OSM kökenli) | İlçeler **ODbL 1.0**, iller **CC BY-SA 2.0** |
 | `kiyi_tr.npz` | Türkiye ve çevresi kıyı çizgisi noktaları | Natural Earth 1:10m | Kamu malı |
+| `altlik_tr.geojson` | Uygulama haritasının karosuz altlığı: Türkiye kara çokgeni, il sınır çizgileri (sadeleştirilmiş, ~800 m), bölge kıyıları (`src/v2_tasarim_altlik.py`) | geoBoundaries gbOpen TUR ADM1 (OSM kökenli), Natural Earth 1:10m | İl sınırları **CC BY-SA 2.0**; kıyılar kamu malı |
 | `piyasa/saatlik.parquet` | **Ulusal** saatlik PTF (TL, USD), Türkiye geneli rüzgâr/güneş üretimi, SFK/PFK/SMF | EPİAŞ Şeffaflık Platformu | EPİAŞ koşulu: kaynak gösterilerek çoğaltılabilir ve kullanılabilir. Atıf: "Kaynak: EPİAŞ Şeffaflık Platformu (seffaflik.epias.com.tr)" |
 | `piyasa/yillik.csv`, `ozet.json` | Yıllık özetler, kurulu güç (TEİAŞ) | EPİAŞ, TEİAŞ | Aynı |
 | `piyasa/parametreler.json` | Fiyat senaryosu ve Monte Carlo parametreleri | config.yaml (kendi varsayımlarım) | CC BY 4.0 |

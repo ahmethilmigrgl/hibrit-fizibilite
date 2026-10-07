@@ -71,8 +71,8 @@ kaynak = pd.DataFrame(
 tablo(kaynak, hide_index=True, width="stretch")
 st.caption(
     T(
-        "Uygulama çalışırken hiçbir dış API'ye ve kişisel kimlik bilgisine (CDS, EPİAŞ) bağlanmaz: tüm veriler önceden hazırlanmış yerel paketlerden okunur. Harita altlığı OpenStreetMap karolarıdır (tarayıcı yükler).",
-        "At run time the app connects to no external API and uses no personal credentials (CDS, EPİAŞ): all data are read from pre-built local packages. The base map uses OpenStreetMap tiles (loaded by the browser).",
+        "Uygulama çalışırken hiçbir dış API'ye ve kişisel kimlik bilgisine (CDS, EPİAŞ) bağlanmaz: tüm veriler önceden hazırlanmış yerel paketlerden okunur. Harita altlığı uygulamanın kendi il sınırı ve kıyı verisinden çizilir (geoBoundaries, Natural Earth); OpenStreetMap karoları yalnız katman menüsünden seçilirse tarayıcıya yüklenir.",
+        "At run time the app connects to no external API and uses no personal credentials (CDS, EPİAŞ): all data are read from pre-built local packages. The base map is drawn from the app's own province and coastline data (geoBoundaries, Natural Earth); OpenStreetMap tiles are loaded by the browser only if chosen in the layer menu.",
     )
 )
 

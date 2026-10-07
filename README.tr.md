@@ -51,7 +51,15 @@ Ortam ve veri paketleri hazırsa ([Nasıl çalıştırılır](#nasıl-çalışt�
 - **Belgeler:** [veri altyapısı](docs/v2_A_veri_altyapisi.md), [analiz motoru](docs/v2_B_analiz_motoru.md),
   [uygulama](docs/v2_C_arayuz.md).
 
-<p align="center"><img src="docs/img/v2/01_acilis_harita_masaustu.png" width="85%" alt="Ön tarama haritası"></p>
+- **Tasarım:** açık (yatırım raporu) ve koyu (kontrol odası) temalı "Eşik" tasarım sistemi; yerel yazı tipleri, karosuz
+  altlık harita, renk körlüğüne uygun harita skalası ve ortak bileşenler. Bkz. [tasarım sistemi](docs/v2_tasarim_sistemi.md).
+- **Uygulamadaki uyarılar:** tek komşu santrale dayanan tahminler, Türkiye'de gözlenen en yüksek kapasite faktörünü aşan
+  hücreler ("üst sınıra yakın") ve ada sahaları (denizaltı kablosu gerekir; adalar sıralamalardan varsayılan olarak hariç).
+
+| Açık | Koyu |
+|---|---|
+| <img src="docs/img/tasarim/birlesim/01_acilis_masaustu.jpg" alt="Açılış (açık)"> | <img src="docs/img/tasarim/birlesim/01_acilis_masaustu_koyu.jpg" alt="Açılış (koyu)"> |
+| <img src="docs/img/tasarim/birlesim/04_tam_masaustu.jpg" alt="Tam analiz (açık)"> | <img src="docs/img/tasarim/birlesim/07_ada_masaustu_koyu.jpg" alt="Ada uyarısı (koyu)"> |
 
 ## Vaka çalışması (v1.0.0): ana bulgular
 

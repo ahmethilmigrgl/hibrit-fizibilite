@@ -169,3 +169,8 @@ tüm v2 işi `v2-genel` dalında.
    (sıralamalardan varsayılan hariç); tam analiz hızı: `IsletmeLPHizli` (highspy) + MILP `tam_milp_temsili_gun: 96`
    (karşılaştırma için `MOTOR_LP=pyomo`, `MOTOR_TAM_MILP=tamyil`); betikler `src/v2_R1..R5_*.py` → `outputs/v2R/`.
    Bkz. docs/v2_A §5c, docs/v2_C §9.
+- **Arayüz tasarım sistemi "Eşik" (dal `v2-arayuz`, 2026-10-07'de `v2-genel`'e birleştirildi):** ✅ bkz. `docs/v2_tasarim_sistemi.md`. Görünüm `uygulama/tasarim/` altında
+   (`tokenlar.py` tek renk/yazı kaynağı, `stil.py` CSS + tema düğmesi, `bilesenler.py`, `grafik.py` ortak Plotly şablonu).
+   Açık tema = yatırım raporu, koyu tema = kontrol odası. **Renk kodu yalnız `tokenlar.py`'de**; değişince
+   `.venv/bin/python src/v2_tasarim_tema.py` (`.streamlit/config.toml` + logolar üretilir, elle düzenlenmez). Harita altlığı
+   karosuz (`data/atlas/altlik_tr.geojson`), yazı tipleri yerel (`static/fonts`, OFL). Testler `tests/test_v2_tasarim.py`.

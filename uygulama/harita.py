@@ -1,16 +1,27 @@
 """
-Ön tarama haritası (folium). Hücreler 0,25° dikdörtgenler (tek GeoJSON katmanı); renk tek tonlu sıralı skala (koyu = daha
-cazip; renk körlüğünde sıralama korunur). Düşük güvenli hücreler soluk dolgu + kesikli kenarla ayrılır. Kalibre santraller
-ayrı, açılıp kapatılabilir katman. Altlık harita OpenStreetMap karoları (© OpenStreetMap katkıcıları; anahtarsız, yerel kullanım için — herkese açık yayında OSM karo kullanım politikası nedeniyle bir karo sağlayıcısı seçilmeli).
+Ön tarama haritası (folium). Hücreler 0,25° dikdörtgenler (tek GeoJSON katmanı); renk viridis sıralı skala (renk körlüğünde
+sıralama korunur): açık temada koyu mor, koyu temada parlak sarı = daha cazip. Düşük güvenli hücreler soluk dolguyla ayrılır.
+Kalibre santraller ayrı, açılıp kapatılabilir katman.
+
+Altlık: üçüncü taraf karo yok. İl sınırları ve kıyılar (data/atlas/altlik_tr.geojson: geoBoundaries + Natural Earth) temanın
+renkleriyle çizilir; API anahtarı veya karo kullanım politikası gerektirmez. Saha ölçeğinde ayrıntı için katman menüsünden
+isteğe bağlı OpenStreetMap altlığı seçilebilir (© OpenStreetMap katkıcıları; herkese açık yayında OSM karo kullanım
+politikasına uyulmalı).
 """
 
 from __future__ import annotations
+
+import html
+import json
+from functools import lru_cache
 
 import folium
 import numpy as np
 import pandas as pd
 
-from uygulama.ortak import SIRALI, T, sayi, yuzde
+from src import veri_katmani
+from uygulama.ortak import T, sayi, yuzde
+from uygulama.tasarim.tokenlar import TEMALAR
 
 # katman: (sütun, TR ad, EN ad, birim, yüksek değer iyi mi)
 KATMANLAR = {
@@ -20,18 +31,56 @@ KATMANLAR = {
     "res_kf": ("RES kapasite faktörü", "Wind capacity factor", "%", True),
     "ges_kf": ("GES kapasite faktörü", "Solar capacity factor", "%", True),
 }
-DUSUK_GUVEN_OPAKLIK, YUKSEK_GUVEN_OPAKLIK = 0.30, 0.72
+KISA_AD = {
+    "basabas_en_iyi": ("Başabaş", "Break-even"),
+    "basabas_res": ("RES başabaş", "Wind break-even"),
+    "basabas_ges": ("GES başabaş", "Solar break-even"),
+    "res_kf": ("RES KF", "Wind CF"),
+    "ges_kf": ("GES KF", "Solar CF"),
+}
+DUSUK_GUVEN_OPAKLIK, YUKSEK_GUVEN_OPAKLIK = 0.34, 0.86
+SINIF = 6
+BOS_KARO = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"  # saydam 1 px: "sade" altlık
+
+
+@lru_cache(maxsize=1)
+def _altlik() -> dict | None:
+    try:
+        p = veri_katmani.yol("atlas/altlik_tr.geojson", zorunlu=False)
+        return json.loads(p.read_text(encoding="utf-8")) if p is not None else None
+    except Exception:
+        return None
 
 
 def siniflar(v: pd.Series, iyi_yuksek: bool) -> tuple[np.ndarray, list[float]]:
-    """6 sınıf (eşit yüzdelikler); sınıf 0 = en cazip (en koyu)."""
-    q = np.nanquantile(v, np.linspace(0, 1, len(SIRALI) + 1))
-    s = np.clip(np.searchsorted(q[1:-1], v, side="right"), 0, len(SIRALI) - 1)
-    return (len(SIRALI) - 1 - s if iyi_yuksek else s), q.tolist()
+    """6 sınıf (eşit yüzdelikler); sınıf 0 = en cazip."""
+    q = np.nanquantile(v, np.linspace(0, 1, SINIF + 1))
+    s = np.clip(np.searchsorted(q[1:-1], v, side="right"), 0, SINIF - 1)
+    return (SINIF - 1 - s if iyi_yuksek else s), q.tolist()
 
 
 def gosterim(kolon: str, x: float) -> str:
     return yuzde(100 * x, 1) if kolon.endswith("_kf") else sayi(x, 0)
+
+
+def _harita_css(r: dict, y: dict, koyu: bool) -> str:
+    """Leaflet denetimlerini (yakınlaştırma, katman menüsü, ipucu, ölçek, atıf) temaya uydurur."""
+    return f"""<style>
+.leaflet-container{{background:{r["deniz"]}!important;font-family:'{y["arayuz"]}',system-ui,sans-serif;}}
+.leaflet-bar a,.leaflet-control-layers{{background:{r["yuzey"]}!important;color:{r["metin"]}!important;border-color:{r["cizgi"]}!important;}}
+.leaflet-bar{{border:1px solid {r["cizgi"]}!important;box-shadow:none!important;}}
+.leaflet-control-layers{{border:1px solid {r["cizgi"]}!important;box-shadow:none!important;border-radius:6px;font-size:12px;}}
+.leaflet-control-layers-toggle{{filter:{"invert(.85)" if koyu else "none"};}}
+.leaflet-tooltip{{background:{r["yuzey"]};color:{r["metin"]};border:1px solid {r["cizgi"]};border-radius:6px;box-shadow:0 4px 14px rgba(0,0,0,.18);
+  font-size:12px;line-height:1.45;padding:7px 9px;font-variant-numeric:tabular-nums;}}
+.leaflet-tooltip-top:before,.leaflet-tooltip-bottom:before,.leaflet-tooltip-left:before,.leaflet-tooltip-right:before{{display:none;}}
+.leaflet-control-scale-line{{background:{r["yuzey"]}cc;color:{r["metin_soluk"]};border-color:{r["metin_soluk"]};}}
+.leaflet-control-attribution{{background:{r["yuzey"]}cc!important;color:{r["metin_soluk"]};font-size:10px;}}
+.leaflet-control-attribution a{{color:{r["metin_soluk"]};}}
+.esik-secim{{width:22px;height:22px;border-radius:50%;background:{r["vurgu"]};border:3px solid {r["yuzey"]};box-shadow:0 0 0 2px {r["vurgu"]},0 2px 8px rgba(0,0,0,.35);}}
+.esik-aday{{width:22px;height:22px;border-radius:50%;background:{r["yuzey"]};color:{r["metin"]};border:2px solid {r["vurgu"]};
+  font:600 11px/18px '{y["sayi"]}',monospace;text-align:center;}}
+</style>"""
 
 
 def harita(
@@ -43,18 +92,48 @@ def harita(
     turbinler: list | None = None,
     merkez: tuple[float, float] = (39.0, 35.2),
     zoom: int = 6,
+    tema: str = "acik",
 ) -> folium.Map:
-    m = folium.Map(location=list(merkez), zoom_start=zoom, tiles="OpenStreetMap", control_scale=True, prefer_canvas=True)
+    t = TEMALAR[tema]
+    r, sk = t["renk"], t["harita_skala"]
+    koyu = t["streamlit"] == "dark"
+    m = folium.Map(location=list(merkez), zoom_start=zoom, tiles=None, control_scale=True, prefer_canvas=True, min_zoom=5)
+    if zoom <= 6:  # ülke görünümü: her ekran genişliğinde Türkiye'nin tamamı
+        m.fit_bounds([[35.8, 25.7], [42.1, 44.8]])
+    m.get_root().header.add_child(folium.Element(_harita_css(r, t["yazi"], koyu)))
+    folium.TileLayer(BOS_KARO, attr="geoBoundaries · Natural Earth", name=T("Sade altlık", "Plain base map"), control=True).add_to(m)
+    folium.TileLayer("OpenStreetMap", name="OpenStreetMap", control=True, show=False).add_to(m)
+    alt = _altlik()
+    if alt is not None:
+        altlik = folium.GeoJson(
+            alt,
+            name="altlik",
+            control=False,
+            interactive=False,
+            style_function=lambda f: {
+                "fillColor": r["kara"],
+                "fillOpacity": 1 if f["properties"]["tur"] == "ulke" else 0,
+                "color": r["sinir"],
+                "weight": 0.7 if f["properties"]["tur"] == "il" else 0.9,
+            },
+        ).add_to(m)
+        # OSM seçilince sade altlık gizlenir (kara dolgusu karoların üstünü örtmesin)
+        m.get_root().script.add_child(
+            folium.Element(
+                f"{m.get_name()}.on('baselayerchange', function(e) {{ if (e.name === 'OpenStreetMap') {{ {m.get_name()}.removeLayer("
+                f"{altlik.get_name()}); }} else {{ {altlik.get_name()}.addTo({m.get_name()}); {altlik.get_name()}.bringToBack(); }} }});"
+            )
+        )
     if ot is not None and len(ot):
         ad_tr, ad_en, birim, iyi_yuksek = KATMANLAR[kolon]
         v = ot[kolon].astype(float)
         sinif, _ = siniflar(v, iyi_yuksek)
         ozellik = []
-        for r, c in zip(ot.itertuples(), sinif, strict=True):
-            e, b = r.hucre_enlem, r.hucre_boylam
-            dusuk = r.guven != "yüksek"
-            ada = bool(getattr(r, "ada", False))
-            ust = bool(getattr(r, "ust_sinir", False))
+        for rr, c in zip(ot.itertuples(), sinif, strict=True):
+            e, b = rr.hucre_enlem, rr.hucre_boylam
+            dusuk = rr.guven != "yüksek"
+            ada = bool(getattr(rr, "ada", False))
+            ust = bool(getattr(rr, "ust_sinir", False))
             notlar = ([T("Ada: bağlantı denizaltı kablosu gerektirir", "Island: connection requires a submarine cable")] if ada else []) + (
                 [T("Üst sınıra yakın: ihtiyatla değerlendirin", "Near the upper bound: treat with caution")] if ust else []
             )
@@ -74,14 +153,14 @@ def harita(
                         ],
                     },
                     "properties": {
-                        "renk": SIRALI[int(c)],
+                        "renk": sk[int(c)],
                         "dusuk": bool(dusuk),
                         "ada": ada,
                         "ust": ust,
-                        "not": " · ".join(notlar),
-                        "yer": f"{r.il} / {r.ilce}",
-                        "deger": f"{T(ad_tr, ad_en)}: {gosterim(kolon, getattr(r, kolon))} {'' if birim == '%' else birim}",
-                        "res": f"RES KF {gosterim('res_kf', r.res_kf)} · GES KF {gosterim('ges_kf', r.ges_kf)}",
+                        "not": html.escape(" · ".join(notlar)),
+                        "yer": f"<b>{html.escape(rr.il)} / {html.escape(rr.ilce)}</b>",
+                        "deger": f"{T(ad_tr, ad_en)}: <b>{gosterim(kolon, getattr(rr, kolon))}</b> {'' if birim == '%' else birim}",
+                        "res": f"RES KF {gosterim('res_kf', rr.res_kf)} · GES KF {gosterim('ges_kf', rr.ges_kf)}",
                         "guven": T("Güven: ", "Confidence: ") + (T("düşük", "low") if dusuk else T("yüksek", "high")),
                     },
                 }
@@ -92,79 +171,81 @@ def harita(
             style_function=lambda f: {
                 "fillColor": f["properties"]["renk"],
                 "fillOpacity": DUSUK_GUVEN_OPAKLIK if f["properties"]["dusuk"] else YUKSEK_GUVEN_OPAKLIK,
-                "color": "#0b0b0b"
+                "color": r["metin"]
                 if f["properties"]["ust"]
-                else ("#7f6bd1" if f["properties"]["ada"] else ("#52514e" if f["properties"]["dusuk"] else f["properties"]["renk"])),
-                "weight": 2.2 if (f["properties"]["ust"] or f["properties"]["ada"]) else (0.8 if f["properties"]["dusuk"] else 0.4),
-                "dashArray": "1 4" if f["properties"]["ada"] else ("3 3" if f["properties"]["dusuk"] else None),
+                else (t["veri"]["batarya"] if f["properties"]["ada"] else f["properties"]["renk"]),
+                "weight": 2.2 if (f["properties"]["ust"] or f["properties"]["ada"]) else (0 if f["properties"]["dusuk"] else 0.5),
+                "dashArray": "1 4" if f["properties"]["ada"] else None,
             },
+            highlight_function=lambda f: {"weight": 2, "color": r["metin"]},
             tooltip=folium.GeoJsonTooltip(fields=["yer", "deger", "res", "guven", "not"], labels=False),
         ).add_to(m)
     if santral is not None and len(santral):
         fg = folium.FeatureGroup(name=T("Kalibre RES santralleri", "Calibrated wind farms"), show=True)
-        for r in santral.itertuples():
+        for rr in santral.itertuples():
             folium.CircleMarker(
-                [r.enlem, r.boylam],
-                radius=4,
-                color="#0b0b0b",
-                weight=1,
+                [rr.enlem, rr.boylam],
+                radius=3.6,
+                color=r["zemin"] if koyu else r["metin"],
+                weight=1.3,
                 fill=True,
-                fill_color="#ffffff",
+                fill_color=r["metin"] if koyu else r["yuzey"],
                 fill_opacity=1,
-                tooltip=f"{r.ad} · {T('gözlenen KF', 'observed CF')} {gosterim('res_kf', r.gozlenen_kf)} · {r.turbin}",
+                tooltip=f"<b>{html.escape(rr.ad)}</b><br>{T('gözlenen KF', 'observed CF')} {gosterim('res_kf', rr.gozlenen_kf)} · {html.escape(str(rr.turbin))}",
             ).add_to(fg)
         fg.add_to(m)
     if aday is not None and len(aday):
         fg = folium.FeatureGroup(name=T("Aday noktalar", "Candidate points"))
-        for i, r in enumerate(aday.itertuples(), 1):
+        for i, rr in enumerate(aday.itertuples(), 1):
             folium.Marker(
-                [r.enlem, r.boylam],
-                tooltip=f"{T('Aday', 'Candidate')} {i}: GWA {sayi(r.gwa_1km, 1)} m/s",
-                icon=folium.DivIcon(
-                    html=f'<div style="background:#1d4f91;color:#fff;border-radius:50%;width:22px;height:22px;'
-                    f'text-align:center;line-height:22px;font:600 12px Arial;border:2px solid #fff">{i}</div>',
-                    icon_size=(22, 22),
-                    icon_anchor=(11, 11),
-                ),
+                [rr.enlem, rr.boylam],
+                tooltip=f"{T('Aday', 'Candidate')} {i}: GWA {sayi(rr.gwa_1km, 1)} m/s",
+                icon=folium.DivIcon(html=f'<div class="esik-aday">{i}</div>', icon_size=(22, 22), icon_anchor=(11, 11)),
             ).add_to(fg)
         fg.add_to(m)
     if turbinler:
         fg = folium.FeatureGroup(name=T("Türbin yerleşimi (GWA en rüzgârlı hücreler)", "Turbine layout (windiest GWA cells)"))
         for e, b in turbinler:
-            folium.CircleMarker([e, b], radius=2.5, color="#1baf7a", fill=True, fill_opacity=1, weight=0).add_to(fg)
+            folium.CircleMarker([e, b], radius=2.5, color=r["vurgu"], fill=True, fill_opacity=1, weight=0).add_to(fg)
         fg.add_to(m)
     if secim is not None:
-        folium.Marker(list(secim), tooltip=T("Seçilen nokta", "Selected point"), icon=folium.Icon(color="red", icon="star")).add_to(m)
-    folium.LayerControl(collapsed=True).add_to(m)
+        folium.Marker(
+            list(secim),
+            tooltip=T("Seçilen nokta", "Selected point"),
+            icon=folium.DivIcon(html='<div class="esik-secim"></div>', icon_size=(22, 22), icon_anchor=(11, 11)),
+        ).add_to(m)
+    folium.LayerControl(collapsed=True, position="topright").add_to(m)
     return m
 
 
-def lejant(ot: pd.DataFrame | None, kolon: str) -> str:
-    """Markdown/HTML lejant: sınıf eşikleri + güven gösterimi."""
+def lejant(ot: pd.DataFrame | None, kolon: str, tema: str = "acik") -> str:
+    """HTML lejant: 6 sınıf (renk + aralık) ve güven/santral anahtarı. Sınıflar en cazipten başlar."""
     if ot is None or not len(ot):
         return ""
     ad_tr, ad_en, birim, iyi_yuksek = KATMANLAR[kolon]
+    sk = TEMALAR[tema]["harita_skala"]
+    r = TEMALAR[tema]["renk"]
     _, q = siniflar(ot[kolon].astype(float), iyi_yuksek)
-    araliklar = [(q[i], q[i + 1]) for i in range(len(SIRALI))]
+    araliklar = [(q[i], q[i + 1]) for i in range(SINIF)]
     if iyi_yuksek:
         araliklar = araliklar[::-1]
     kutu = "".join(
-        f'<span style="display:inline-block;margin:2px 8px 2px 0"><span style="display:inline-block;width:14px;height:14px;'
-        f'background:{SIRALI[i]};vertical-align:middle;margin-right:4px"></span>{gosterim(kolon, a)}–{gosterim(kolon, b)}</span>'
+        f'<div class="sinif"><i style="background:{sk[i]}"></i><span>{gosterim(kolon, a)}–{gosterim(kolon, b)}</span></div>'
         for i, (a, b) in enumerate(araliklar)
     )
-    guven = (
-        f'<span style="display:inline-block;margin-left:6px"><span style="display:inline-block;width:14px;height:14px;'
-        f'background:{SIRALI[2]};opacity:{DUSUK_GUVEN_OPAKLIK};border:1px dashed #52514e;vertical-align:middle;margin-right:4px">'
-        f"</span>{T('düşük güven (30 km içinde kalibre santral yok)', 'low confidence (no calibrated farm within 30 km)')}</span>"
+    yon = T("yüksek = daha cazip", "higher = more attractive") if iyi_yuksek else T("düşük = daha cazip", "lower = more attractive")
+    anahtar = (
+        f'<div class="anahtar"><span><i style="background:{sk[1]};opacity:{YUKSEK_GUVEN_OPAKLIK}"></i>{T("Yüksek güven", "High confidence")}</span>'
+        f'<span><i style="background:{sk[1]};opacity:{DUSUK_GUVEN_OPAKLIK}"></i>{T("Düşük güven (30 km içinde kalibre santral yok)", "Low confidence (no calibrated farm within 30 km)")}</span>'
+        f'<span><i style="border-radius:50%;width:.6rem;height:.6rem;background:{r["yuzey"]};border:1.5px solid {r["metin"]}"></i>'
+        f"{T('Kalibre RES santrali', 'Calibrated wind farm')}</span>"
+        f'<span><i style="background:transparent;border:2.2px solid {r["metin"]}"></i>'
+        f"{T('Üst sınıra yakın (RES KF gözlenen azaminin üstünde)', 'Near the upper bound (wind CF above the highest observed)')}</span>"
+        f'<span><i style="background:transparent;border:2.2px dotted {TEMALAR[tema]["veri"]["batarya"]}"></i>'
+        f"{T('Ada (denizaltı kablosu gerekir)', 'Island (submarine cable required)')}</span></div>"
     )
-    ozel = (
-        f'<br><span style="display:inline-block;width:14px;height:14px;border:2.2px solid #0b0b0b;vertical-align:middle;margin-right:4px"></span>'
-        f"{T('üst sınıra yakın (RES KF Türkiye gözlenen azamisinin üstünde)', 'near the upper bound (wind CF above the highest observed in Türkiye)')}"
-        f'<span style="display:inline-block;width:14px;height:14px;border:2.2px dotted #7f6bd1;vertical-align:middle;margin:0 4px 0 12px"></span>'
-        f"{T('ada (denizaltı kablosu gerekir)', 'island (submarine cable required)')}"
-    )
+    birim_m = f"{birim}" if birim != "%" else "%"
     return (
-        f'<div style="font-size:12px;line-height:1.6"><b>{T(ad_tr, ad_en)}</b> ({birim}; {T("koyu = daha cazip", "dark = more attractive")})<br>'
-        f"{kutu}{guven}{ozel}</div>"
+        f'<div class="esik-lejant"><div><div class="baslik">{T(ad_tr, ad_en)}, {birim_m} '
+        f'<span style="font-weight:400;color:var(--metin-soluk)">· {yon}</span></div><div class="siniflar">{kutu}</div></div>{anahtar}</div>'
     )

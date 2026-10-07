@@ -1,8 +1,8 @@
-adim,adim_en,degisiklik,degisiklik_en,beklenen_npv_musd,oneri,oneri_en
-Aşama 4,Stage 4,Deterministik optimum: yalnız RES 58,8 MW,Deterministic optimum: wind only 58.8 MW,-1.6,Yatırım yapılamaz,Not investable
-Aşama 5,Stage 5,Batarya + SFK (yan hizmet) geliri ve Monte Carlo,Battery + ancillary (SFK) revenue and Monte Carlo,28.4,Güçlü evet,Strong yes
-Aşama 6,Stage 6,SFK piyasası doyum stres testi,SFK market saturation stress test,4.5,Koşullu onay (PPA ve aşamalı batarya),Conditional approval (PPA and phased battery)
-Aşama 7,Stage 7,Gerçekçi takvim; sistem kesintisi; YEKDEM,Realistic schedule; system curtailment; YEKDEM,2.1,Koşullu onay (inşaata hazır + YEKDEM),Conditional approval (ready-to-build + YEKDEM)
-Tutarlılık 1,Consistency 1,YEKDEM/PPA'da batarya arbitrajı kaldırıldı,Battery arbitrage removed under YEKDEM/PPA,-11.4,Yatırım önerilmez,Do not invest
-Tutarlılık 2,Consistency 2,YEKDEM yıllık opsiyon; ortak batarya sürücüsü; inşaata hazır takvim,YEKDEM annual option; common battery driver; ready-to-build schedule,1.5,Durum tespiti + ≤1,5 M$ teklif,Due diligence + ≤1.5 M$ offer
-Nihai (Aşama 9 A),Final (Stage 9 A),Fiyat ortalaması: 58 $/MWh medyan değil beklenen değer,Price mean: 58 $/MWh is the expected value not the median,-1.7,Rafa kaldır; tetikleyicileri izle,Shelve; monitor triggers
+"adim","adim_en","degisiklik","degisiklik_en","beklenen_npv_musd","oneri","oneri_en"
+"Aşama 4","Stage 4","Deterministik optimum: yalnız RES 58,8 MW","Deterministic optimum: wind only 58.8 MW",-1.6,"Yatırım yapılamaz","Not investable"
+"Aşama 5","Stage 5","Batarya + SFK (yan hizmet) geliri ve Monte Carlo","Battery + ancillary (SFK) revenue and Monte Carlo",28.4,"Güçlü evet","Strong yes"
+"Aşama 6","Stage 6","SFK piyasası doyum stres testi","SFK market saturation stress test",4.5,"Koşullu onay (PPA ve aşamalı batarya)","Conditional approval (PPA and phased battery)"
+"Aşama 7","Stage 7","Gerçekçi takvim; sistem kesintisi; YEKDEM","Realistic schedule; system curtailment; YEKDEM",2.1,"Koşullu onay (inşaata hazır + YEKDEM)","Conditional approval (ready-to-build + YEKDEM)"
+"Tutarlılık 1","Consistency 1","YEKDEM/PPA'da batarya arbitrajı kaldırıldı","Battery arbitrage removed under YEKDEM/PPA",-11.4,"Yatırım önerilmez","Do not invest"
+"Tutarlılık 2","Consistency 2","YEKDEM yıllık opsiyon; ortak batarya sürücüsü; inşaata hazır takvim","YEKDEM annual option; common battery driver; ready-to-build schedule",1.5,"Durum tespiti + ≤1,5 M$ teklif","Due diligence + ≤1.5 M$ offer"
+"Nihai (Aşama 9 A)","Final (Stage 9 A)","Fiyat ortalaması: 58 $/MWh medyan değil beklenen değer","Price mean: 58 $/MWh is the expected value not the median",-1.7,"Rafa kaldır; tetikleyicileri izle","Shelve; monitor triggers"

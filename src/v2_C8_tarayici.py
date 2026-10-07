@@ -39,7 +39,7 @@ TASMA_JS = """() => {
       const s = getComputedStyle(el);
       // görünmez öğeler (gizli sekme panelleri) ve kendi içinde kaydırılan sekme çubukları/tablolar sayılmaz
       if (el.checkVisibility({checkOpacity: true, checkVisibilityCSS: true}) && s.position !== 'fixed' && s.overflowX !== 'auto'
-          && !el.closest('[role="tablist"], [data-testid="stDataFrame"], .stDataFrame, [data-testid="stCode"], iframe, .js-plotly-plot')) {
+          && !el.closest('[role="tablist"], [data-testid="stDataFrame"], .stDataFrame, [data-testid="stCode"], iframe, .js-plotly-plot, .esik-tablo-kap')) {
         tasan.push((el.getAttribute('data-testid') || el.tagName) + ':' + Math.round(r.right));
       }
     }

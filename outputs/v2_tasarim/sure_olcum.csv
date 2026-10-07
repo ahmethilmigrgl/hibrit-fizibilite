@@ -1,0 +1,13 @@
+etiket,olcum,n,medyan_s,min_s,maks_s
+once,açılış (soğuk),3,1.94,1.94,1.94
+once,"açılış (sıcak, yeniden yükleme)",5,0.88,0.87,0.88
+once,hızlı tarama,6,2.94,2.90,3.34
+once,hızlı tarama (ince): ilerleme görünür,6,0.35,0.35,0.35
+once,hızlı tarama (ince): sonuç DOM'da,6,2.74,2.68,2.75
+once,hızlı tarama: sunucu süresi,6,2.30,2.30,2.30
+sonra,açılış (soğuk),3,1.93,1.92,1.94
+sonra,"açılış (sıcak, yeniden yükleme)",5,0.87,0.86,0.88
+sonra,hızlı tarama,6,3.36,2.85,3.37
+sonra,hızlı tarama (ince): ilerleme görünür,6,0.41,0.40,0.42
+sonra,hızlı tarama (ince): sonuç DOM'da,6,2.84,2.78,2.86
+sonra,hızlı tarama: sunucu süresi,6,2.40,2.40,2.40

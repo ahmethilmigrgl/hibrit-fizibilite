@@ -49,7 +49,15 @@ Run locally with one command (after the environment and data packages are in pla
 - **Docs:** [data infrastructure](docs/v2_A_veri_altyapisi.md), [analysis engine](docs/v2_B_analiz_motoru.md),
   [app](docs/v2_C_arayuz.md).
 
-<p align="center"><img src="docs/img/v2/01_acilis_harita_masaustu.png" width="85%" alt="Pre-screening map"></p>
+- **Design:** the "Eşik" design system with a light theme (investment report) and a dark theme (control room); local fonts,
+  a tile-free base map, a colour-blind-safe map scale and consistent components. See [design system](docs/v2_tasarim_sistemi.md).
+- **Caveats shown in the app:** single-neighbour estimates, cells above the highest observed capacity factor in Türkiye
+  ("near the upper bound") and island sites (a submarine cable is required; islands are excluded from rankings by default).
+
+| Light | Dark |
+|---|---|
+| <img src="docs/img/tasarim/birlesim/01_acilis_masaustu.jpg" alt="Opening screen (light)"> | <img src="docs/img/tasarim/birlesim/01_acilis_masaustu_koyu.jpg" alt="Opening screen (dark)"> |
+| <img src="docs/img/tasarim/birlesim/04_tam_masaustu.jpg" alt="Full analysis (light)"> | <img src="docs/img/tasarim/birlesim/07_ada_masaustu_koyu.jpg" alt="Island warning (dark)"> |
 
 ## Case study (v1.0.0): key findings
 
