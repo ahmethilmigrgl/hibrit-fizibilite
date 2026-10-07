@@ -2,54 +2,54 @@
 "guven": [
 {
 "guven": "yüksek",
-"santral": 37.0,
-"ort_hata": -1.332,
-"rmse": 6.534,
-"mutlak_medyan": 3.826,
-"mutlak_p90": 9.807,
-"goreli_rmse_%": 19.665,
-"gunici_rmse_medyan": 5.418,
-"medyan_alt": 2.891,
-"medyan_ust": 6.854,
-"p90_alt": 7.955,
-"p90_ust": 12.808
+"santral": 41.0,
+"ort_hata": -0.049,
+"rmse": 6.049,
+"mutlak_medyan": 3.383,
+"mutlak_p90": 10.404,
+"goreli_rmse_%": 18.206,
+"gunici_rmse_medyan": 5.487,
+"medyan_alt": 2.04,
+"medyan_ust": 4.291,
+"p90_alt": 8.003,
+"p90_ust": 12.653
 },
 {
 "guven": "düşük",
-"santral": 53.0,
-"ort_hata": -0.845,
-"rmse": 7.587,
-"mutlak_medyan": 5.6,
-"mutlak_p90": 11.526,
-"goreli_rmse_%": 22.836,
+"santral": 49.0,
+"ort_hata": -0.913,
+"rmse": 7.491,
+"mutlak_medyan": 5.59,
+"mutlak_p90": 11.446,
+"goreli_rmse_%": 22.547,
 "gunici_rmse_medyan": 7.438,
 "medyan_alt": 4.588,
 "medyan_ust": 7.768,
 "p90_alt": 10.621,
-"p90_ust": 12.646
+"p90_ust": 12.501
 }
 ],
 "cv": [
 {
 "saha GWA modu": "nokta (250 m)",
-"rmse": 9.18,
-"medyan |hata|": 6.33,
+"rmse": 8.94,
+"medyan |hata|": 6.22,
 "P90 |hata|": 14.81,
-"ort. hata": -4.14
+"ort. hata": -3.68
 },
 {
 "saha GWA modu": "gerçek türbin konumları (kâhin)",
-"rmse": 6.66,
-"medyan |hata|": 4.4,
-"P90 |hata|": 10.54,
-"ort. hata": -0.89
+"rmse": 6.48,
+"medyan |hata|": 4.3,
+"P90 |hata|": 9.13,
+"ort. hata": -0.36
 },
 {
 "saha GWA modu": "türbin yerleşimi 2 km (varsayılan)",
-"rmse": 7.17,
-"medyan |hata|": 5.1,
-"P90 |hata|": 11.41,
-"ort. hata": -1.04
+"rmse": 6.87,
+"medyan |hata|": 4.44,
+"P90 |hata|": 11.1,
+"ort. hata": -0.52
 }
 ],
 "ezine": [
@@ -159,50 +159,50 @@
 {
 "saha": "Çanakkale-Ezine",
 "guven": "yüksek",
-"hizli_tasarim": "RES 54.6 / GES -0 / BESS 30/58",
-"tam_tasarim": "RES 54.6 / GES 0 / BESS 31/60",
-"hizli_optimum_npv_deterministik": -4.92,
-"tam_milp_npv_deterministik": -1.74,
+"hizli_tasarim": "RES 58.8 / GES 0 / BESS 31/60",
+"tam_tasarim": "RES 58.8 / GES 0 / BESS 31/60",
+"hizli_optimum_npv_deterministik": -1.83,
+"tam_milp_npv_deterministik": -0.11,
 "hizli_en_iyi_standart": "RES",
 "hizli_karar": "Pozitif NPV'li tasarım yok",
 "tam_yedek_tasarim": null,
-"tam_E[NPV]_en_iyi_yapi": -7.25,
+"tam_E[NPV]_en_iyi_yapi": -6.3,
 "tam_en_iyi_yapi": "yekdem_opsiyon",
 "tam_karar": "rafa_kaldir",
-"hizli_s": 4.31,
-"tam_s": 479.77
+"hizli_s": 3.63,
+"tam_s": 83.46
 },
 {
 "saha": "Sivas-Gürün",
 "guven": "yüksek",
-"hizli_tasarim": "RES 58.8 / GES 0 / BESS 30/56",
-"tam_tasarim": "RES 58.8 / GES 0 / BESS 32/60",
-"hizli_optimum_npv_deterministik": 3.42,
-"tam_milp_npv_deterministik": 5.17,
-"hizli_en_iyi_standart": "RES fazla kurulum (%30)",
-"hizli_karar": "Optimum (temsilî gün, +batarya)",
+"hizli_tasarim": "RES 58.8 / GES 0 / BESS 31/60",
+"tam_tasarim": "RES 54.6 / GES 0 / BESS 32/60",
+"hizli_optimum_npv_deterministik": -2.24,
+"tam_milp_npv_deterministik": -1.97,
+"hizli_en_iyi_standart": "RES",
+"hizli_karar": "Pozitif NPV'li tasarım yok",
 "tam_yedek_tasarim": null,
-"tam_E[NPV]_en_iyi_yapi": -1.48,
+"tam_E[NPV]_en_iyi_yapi": -5.71,
 "tam_en_iyi_yapi": "yekdem_opsiyon",
 "tam_karar": "rafa_kaldir",
-"hizli_s": 4.79,
-"tam_s": 465.33
+"hizli_s": 2.67,
+"tam_s": 83.33
 },
 {
 "saha": "Balıkesir-Susurluk",
 "guven": "yüksek",
-"hizli_tasarim": "RES 58.8 / GES 0 / BESS 31/60",
-"tam_tasarim": "RES 58.8 / GES 0 / BESS 32/60",
-"hizli_optimum_npv_deterministik": -0.28,
-"tam_milp_npv_deterministik": 0.22,
+"hizli_tasarim": "RES 54.6 / GES 0 / BESS 30/60",
+"tam_tasarim": "RES 58.8 / GES 0 / BESS 31/60",
+"hizli_optimum_npv_deterministik": 2.97,
+"tam_milp_npv_deterministik": 1.49,
 "hizli_en_iyi_standart": "RES",
-"hizli_karar": "Pozitif NPV'li tasarım yok",
+"hizli_karar": "Optimum (temsilî gün, +batarya)",
 "tam_yedek_tasarim": null,
-"tam_E[NPV]_en_iyi_yapi": -7.81,
+"tam_E[NPV]_en_iyi_yapi": -5.04,
 "tam_en_iyi_yapi": "yekdem_opsiyon",
 "tam_karar": "rafa_kaldir",
-"hizli_s": 4.6,
-"tam_s": 537.41
+"hizli_s": 3.34,
+"tam_s": 19.1
 }
 ],
 "bes_saha": [
@@ -213,22 +213,22 @@
 "turbin": "E-141/4200@120",
 "gwa_100m": 7.38,
 "guven": "yüksek",
-"res_kf_%": 24.59,
+"res_kf_%": 32.82,
 "ges_kf_%": 21.21,
-"res_yakalanma": 1.04,
+"res_yakalanma": 1.06,
 "ges_yakalanma": 0.72,
-"lcoe_res": 75.85,
+"lcoe_res": 57.75,
 "lcoe_ges": 49.76,
-"basabas_res": 84.75,
+"basabas_res": 63.46,
 "basabas_ges": 86.81,
-"npv_RES": -22.92,
+"npv_RES": -6.29,
 "npv_GES": -14.39,
-"npv_RES+GES": -26.66,
-"optimum": "RES 0/GES 5/BESS 30",
+"npv_RES+GES": -10.07,
+"optimum": "RES 55/GES 0/BESS 30",
 "karar": "Pozitif NPV'li tasarım yok",
-"optimum_npv": -5.78,
+"optimum_npv": -2.33,
 "uyarilar": null,
-"sure_s": 4.33
+"sure_s": 3.78
 },
 {
 "saha": "İç Anadolu rüzgârlı: Sivas-Kangal",
@@ -252,7 +252,7 @@
 "karar": "Pozitif NPV'li tasarım yok",
 "optimum_npv": -6.92,
 "uyarilar": "guven",
-"sure_s": 3.52
+"sure_s": 3.12
 },
 {
 "saha": "Güneşli güney: Karaman",
@@ -276,7 +276,7 @@
 "karar": "Pozitif NPV'li tasarım yok",
 "optimum_npv": -5.25,
 "uyarilar": "guven",
-"sure_s": 3.62
+"sure_s": 2.75
 },
 {
 "saha": "Düşük rüzgârlı: Ankara-Polatlı",
@@ -300,7 +300,7 @@
 "karar": "Pozitif NPV'li tasarım yok",
 "optimum_npv": -5.95,
 "uyarilar": "guven",
-"sure_s": 3.54
+"sure_s": 2.63
 },
 {
 "saha": "Dağlık: Erzurum-Palandöken",
@@ -324,37 +324,37 @@
 "karar": "Pozitif NPV'li tasarım yok",
 "optimum_npv": -6.61,
 "uyarilar": "guven",
-"sure_s": 3.59
+"sure_s": 2.8
 }
 ],
 "sure": [
 {
 "olcum": "açılış (soğuk, masaustu)",
-"sure_s": 1.7
+"sure_s": 2.2
 },
 {
 "olcum": "açılış (sıcak, yeniden yükleme, masaustu)",
-"sure_s": 0.4
+"sure_s": 0.9
 },
 {
 "olcum": "hızlı tarama (arayüz, masaustu)",
-"sure_s": 4.1
+"sure_s": 4.3
 },
 {
 "olcum": "tam analiz (arayüz, soğuk tablolar)",
-"sure_s": 438.5
+"sure_s": 92.6
 },
 {
 "olcum": "açılış (ılık, mobil)",
-"sure_s": 1.2
+"sure_s": 1.5
 },
 {
 "olcum": "açılış (sıcak, yeniden yükleme, mobil)",
-"sure_s": 0.5
+"sure_s": 0.9
 },
 {
 "olcum": "hızlı tarama (arayüz, mobil)",
-"sure_s": 0.9
+"sure_s": 0.8
 }
 ]
 }

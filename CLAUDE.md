@@ -163,3 +163,9 @@ tüm v2 işi `v2-genel` dalında.
    güven iki seviye (≤30 km yüksek), türbin yerleşimi varsayılan açık. Testler: `tests/test_v2_uygulama.py` (AppTest;
    `MOTOR_KUCUK=1` yalnız testte küçük tam analiz), tarayıcı `src/v2_C8_tarayici.py` (Playwright + Chrome) → `docs/img/v2/`.
    Yöntem sayfası sayıları `results/v2_dogrulama.json` (`src/v2_C9_sonuclari_paketle.py`). Hugging Face/yayın bu fazda yok.
+   **Revizyon R (2026-10-07):** aktarım kuralı `config v2.aktarim` (kıyı oranı 0,7, büzülme `r_buzulme_n0: 2`;
+   `aktarim.r_duzelt`), güven yüksek ≤ 30 km; modern türbin doğrulaması `src/v2_R3_modern_turbin.py`; üst sınır
+   `config v2.uygulama.ust_sinir_kf` (gözlenen azami %45,6); adalar `src/kaynaklar/adalar.py` + `config v2.adalar`
+   (sıralamalardan varsayılan hariç); tam analiz hızı: `IsletmeLPHizli` (highspy) + MILP `tam_milp_temsili_gun: 96`
+   (karşılaştırma için `MOTOR_LP=pyomo`, `MOTOR_TAM_MILP=tamyil`); betikler `src/v2_R1..R5_*.py` → `outputs/v2R/`.
+   Bkz. docs/v2_A §5c, docs/v2_C §9.

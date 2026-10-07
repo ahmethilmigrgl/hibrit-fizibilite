@@ -23,7 +23,7 @@ from dataclasses import asdict, replace
 import numpy as np
 
 from src.ayarlar import KOK
-from src.risk.isletme import tablo_uret
+from src.risk.isletme import IsletmeLP, IsletmeLPHizli, tablo_uret
 from src.risk.senaryo import birim_sekiller
 from src.risk.tasarim import Tasarim
 from src.risk.yekdem_tablo import A_DUSUK, YEKDEM_PP, YEKDEM_SABIT
@@ -46,7 +46,9 @@ def izgara(seviye: str, o, sigma: float = 0.125) -> dict:
 
 def _isci(args):
     t, ges, res, sek, yan, H, M, A, pp, sabit = args
-    return tablo_uret(t, ges, res, sek, yan, H, M, A, pp, 58.0, 1.0, sabit)["T"]
+    # highspy doğrudan LP (IsletmeLP ile birebir aynı sonuç, ~4× hızlı; src/risk/isletme.py)
+    lp = IsletmeLP if os.environ.get("MOTOR_LP") == "pyomo" else IsletmeLPHizli  # karşılaştırma için eski sürüm
+    return tablo_uret(t, ges, res, sek, yan, H, M, A, pp, 58.0, 1.0, sabit, lp_sinifi=lp)["T"]
 
 
 def hava_alt_kumesi(o, W: int | None) -> np.ndarray:

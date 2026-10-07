@@ -111,6 +111,7 @@ def kapasite_coz(
     zaman_siniri: float = 600,
     yatirim: str = "zorunlu",
     gelir: dict | None = None,
+    n_aralik: tuple[int, int] | None = None,
 ) -> dict:
     """
     MILP'i kurar ve çözer. sabit: {"N","G","P","E", ("N2","G2")} verilirse ilgili kapasite sabitlenir.
@@ -136,7 +137,8 @@ def kapasite_coz(
     idx = [(s, h) for s, seg in enumerate(segmentler) for h in range(len(seg.fiyat))]
     m.I = pyo.Set(initialize=idx, dimen=2)
     # --- Kapasite değişkenleri
-    m.N = pyo.Var(within=pyo.NonNegativeIntegers, bounds=(0, opt["turbin_azami"]))
+    n_alt, n_ust = n_aralik if n_aralik else (0, opt["turbin_azami"])  # n_aralik: başlangıç çözümünden daraltılmış aralık
+    m.N = pyo.Var(within=pyo.NonNegativeIntegers, bounds=(max(0, n_alt), min(opt["turbin_azami"], n_ust)))
     m.G = pyo.Var(bounds=(0, opt["ges_azami_mw"]))
     m.P = pyo.Var(bounds=(0, None))
     m.E = pyo.Var(bounds=(0, None))
@@ -240,6 +242,7 @@ def kapasite_coz(
 
     from pyomo.contrib import appsi
 
+    t_kurulum = time.time() - t0
     coz = appsi.solvers.Highs()
     coz.config.time_limit = zaman_siniri
     coz.config.mip_gap = opt.get("mip_bosluk", 1e-3)
@@ -274,6 +277,7 @@ def kapasite_coz(
         "Kesinti [%]": 100 * float((W * k_).sum()) / max(float((W * A_).sum()), 1e-9),
         "BESS döngü/yıl": float((W * d_).sum()) / E_val if E_val > 1e-6 else 0.0,
         "Çözüm süresi [s]": sure,
+        "Model kurulum süresi [s]": t_kurulum,
         "MIP boşluğu": bosluk,
         "Çözücü durumu": str(sonuc.termination_condition),
         # Batarya gelir ayrıştırması (yıllık, USD): deşarj geliri − yıpranma, kaynağına göre

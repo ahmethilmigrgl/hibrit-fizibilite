@@ -181,6 +181,15 @@ def saha_karti(kv: dict) -> dict | None:
         f"±{sayi(b['guven_medyan'], 1)} {T('puan', 'pts')}",
         help=T(f"%90'lık hata ±{sayi(b['guven_p90'], 1)} puan", f"90th percentile error ±{sayi(b['guven_p90'], 1)} pts"),
     )
+    if b.get("ada"):
+        st.warning(
+            T(
+                f"**Ada ({b['ada']['ilce']}, ~{sayi(b['ada']['alan_km2'], 0)} km²):** 50 MW ölçeğinde bağlantı denizaltı kablosu gerektirir; "
+                f"bu maliyet modele dahil değil. {b['ada']['durum']}",
+                f"**Island ({b['ada']['ilce']}, ~{sayi(b['ada']['alan_km2'], 0)} km²):** a 50 MW connection requires a submarine cable, "
+                "whose cost is not modelled. Existing island links are distribution-scale; their capacity could not be verified.",
+            )
+        )
     if b["komsular"]:
         st.caption(
             T("Dayandığı kalibre santral(ler): ", "Calibrated wind farm(s) used: ")
@@ -200,6 +209,15 @@ def saha_karti(kv: dict) -> dict | None:
             T(
                 "30 km içinde benzer kalibre santral yok: GWA × ulusal medyan düzeltme kullanılır.",
                 "No similar calibrated farm within 30 km: GWA × national median correction is used.",
+            )
+        )
+    if b["hucre"] and b["hucre"].get("ust_sinir"):
+        st.warning(
+            T(
+                "**Üst sınıra yakın, ihtiyatla değerlendirin:** bu hücrenin tahmini RES KF'si Türkiye'de gözlenen en yüksek santral "
+                f"KF'sinin (%{sayi(100 * ayar()['ust_sinir_kf'], 1)}) üstünde.",
+                "**Near the upper bound, treat with caution:** this cell's estimated wind CF exceeds the highest observed farm CF in "
+                f"Türkiye ({sayi(100 * ayar()['ust_sinir_kf'], 1)}%).",
             )
         )
     if b["hucre"]:
@@ -351,7 +369,11 @@ def neden_listesi(nedenler: list[dict]) -> None:
 def uyari_listesi(uyarilar: list[dict]) -> None:
     dil = st.session_state.get("dil", "TR")
     for u in uyarilar:
-        st.caption("⚠️ " + md(u["tr"] if dil == "TR" else u["en"]))
+        metin = md(u["tr"] if dil == "TR" else u["en"])
+        if u.get("kod") in ("ada", "ust_sinir"):  # karar açısından önemli: görünür kutu
+            st.warning(metin)
+        else:
+            st.caption("⚠️ " + metin)
 
 
 def profil_grafikleri(g: dict) -> None:
@@ -612,6 +634,33 @@ def sayfa() -> None:
         except Exception:  # bileşen yüklenemezse (ör. test ortamı)
             out = None
         st.markdown(H.lejant(ot, kolon), unsafe_allow_html=True)
+        if ot is not None:
+            with st.expander(T("Başabaş fiyatı en düşük 10 hücre", "10 cells with the lowest break-even price")):
+                adalar = st.toggle(T("Adaları dahil et", "Include islands"), False, key="ilk10_ada")
+                t10 = servis.ilk_n(10, adalar)
+                tablo(
+                    pd.DataFrame(
+                        {
+                            T("İl / ilçe", "Province / district"): t10["il"] + " / " + t10["ilce"],
+                            T("Nokta", "Point"): [
+                                f"{sayi(a, 2)}, {sayi(b_, 2)}" for a, b_ in zip(t10["enlem"], t10["boylam"], strict=True)
+                            ],
+                            "RES KF %": 100 * t10["res_kf"],
+                            T("Güven", "Confidence"): t10["guven"],
+                            T("Başabaş [$/MWh]", "Break-even [$/MWh]"): t10["basabas_en_iyi"],
+                            T("Not", "Note"): [
+                                " · ".join(
+                                    x
+                                    for x in (T("ada", "island") if a else "", T("üst sınıra yakın", "near upper bound") if u else "")
+                                    if x
+                                )
+                                for a, u in zip(t10.get("ada", [False] * len(t10)), t10.get("ust_sinir", [False] * len(t10)), strict=True)
+                            ],
+                        }
+                    ),
+                    hide_index=True,
+                    width="stretch",
+                )
         tik = (out or {}).get("last_clicked")
         if tik and tik != st.session_state.get("_son_tik"):
             st.session_state["_son_tik"] = tik

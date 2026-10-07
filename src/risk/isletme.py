@@ -98,6 +98,90 @@ class IsletmeLP:
         return {k: al(getattr(m, k)) for k in ["y", "k", "c", "d", "r"]}
 
 
+class IsletmeLPHizli:
+    """
+    IsletmeLP ile birebir aynı LP, doğrudan highspy ile (Revizyon R5 — tam analiz hızlandırması).
+
+    Matris bir kez kurulur; her işletme durumunda yalnız amaç katsayıları (y, d, r sütunları) ve üretim dengesinin sağ
+    tarafı (A_t) vektörel olarak güncellenir; HiGHS bir önceki çözümün bazından sıcak başlar. Pyomo sürümünde her
+    çözümde ~26 bin parametre Python döngüsüyle atanıp amaç ifadesi yeniden kuruluyordu.
+    Sütun sırası: v·n + t, v ∈ (y, k, c, d, r, s). Satırlar: üretim, şebeke, şarj, deşarj, enerji alt, enerji üst, SOC.
+    """
+
+    def __init__(
+        self,
+        t: Tasarim,
+        eta: float,
+        yipranma: float,
+        teias_e: float,
+        yekg: float,
+        rezerv_tavan: float,
+        enerji_saat: float,
+        ppa_fiyat: float,
+        n: int = 8760,
+        desarj_sozlesmeli: bool = False,
+    ):
+        import highspy
+        from scipy import sparse
+
+        self.n, self.ppa_fiyat, self.desarj_sozlesmeli = n, ppa_fiyat, desarj_sozlesmeli
+        self.yk = yekg if t.yekg else 0.0
+        self.teias_e, self.yipranma = teias_e, yipranma
+        P, E, L = t.bess_mw, t.bess_mwh, t.sebeke_mw
+        R = min(rezerv_tavan, P) if t.yan_hizmet else 0.0
+        y, k, c, d, r, s_ = (np.arange(n) + v * n for v in range(6))
+        t_ = np.arange(n)
+        satir, sutun, deger_ = [], [], []
+
+        def ekle(blok: int, kol: np.ndarray, kat) -> None:
+            satir.append(blok * n + t_)
+            sutun.append(kol)
+            deger_.append(np.broadcast_to(np.asarray(kat, float), (n,)))
+
+        ekle(0, y, 1), ekle(0, k, 1), ekle(0, c, 1)  # y + k + c = A
+        ekle(1, y, 1), ekle(1, d, 1)  # y + d ≤ L
+        ekle(2, c, 1), ekle(2, r, 1)  # c + r ≤ P
+        ekle(3, d, 1), ekle(3, r, 1)  # d + r ≤ P
+        ekle(4, s_, 1), ekle(4, r, -enerji_saat)  # s − h·r ≥ 0
+        ekle(5, s_, 1), ekle(5, r, enerji_saat)  # s + h·r ≤ E
+        ekle(6, s_, 1), ekle(6, np.roll(s_, 1), -1), ekle(6, c, -eta), ekle(6, d, 1 / eta)  # SOC (döngüsel)
+        A = sparse.csc_matrix((np.concatenate(deger_), (np.concatenate(satir), np.concatenate(sutun))), shape=(7 * n, 6 * n))
+        inf = highspy.kHighsInf
+        lp = highspy.HighsLp()
+        lp.num_col_, lp.num_row_ = 6 * n, 7 * n
+        lp.col_cost_ = np.zeros(6 * n)
+        lp.col_lower_ = np.zeros(6 * n)
+        lp.col_upper_ = np.concatenate([np.full(n, inf), np.full(n, inf), np.full(n, P), np.full(n, P), np.full(n, R), np.full(n, E)])
+        alt = [np.zeros(n), np.full(n, -inf), np.full(n, -inf), np.full(n, -inf), np.zeros(n), np.full(n, -inf), np.zeros(n)]
+        ust = [np.zeros(n), np.full(n, L), np.full(n, P), np.full(n, P), np.full(n, inf), np.full(n, E), np.zeros(n)]
+        lp.row_lower_, lp.row_upper_ = np.concatenate(alt), np.concatenate(ust)
+        lp.a_matrix_.format_ = highspy.MatrixFormat.kColwise
+        lp.a_matrix_.start_, lp.a_matrix_.index_, lp.a_matrix_.value_ = A.indptr, A.indices, A.data
+        lp.sense_ = highspy.ObjSense.kMaximize
+        h = highspy.Highs()
+        h.setOptionValue("output_flag", False)
+        h.passModel(lp)
+        self.h = h
+        self._yda = np.concatenate([y, d, r]).astype(np.int32)
+        self._uretim = t_.astype(np.int32)
+
+    def coz(self, A: np.ndarray, p: np.ndarray, a: float, phi: float) -> dict:
+        """IsletmeLP.coz ile aynı arayüz ve sonuç."""
+        import highspy
+
+        n = self.n
+        py = (1 - phi) * p + phi * self.ppa_fiyat + self.yk - self.teias_e
+        pd_ = ((1 - phi) * p + phi * self.ppa_fiyat) if self.desarj_sozlesmeli else p
+        maliyet = np.concatenate([py, pd_ + self.yk - self.teias_e - self.yipranma, np.broadcast_to(np.asarray(a, float), (n,))])
+        self.h.changeColsCost(3 * n, self._yda, maliyet)
+        A = np.asarray(A, float)
+        self.h.changeRowsBounds(n, self._uretim, A, A)
+        self.h.run()
+        assert self.h.getModelStatus() == highspy.HighsModelStatus.kOptimal
+        x = np.asarray(self.h.getSolution().col_value)
+        return {ad: x[v * n : (v + 1) * n] for v, ad in enumerate(["y", "k", "c", "d", "r"])}
+
+
 def birim_toplamlar(
     y: np.ndarray,
     k: np.ndarray,
@@ -148,16 +232,18 @@ def tablo_uret(
     sabitler: dict,
     tavan_q: float = 0.70,
     log: Callable[[str], None] | None = None,
+    lp_sinifi: type | None = None,
 ) -> dict:
     """
     sekiller[(s, h)] = birim fiyat şekli q (ortalama 1), yan_sekil (2, 8760) yan hizmet şekli (ortalama 1).
     Döndürür: {"T": dizi (W, S, H, M, Aa, Pp, alan), "izgara": ...}
     """
+    lp_sinifi = lp_sinifi or IsletmeLP
     W, S = ges.shape[0], 2
     H, M, Aa, Pp = len(h_izgara), len(m_izgara), len(a_izgara), len(ppa_izgara)
     Tb = np.zeros((W, S, H, M, Aa, Pp, len(ALANLAR)))
     pil = t.bess_mw > 0.5
-    lp = IsletmeLP(t, **sabitler) if pil else None
+    lp = lp_sinifi(t, **sabitler) if pil else None
     t0, sayac = time.time(), 0
     for w, s, ih, im, ia, ip in itertools.product(range(W), range(S), range(H), range(M), range(Aa), range(Pp)):
         G = t.ges_mw * ges[w]

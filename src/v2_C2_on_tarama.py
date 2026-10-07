@@ -29,7 +29,9 @@ CIKTI = KOK / "data" / "atlas" / "on_tarama.parquet"
 
 
 def hucre_tara(h: tuple[float, float]) -> dict:
+    from src.ayarlar import deger
     from src.finans.metrikler import basabas_fiyat
+    from src.kaynaklar.adalar import ada_bilgisi
     from src.motor.hizli import _fiyat, standart_tasarimlar, uretim_ozeti
     from src.motor.ortak import hazirla
     from src.motor.varsayimlar import KullaniciVarsayimlari
@@ -70,11 +72,13 @@ def hucre_tara(h: tuple[float, float]) -> dict:
                 "en_iyi_npv_musd": en_iyi["npv_musd"],
                 "basabas_en_iyi": bb(en_iyi["tasarim"]),
                 **{f"npv_{x['tasarim']}": x["npv_musd"] for x in tas},
+                "ada": ada_bilgisi(ne, nb) is not None,
+                "ust_sinir": bool(uo["res_kf"] >= deger(hz.cfg["v2"]["uygulama"])["ust_sinir_kf"]),
                 "hata": "",
             }
         )
     except Exception as ex:  # hücre atlanır, nedeni kaydedilir
-        kayit["hata"] = f"{type(ex).__name__}: {str(ex)[:120]}"
+        kayit.update({"ada": False, "ust_sinir": False, "hata": f"{type(ex).__name__}: {str(ex)[:120]}"})
     return kayit
 
 
@@ -98,11 +102,12 @@ def main() -> None:
     ozet.to_csv(CIKTILAR / "v2C" / "C2_on_tarama_ozet.csv", encoding="utf-8-sig", float_format="%.3f")
     print(f"Tamam: {len(ok)}/{len(df)} hücre, {time.time() - t0:.0f} s, {CIKTI.stat().st_size / 1e3:.0f} KB")
     print(df.loc[df["hata"] != "", "hata"].str.split(":").str[0].value_counts().to_string())
-    print(
-        ok.nsmallest(10, "basabas_en_iyi")[
-            ["il", "ilce", "enlem", "boylam", "res_kf", "guven", "en_iyi_tasarim", "basabas_en_iyi"]
-        ].to_string()
-    )
+    ilk10 = ok[~ok["ada"]].nsmallest(10, "basabas_en_iyi")[
+        ["il", "ilce", "enlem", "boylam", "res_kf", "guven", "komsu", "ust_sinir", "en_iyi_tasarim", "basabas_en_iyi"]
+    ]
+    ilk10.to_csv(CIKTILAR / "v2C" / "C2_ilk10.csv", index=False, encoding="utf-8-sig", float_format="%.3f")
+    print("İlk 10 (adalar hariç):\n", ilk10.to_string())
+    print("Ada hücreleri:", int(ok["ada"].sum()), "| üst sınır işaretli:", int(ok["ust_sinir"].sum()))
 
 
 if __name__ == "__main__":

@@ -162,6 +162,30 @@ def hazirla(saha_girdi: Saha | dict, kv: KullaniciVarsayimlari, ilerleme=None, p
                 f"Weak solar: capacity factor {100 * df['ges_kf'].mean():.0f}%.",
             )
         )
+    ust = deger(cfg["v2"]["uygulama"])["ust_sinir_kf"]
+    if df["res_kf"].mean() >= ust:
+        uyari.append(
+            Uyari(
+                "ust_sinir",
+                f"Tahmini RES KF'si (%{100 * df['res_kf'].mean():.1f}) Türkiye'de gözlenen en yüksek santral KF'sini (%{100 * ust:.1f}) "
+                "aşıyor: üst sınıra yakın, ihtiyatla değerlendirin (modern türbin + sırt yerleşimi + GWA belirsizliği).",
+                f"The estimated wind CF ({100 * df['res_kf'].mean():.1f}%) exceeds the highest observed farm CF in Türkiye "
+                f"({100 * ust:.1f}%): near the upper bound, treat with caution (modern turbine + ridge layout + GWA uncertainty).",
+            )
+        )
+    from src.kaynaklar.adalar import ada_bilgisi
+
+    ada = ada_bilgisi(saha.enlem, saha.boylam)
+    if ada is not None:
+        uyari.append(
+            Uyari(
+                "ada",
+                f"Saha bir adada ({ada['ilce']}, ~{ada['alan_km2']:.0f} km²): 50 MW ölçeğinde bağlantı denizaltı kablosu gerektirir; "
+                f"bağlantı maliyeti modele dahil değil. {ada['durum']}",
+                f"The site is on an island ({ada['ilce']}, ~{ada['alan_km2']:.0f} km²): a 50 MW connection requires a submarine cable, "
+                "whose cost is not modelled. Existing island links are distribution-scale; capacity could not be verified.",
+            )
+        )
     guven = guven_bilgisi(bilgi["kalibrasyon"])
     if guven["seviye"] == "düşük":
         uyari.append(

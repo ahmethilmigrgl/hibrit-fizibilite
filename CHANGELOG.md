@@ -20,6 +20,19 @@ Proje aşamalar halinde geliştirildi. Her aşama bir commit; revizyonlar ve ön
 Türkiye geneli saha tarama ve analiz uygulaması. Ayrıntı: `docs/v2_A_veri_altyapisi.md`, `docs/v2_B_analiz_motoru.md`,
 `docs/v2_C_arayuz.md`.
 
+### Revizyon R — ilk 10 makullüğü, modern türbin, adalar, tam analiz süresi (2026-10-07)
+- **Aktarım kuralı:** kıyı benzerliği sürekli oran (20 km eşiğindeki kırılma kaldırıldı), komşu artığı ulusal medyana
+  büzülüyor (n0 = 2). Çapraz doğrulamada RMSE 7,17 → 6,87 (fark −0,30, %90 GA −0,55…−0,07). Güven: yüksek medyan 3,4 /
+  P90 10,4; düşük 5,6 / 11,4. Trakya'da tek komşulu abartılar düzeldi (Çerkezköy %46,6 → %42,0); Biga/Balıkesir ilk 50'de 10 → 17.
+- **Modern türbin doğrulaması:** modern alt kümede (12 santral) sistematik fazla tahmin yok (ort. +1,1 puan); salt türbin
+  kazancı eski santrallerde ~7 puan (iddia "1–5 puan" düzeltildi). Gözlenen azamiyi (%45,6) aşan hücre ve sahalar "üst sınıra
+  yakın" olarak işaretleniyor.
+- **Adalar:** sınır ızgarasından otomatik tespit (Sinop/Cunda istisna); denizaltı kablosu uyarısı, bilinen bağlantı durumu
+  (kaynaklı; kapasite doğrulanamadı); sıralamalardan varsayılan olarak çıkarılıyor.
+- **Tam analiz 2 çekirdekte ~6× hızlı (471–564 → 71–93 s):** işletme LP'si doğrudan highspy (aynı sonuç), kapasite MILP'i
+  96 temsilî günle (tam yıl MILP'i zaman sınırında %2 boşlukta kalıyordu). Sonuçlar Ezine/Susurluk'ta SE'nin altında
+  değişti; Gürün'de daha iyi bir tasarım bulundu (+0,8 M$). Karar üç sahada aynı.
+
 ### Faz C — Web uygulaması (yerel Streamlit)
 - **Ön adım — atlas aktarımı düzeltildi** (`docs/v2_A §5b`):
   - Aktarım hız uzayındaydı; KF kopyalanmıyordu.

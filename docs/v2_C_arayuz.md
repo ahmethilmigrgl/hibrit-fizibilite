@@ -349,3 +349,126 @@ Tutarlılık testindeki üç sahada tam analiz 465–537 s sürdü. Hepsi 600 s 
 - **Güneş:** Profil 0,25° hücrenin temsilî noktasından; dağlık ve kıyı hücrelerinde nokta-özel PVGIS'ten farklı olabilir.
 - **Ön tarama:** Hücre başına tek nokta. Hücre içindeki en iyi sırt noktası değil; kullanıcı il/ilçe adaylarıyla daha iyi noktaları görebilir.
 - **Veri boyutu:** ERA5 gridi ~0,7 GB, PVGIS gridi ~0,13 GB, GWA 250 m 17 MB. Yayında barındırma servisine taşınacak (`veri_katmani` uzak mod).
+
+## 9. Revizyon R (2026-10-07): ilk 10 makullüğü, adalar, üst sınır, tam analiz süresi
+
+Aktarım kuralı ve modern türbin incelemesinin ayrıntısı: `docs/v2_A_veri_altyapisi.md §5c`.
+
+### 9.1 Aktarım kuralı ve ön tarama
+
+**Kural değişikliği.**
+- Kıyı benzerliği artık sürekli bir oran.
+- Komşu artığı ulusal medyana büzülüyor: n0 = 2.
+- Birini dışarıda bırak doğrulamasında RMSE 7,17 → 6,87 puan (eşleştirilmiş bootstrap farkı −0,30, %90 GA −0,55…−0,07).
+
+Ön tarama yeniden üretildi: 1.464/1.464 hücre, 952 s, 8 süreç. Komşusu olmayan hücreler değişmedi (KF değişiminin medyanı 0).
+
+**Başabaş fiyatı en düşük 10 hücre** (adalar hariç; `outputs/v2C/C2_ilk10.csv`):
+
+| # | İl / ilçe | RES KF | Güven (komşular) | Başabaş [$/MWh] | Önceki sıra |
+|---|---|---|---|---|---|
+| 1 | İzmir / Karaburun | %43,7 | düşük (yok) | 48,8 | 6 |
+| 2 | Manisa / Soma | %43,9 | yüksek (Soma, Geres, Sayalar) | 49,4 | — |
+| 3 | Sivas / Gürün | %45,7 ⚠ üst sınır | düşük (yok) | 49,4 | 9 |
+| 4 | Hatay / Belen | %45,2 | yüksek (Atik, Belen) | 49,9 | 2 |
+| 5 | Bursa / Karacabey | %42,2 | yüksek (Harmanlık, Karacabey) | 50,3 | 5 |
+| 6 | İzmir / Çeşme | %42,6 | yüksek (Çeşme) | 50,7 | — |
+| 7 | Tekirdağ / Çerkezköy | %42,0 | yüksek (Çanta, Tayakadın, Yamaçtepe) | 50,9 | 3 |
+| 8 | İzmir / Urla | %42,0 | düşük (yok) | 51,0 | — |
+| 9 | İzmir / Bergama | %41,6 | yüksek (Kınık) | 51,5 | 4 |
+| 10 | Çanakkale / Ezine | %42,0 | yüksek (Sares, Enerjisa, Çamseki) | 51,9 | 26 |
+
+**Listeden çıkanlar.**
+- Gökçeada (ada; artık varsayılan olarak hariç).
+- İki Edirne/Lalapaşa hücresi: tek komşu Süloğlu'nun yüksek artığı büzüldü.
+
+**Bölge sayımı** (ilk 50'deki hücre):
+- Trakya: 14 → 7.
+- Balıkesir/Biga: 10 → 17.
+
+### 9.2 Adalar ve üst sınır
+
+**Adalar.**
+- 7 ada hücresi tespit edildi: Gökçeada 4, Bozcaada 1, Marmara 2.
+- Sıralamalardan (ilk 10, Türkiye yüzdeliği) varsayılan olarak çıkarılıyor. Haritanın altındaki "en düşük başabaşlı 10 hücre" tablosunda "Adaları dahil et" anahtarıyla eklenebiliyor.
+- Haritada mor noktalı kenarla gösteriliyor.
+- Saha kartında ve analiz sonuçlarında uyarı çıkıyor: "50 MW ölçeğinde bağlantı denizaltı kablosu gerektirir; maliyeti modelde yok". Bilinen bağlantı durumu da gösteriliyor (§5c; doğrulanamayan kısımlar açıkça belirtiliyor).
+
+**Üst sınır.**
+- Eşik: tahmini RES KF ≥ %45,6, yani Türkiye'de gözlenen en yüksek santral KF'si (Geres RES).
+- İşaretli hücreler: Gökçeada %47,2 ve Gürün %45,7.
+- Haritada kalın siyah kenar; saha kartında ve sonuçlarda "üst sınıra yakın, ihtiyatla değerlendirin".
+- Belen yeni kuralla %45,2 ve eşiğin hemen altında. Karmaşık arazide 2 km yerleşimin seçtiği sırt hücrelerinin (GWA 9,4) santral konumlarından belirgin biçimde rüzgârlı olduğu, §5c'de ayrıca not edildi.
+
+### 9.3 Tam analiz süresi (hedef ≤ 5 dk, 2 çekirdek, ilk kez)
+
+`src/v2_R5_tam_hiz.py` → `outputs/v2R/R5_tam_hiz.csv`. Her çalıştırma ayrı süreçte; işletme tablosu ve sonuç önbellekleri silinmiş.
+
+**Profil (önce).**
+
+| Adım | Süre | Not |
+|---|---|---|
+| İşletme tabloları | 199–304 s | Pyomo LP'sinde çözüm başına ~0,85 s; her durumda ~26 bin parametre Python döngüsüyle atanıp amaç ifadesi yeniden kuruluyordu |
+| Tam yıl MILP | 255–271 s | Model kurulumu < 1 s; süre dal-sınır ve LP gevşetmesinde. 240 s zaman sınırına çarpıyordu: sınırsız denemede 2.055 s sonra bile %2 boşluk; tamsayılar sabitlenince LP bile > 10 dk |
+| Monte Carlo | 2–3 s | Zaten küçük; erken durdurma kazandırmaz |
+
+**Değişiklikler.**
+1. **İşletme LP'si doğrudan highspy ile** (`IsletmeLPHizli`).
+   - Matris bir kez kuruluyor; her durumda yalnız amaç katsayıları ve üretim dengesinin sağ tarafı vektörel güncelleniyor; çözüm önceki bazdan sıcak başlıyor.
+   - Formülasyon birebir aynı: rastgele test durumlarında amaç farkı %0,0 (test: `tests/test_v2_revizyon.py`).
+   - ~3,5 kat hızlı.
+2. **Kapasite MILP'i 96 temsilî günle** (`config v2.motor.tam_milp_temsili_gun`).
+   - 5–15 s'de kesin optimum.
+   - 24 / 48 / 96 günün tasarımları tam yıl çözümüyle ±1 türbin, ±1 MW batarya içinde.
+   - Tasarımın değeri zaten 10 hava yılı × 8760 saatlik işletme tablolarıyla Monte Carlo'da ölçülüyor.
+3. **Denenip bırakılanlar.**
+   - Temsilî gün çözümünden "N0 ± 2" ile daraltılmış tam yıl MILP'i: zaman sınırında kötü ara çözümde kaldı.
+   - Tamsayıları sabitlenmiş tam yıl LP'leri: tek LP > 10 dk.
+
+**Sonuç** (2 çekirdek, soğuk tablolar):
+
+| Saha | Süre önce → sonra | MILP | Tablolar | Tasarım önce → sonra | YEKDEM opsiyonu E[NPV] | Tüccar E[NPV] | P(NPV>0) | Başabaş | Karar |
+|---|---|---|---|---|---|---|---|---|---|
+| Ezine | 478 → **72 s** | 271 → 5 s | 199 → 63 s | RES 58,8 + 31,7/60 → 58,8 + 31,3/60 | −6,31 → −6,30 | −6,66 → −6,65 | %33,2 → %33,3 | 62,6 → 62,6 | aynı (rafa kaldır) |
+| Gürün | 471 → **73 s** | 265 → 6 s | 202 → 63 s | 58,8 + 32,0 → **54,6** + 31,5 | −6,49 → −5,71 | −6,86 → −6,05 | %33,0 → %34,1 | 62,7 → 62,4 | aynı |
+| Susurluk | 564 → **94 s** | 255 → 15 s | 304 → 75 s | 58,8 + 32,0 → 58,8 + 31,0 | −5,07 → −5,04 | −5,43 → −5,40 | %35,6 → %35,6 | 61,6 → 61,6 | aynı |
+
+**Yorum.**
+- Ezine ve Susurluk'ta sonuçlar standart hatanın (0,19 M$) çok altında değişti.
+- Gürün'de 96 günlük MILP 13 türbin seçti. Zaman sınırına takılan tam yıl MILP'i 14 seçmişti. Monte Carlo, 13 türbinli tasarımı 0,8 M$ daha iyi buluyor; yani eski yol optimal değildi.
+- Tam analiz artık 2 çekirdekte ~1,5 dakika (hedef ≤ 5 dk).
+
+**Uçtan uca süreler** (tarayıcı, 2 çekirdek; `outputs/v2C/C8_sure.csv`; önce: `outputs/v2R/C8_sure_once.csv`):
+
+| Ölçüm | Önce | Sonra |
+|---|---|---|
+| Açılış (yeni sunucu) | 1,7 s | 2,2 s |
+| Açılış (yeniden yükleme) | 0,4 s | 0,9 s |
+| Hızlı tarama | 4,1 s | 4,3 s |
+| Tam analiz (arayüz, soğuk tablolar, Ezine) | 438 s | **93 s** |
+
+12 ekranın hiçbirinde taşma yok; ekran görüntüleri yenilendi.
+
+### 9.4 Yeniden üretilen doğrulama tabloları
+
+**Hızlı ↔ tam tutarlılık** (`outputs/v2B/B5_tutarlilik.csv`):
+
+| Saha | Hızlı tasarım | Tam tasarım | Tam E[NPV] (YEKDEM opsiyonu) | Karar |
+|---|---|---|---|---|
+| Ezine | RES 58,8 + 31/60 | aynı | −6,3 | rafa kaldır |
+| Gürün | RES 58,8 + 31/60 | RES 54,6 + 32/60 | −5,7 | rafa kaldır |
+| Susurluk | RES 54,6 + 30/60 | RES 58,8 + 31/60 | −5,0 | rafa kaldır |
+
+İki sahada hızlı ve tam analiz 1 türbin (4,2 MW) farklı; hızlı tarama 24, tam analiz 96 temsilî gün kullanıyor. Kararlar aynı.
+
+**Beş saha tipi** (`outputs/v2B/B5_bes_saha.csv`; önce: `outputs/v2R/B5_bes_saha_once.csv`):
+
+| Saha | RES KF önce → sonra | RES başabaş önce → sonra |
+|---|---|---|
+| Karaburun | %24,6 → **%32,8** | 84,8 → 63,5 |
+| Kangal | %31,8 | 67,8 (komşusuz; değişmedi) |
+| Karaman | %16,8 | 122,2 (değişmedi) |
+| Polatlı | %18,6 | 105,5 (değişmedi) |
+| Palandöken | %28,4 | 79,8 (değişmedi) |
+
+**Karaburun'daki değişim.** Tek komşusu Yaylaköy'ün düşük artığı (R 0,78) ulusal medyana çekildi. Sahanın E-141 ile tahmini (%32,8), Yaylaköy'ün GE103 ile gözlenen %32,8'ine denk geliyor. Önceki %24,6, tek santralin artığının aynen taşınmasından kaynaklanan bir eksik tahmindi.

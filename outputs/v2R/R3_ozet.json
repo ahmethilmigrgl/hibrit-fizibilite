@@ -1,0 +1,43 @@
+{
+ "modern_n": 12,
+ "modern_turbinler": {
+  "SWT120/3600": 5,
+  "E-141/4200": 3,
+  "V100/1800": 2,
+  "SWT130/3600": 1,
+  "GE130/3200": 1
+ },
+ "modern_loo_ort_hata": 1.0525666666666667,
+ "modern_loo_medyan_mutlak": 4.6704,
+ "modern_loo_rmse": 8.037562069019021,
+ "diger_loo_ort_hata": -0.7612782051282051,
+ "diger_loo_rmse": 6.674647150195685,
+ "modern_gozlenen_medyan": 34.165,
+ "modern_e141_kf_medyan": 34.20994534600653,
+ "turbin_kazanci_eski_medyan": 6.832096729036035,
+ "turbin_kazanci_eski_p10_p90": [
+  5.159444477864782,
+  8.39311785691571
+ ],
+ "turbin_kazanci_modern_medyan": 1.2185951646062776,
+ "turbin_kazanci_turbine_gore": {
+  "E-141/4200": 0.48,
+  "E-92/2350": 7.59,
+  "E48/800": 12.24,
+  "GE103/2750": 6.3,
+  "GE130/3200": -1.08,
+  "N90/2500": 8.46,
+  "SWT120/3600": 3.37,
+  "SWT130/3600": -0.55,
+  "V100/1800": 1.22,
+  "V112/3300": 6.2,
+  "V117/3300": 3.93,
+  "V90/2000/GS": 7.19
+ },
+ "gozlenen_kf_p90": 39.88500000000001,
+ "gozlenen_kf_p95": 41.5865,
+ "gozlenen_kf_azami": 45.550000000000004,
+ "gozlenen_kf_azami_santral": "GERES RES",
+ "e141_kf_p95_santral_konumlari": 49.095760140986364,
+ "e141_kf_azami_santral_konumlari": 51.99193677271609
+}

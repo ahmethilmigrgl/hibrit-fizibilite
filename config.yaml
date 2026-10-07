@@ -330,10 +330,11 @@ v2:
   aday_nokta_sayisi: {value: 5, birim: "adet", kaynak: "Proje kararı", not: "İl/ilçe seçildiğinde ilçe içinde GWA ortalama hızı en yüksek hücreler (ilçe merkezi değil)"}
   aday_nokta_asgari_aralik_km: {value: 3.0, birim: "km", kaynak: "Proje kararı", not: "Aday noktaların aynı sırtta yığılmaması için"}
   aktarim:
-    value: {yakin_km: 30, orta_km: 30, azami_komsu: 3, idw_us: 2, rakim_farki_m: 400, karmasiklik_farki: 0.04, kiyi_benzerlik: true, karmasiklik_esik: 0.083, gwa_modu: "yerlesim", santral_yaricap_km: 3.0, asgari_aralik_m: 500}
+    value: {yakin_km: 30, orta_km: 30, azami_komsu: 3, idw_us: 2, rakim_farki_m: 400, karmasiklik_farki: 0.04, kiyi_benzerlik: "oran", kiyi_oran_esik: 0.7, r_buzulme_n0: 2, r_sinir: null, karmasiklik_esik: 0.083, gwa_modu: "yerlesim", santral_yaricap_km: 3.0, asgari_aralik_m: 500}
     birim: "km, m, GWA değişkenlik katsayısı farkı"
     kaynak: "Proje kararı; eşikler A4 'birini dışarıda bırak' çapraz doğrulamasıyla sınandı (docs/v2_A_veri_altyapisi.md)"
     not: "Benzer santral: rakım farkı ≤ 400 m, karmaşıklık farkı ≤ 0,04 ve aynı kıyı sınıfı (kıyı < 20 km / iç). Komşu yalnız ≤ 30 km'de kullanılır (yüksek güven); A4 çapraz doğrulamasında 30–80 km'deki komşular (KF RMSE 9,1 puan) ulusal medyan artıktan (7,7) kötü çıktı. Komşu yoksa GWA × ulusal medyan artık matrisi: arazi karmaşıklığı ≤ 0,083 (atlasın alt üçte biri) ise orta, değilse düşük güven"
+    revizyon_r2: "Kıyı benzerliği ikili sınıftan (kıyı < 20 km) sürekli orana çevrildi: |ln((d1+10)/(d2+10))| ≤ 0,7 (20 km eşiğindeki kırılma; ör. Çerkezköy 21,7 km, Silivri 9,2 km). Komşu artığı ulusal medyana büzülüyor: R ← (n·R + 2·R_ulusal)/(n + 2), n = komşu sayısı (tek komşulu tahminler yarı yarıya ulusal medyana). Birini dışarıda bırak (90 santral, kendi türbini): RMSE 7,17 → 6,87 puan (eşleştirilmiş bootstrap farkı −0,30, %90 GA −0,55…−0,07), medyan 5,09 → 4,44, tek komşulu RMSE 6,85 → 6,08, en kötü %10 fazla tahmin 8,51 → 8,05. R sınırı (P10–P90) büzülmeye ek kazanç vermedi; rakım/karmaşıklık eşiklerini sıkılaştırmak iyileştirmedi (outputs/v2R/R2_kural_varyantlari.csv)"
   santral_turbin:
     value:
       siniflar:   # birim güç üst sınırı [MW] → varsayılan özgül güç [W/m²] ve göbek [m] (OSM'de rotor/göbek yoksa)
@@ -363,9 +364,22 @@ v2:
       tam_analize_deger: {evet: 1.10, sinirda: 1.25}
       aday_sayisi: 5
       aday_aralik_km: 3.0
+      ust_sinir_kf: 0.456
     birim: "istek / saniye penceresi; iş; fiyat oranı; adet; km"
     kaynak: "Proje kararı (Faz C7, C4)"
-    not: "istek_siniri: oturum başına kayan pencere (hızlı tarama / tam analiz). tam_sira_azami: aynı anda çalışan 1 tam analizin arkasında bekleyebilecek en fazla iş; fazlası reddedilir. tam_analize_deger: en iyi standart tasarımın başabaş fiyatı / senaryo fiyatı ≤ evet → 'değer', ≤ sinirda → 'sınırda', aksi 'değmez' (deterministik optimum pozitifse her durumda 'değer'). aday_sayisi/aday_aralik_km: il/ilçe seçiminde gösterilen en rüzgârlı GWA noktaları ve aralarındaki en az mesafe"
+    not: "istek_siniri: oturum başına kayan pencere (hızlı tarama / tam analiz). tam_sira_azami: aynı anda çalışan 1 tam analizin arkasında bekleyebilecek en fazla iş; fazlası reddedilir. ust_sinir_kf: Türkiye'de gözlenen en yüksek santral KF'si (atlas, talimat/arıza saatleri hariç: Geres RES %45,6; P95 %41,6; outputs/v2R/R3_ozet.json) — tahmini bunu aşan hücre ve sahalar «üst sınıra yakın, ihtiyatla değerlendirin» notuyla işaretlenir. tam_analize_deger: en iyi standart tasarımın başabaş fiyatı / senaryo fiyatı ≤ evet → 'değer', ≤ sinirda → 'sınırda', aksi 'değmez' (deterministik optimum pozitifse her durumda 'değer'). aday_sayisi/aday_aralik_km: il/ilçe seçiminde gösterilen en rüzgârlı GWA noktaları ve aralarındaki en az mesafe"
+  adalar:
+    value:
+      kara_bagli: ["Sinop/Sinop merkez", "Balıkesir/Ayvalık"]
+      durum:
+        "Çanakkale/Gökçeada": "Ulusal şebekeye 1989'dan beri Kumlimanı'ndan ~2 km'lik denizaltı kablosuyla bağlı (adanın tüketimi için); kablonun gerilimi ve taşıma kapasitesi doğrulanamadı. 50 MW ölçeğinde üretim için yeni bir iletim seviyesi (ör. 154 kV) denizaltı bağlantısı gerekmesi muhtemel."
+        "Çanakkale/Bozcaada": "1989'dan beri Geyikli'den (~4 deniz mili) denizaltı kablosuyla ulusal şebekeye bağlı; adada 10,2 MW'lık bir RES işletmede. Kablonun kapasitesi doğrulanamadı; 50 MW için yeni iletim bağlantısı gerekmesi muhtemel."
+        "Balıkesir/Marmara": "Marmara Adası 1989'dan beri ~11 km'lik denizaltı kablosuyla bağlı (Marmara'daki adalara toplam ~70 km kablo); kapasite doğrulanamadı. 50 MW için yeni iletim bağlantısı gerekmesi muhtemel."
+        "Balıkesir/Erdek": "Erdek'e bağlı adalar (Paşalimanı vb.) denizaltı dağıtım kablolarıyla besleniyor (Güney Marmara EMO raporu); kapasite doğrulanamadı."
+      varsayilan_durum: "Ada: şebeke bağlantısı denizaltı kablosu gerektirir; mevcut bağlantının varlığı ve kapasitesi doğrulanamadı."
+    birim: "il/ilçe anahtarları"
+    kaynak: "Ada tespiti: sınır ızgarasının bağlı bileşenleri (src/kaynaklar/adalar.py). Bağlantı durumu: haberler.com 'Gökçeada'ya denizaltından 2 kilometrelik kablo'; Bozcaada Kaymakamlığı 'Altyapı durumu' (bozcaada.gov.tr); EMO 'Güney Marmara Elektrik Enerjisi Raporu 2018'; Hürriyet/Milliyet Marmara Adası kablo arızası haberleri (2019–2021). Erişim 2026-10."
+    not: "Sinop merkez ızgarada ince kıstak nedeniyle ayrık görünür (karaya bağlı yarımada); Ayvalık adaları (Cunda) köprüyle karaya bağlıdır. Adalar ön tarama sıralamalarından (ilk 10, yüzdelik) varsayılan olarak çıkarılır; kullanıcı dahil edebilir. TEİAŞ bağlantı kapasitesi ve gerilim seviyesi bu çalışmada doğrulanamadı"
   veri_erisim:
     value: {mod: "yerel"}
     birim: "yerel | uzak"
@@ -378,14 +392,15 @@ v2:
     not: "İki seviye. Yüksek: 30 km içinde benzer kalibre santral var (n = 37; mutlak KF hatası medyanı 3,8, %90'lık 9,8 puan); düşük: yok (GWA × ulusal medyan artık; n = 53; 5,6 / 11,5). Eski 'orta' seviyesi (15–30 km, n = 9) medyanda yüksekten iyi çıktı (2,1 vs 4,1; bootstrap GA 1,6–7,5): ayrı seviye istatistiksel olarak desteklenmiyor, sıralama koşulu (medyan ve P90'da) yalnız iki seviyeyle sağlanıyor. orta_km = yuksek_km olduğundan 'orta' üretilmez"
   motor:
     value:
-      veri_surumu: "v2C-2026-10"
+      veri_surumu: "v2R-2026-10"
       profil_yillari: [2014, 2023]
       gunes_model_hatasi: 0.04
       kesinti_kurtarma: 0.158
       kesinti_deger_faktoru: 0.89
       hizli_sure_hedefi_s: 90
-      tam_sure_hedefi_s: 600
+      tam_sure_hedefi_s: 300
       tam_zaman_asimi_s: 900
+      tam_milp_temsili_gun: 96
       onbellek_azami_mb: 500
       mc_baslangic: 2000
       mc_azami: 16000
@@ -393,4 +408,4 @@ v2:
       karar: {yatirim_p_asgari: 0.65, yatirim_cvar_capex_orani: -0.25}
     birim: "çeşitli"
     kaynak: "Proje kararı (Faz B). Kesinti kurtarma payı ve değer faktörü: v1 outputs/07/kesinti_batarya_kurtarma.csv (Ezine referans santralleri)"
-    not: "Karar kuralı v1'in genişletilmesi: E[NPV] > 0, P(NPV>0) ≥ 0,65 ve CVaR %5 ≥ −0,25 × CAPEX → yatırım yap; yalnız E[NPV] > 0 → durum tespiti + sınırlı teklif (azami prim = E[NPV]); aksi halde rafa kaldır"
+    not: "Karar kuralı v1'in genişletilmesi: E[NPV] > 0, P(NPV>0) ≥ 0,65 ve CVaR %5 ≥ −0,25 × CAPEX → yatırım yap; yalnız E[NPV] > 0 → durum tespiti + sınırlı teklif (azami prim = E[NPV]); aksi halde rafa kaldır. tam_milp_temsili_gun (R5): tam analizde kapasite MILP'i 96 temsilî günle çözülür (kesin optimum ≤ ~15 s); tam yıl (2 × 8760 saat) MILP'i 2 çekirdekte 240 s sınırında %2 boşlukla kalıyordu ve tasarımlar ±1 türbin / ±1 MW batarya içinde aynıydı. Değerleme 10 hava yılı × 8760 saatlik işletme tablolarıyla. İşletme LP'si highspy ile (IsletmeLPHizli; Pyomo sürümüyle aynı sonuç, ~3,5× hızlı)"

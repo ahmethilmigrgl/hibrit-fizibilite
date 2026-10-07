@@ -103,8 +103,11 @@ def nokta_bilgisi(enlem: float, boylam: float, yerlesim: bool = True, yaricap_km
         r = ot[(ot["hucre_enlem"] == he) & (ot["hucre_boylam"] == hb)]
         if len(r):
             hucre = r.iloc[0].to_dict()
-            hucre["yuzdelik"] = float((ot["basabas_en_iyi"] > hucre["basabas_en_iyi"]).mean() * 100)  # şu kadarından daha cazip
+            hucre["yuzdelik"] = yuzdelik(hucre["basabas_en_iyi"])  # adasız hücrelerin şu kadarından daha cazip
+    from src.kaynaklar.adalar import ada_bilgisi
+
     return {
+        "ada": ada_bilgisi(enlem, boylam),
         "il": k["il"],
         "ilce": k["ilce"],
         "gwa_nokta": float(g["nokta"]),
@@ -121,9 +124,21 @@ def nokta_bilgisi(enlem: float, boylam: float, yerlesim: bool = True, yaricap_km
     }
 
 
-def yuzdelik(basabas: float) -> float | None:
-    """Başabaş fiyatı Türkiye kara hücrelerinin yüzde kaçından düşük (yüksek = daha cazip)."""
+def yuzdelik(basabas: float, adalar: bool = False) -> float | None:
+    """Başabaş fiyatı Türkiye kara hücrelerinin yüzde kaçından düşük (yüksek = daha cazip); adalar varsayılan olarak hariç."""
     ot = on_tarama()
     if ot is None or basabas is None or not np.isfinite(basabas):
         return None
+    if not adalar and "ada" in ot:
+        ot = ot[~ot["ada"]]
     return float((ot["basabas_en_iyi"] > basabas).mean() * 100)
+
+
+def ilk_n(n: int = 10, adalar: bool = False) -> pd.DataFrame | None:
+    """Başabaş fiyatı en düşük n hücre (adalar varsayılan olarak hariç)."""
+    ot = on_tarama()
+    if ot is None:
+        return None
+    if not adalar and "ada" in ot:
+        ot = ot[~ot["ada"]]
+    return ot.nsmallest(n, "basabas_en_iyi")

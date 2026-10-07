@@ -92,7 +92,7 @@ class Ortam:
         self.yh_azalma, self.yh_taban = deger(yh["yillik_azalma"]), deger(yh["taban_oran"])
         self.kan_taban = deger(self.cfg["fiyat_senaryolari"]["kanibalizasyon"])["taban_oran"]
 
-    def milp(self, kalemler, seviye="baz", K=None, yh_carpan=1.0, zaman=1200):
+    def milp(self, kalemler, seviye="baz", K=None, yh_carpan=1.0, zaman=1200, n_aralik=None, sabit=None):
         f = fiyat_senaryosu_uret(self.cfg, self.u, seviye, "devam")
         p = (f.fiyatlar * self.DF[:, None, None]).sum(0) / self.DF.sum()
         eko = ekonomi_hesapla(self.v, float(p.mean()))
@@ -100,7 +100,7 @@ class Ortam:
         if yanlar is not None:
             yanlar = [y * yh_carpan for y in yanlar]
         seg = segmentleri_kur([p[0], p[1]], self.g, self.r, K, Segment, yanlar)
-        r = kapasite_coz(seg, self.v, eko, self.baglanti, self.opt, {}, gelir=gelir, zaman_siniri=zaman)
+        r = kapasite_coz(seg, self.v, eko, self.baglanti, self.opt, sabit or {}, gelir=gelir, zaman_siniri=zaman, n_aralik=n_aralik)
         r.pop("model", None)
         return r
 

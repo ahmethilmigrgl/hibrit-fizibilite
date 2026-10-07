@@ -53,6 +53,11 @@ def harita(
         for r, c in zip(ot.itertuples(), sinif, strict=True):
             e, b = r.hucre_enlem, r.hucre_boylam
             dusuk = r.guven != "yüksek"
+            ada = bool(getattr(r, "ada", False))
+            ust = bool(getattr(r, "ust_sinir", False))
+            notlar = ([T("Ada: bağlantı denizaltı kablosu gerektirir", "Island: connection requires a submarine cable")] if ada else []) + (
+                [T("Üst sınıra yakın: ihtiyatla değerlendirin", "Near the upper bound: treat with caution")] if ust else []
+            )
             ozellik.append(
                 {
                     "type": "Feature",
@@ -71,6 +76,9 @@ def harita(
                     "properties": {
                         "renk": SIRALI[int(c)],
                         "dusuk": bool(dusuk),
+                        "ada": ada,
+                        "ust": ust,
+                        "not": " · ".join(notlar),
                         "yer": f"{r.il} / {r.ilce}",
                         "deger": f"{T(ad_tr, ad_en)}: {gosterim(kolon, getattr(r, kolon))} {'' if birim == '%' else birim}",
                         "res": f"RES KF {gosterim('res_kf', r.res_kf)} · GES KF {gosterim('ges_kf', r.ges_kf)}",
@@ -84,11 +92,13 @@ def harita(
             style_function=lambda f: {
                 "fillColor": f["properties"]["renk"],
                 "fillOpacity": DUSUK_GUVEN_OPAKLIK if f["properties"]["dusuk"] else YUKSEK_GUVEN_OPAKLIK,
-                "color": "#52514e" if f["properties"]["dusuk"] else f["properties"]["renk"],
-                "weight": 0.8 if f["properties"]["dusuk"] else 0.4,
-                "dashArray": "3 3" if f["properties"]["dusuk"] else None,
+                "color": "#0b0b0b"
+                if f["properties"]["ust"]
+                else ("#7f6bd1" if f["properties"]["ada"] else ("#52514e" if f["properties"]["dusuk"] else f["properties"]["renk"])),
+                "weight": 2.2 if (f["properties"]["ust"] or f["properties"]["ada"]) else (0.8 if f["properties"]["dusuk"] else 0.4),
+                "dashArray": "1 4" if f["properties"]["ada"] else ("3 3" if f["properties"]["dusuk"] else None),
             },
-            tooltip=folium.GeoJsonTooltip(fields=["yer", "deger", "res", "guven"], labels=False),
+            tooltip=folium.GeoJsonTooltip(fields=["yer", "deger", "res", "guven", "not"], labels=False),
         ).add_to(m)
     if santral is not None and len(santral):
         fg = folium.FeatureGroup(name=T("Kalibre RES santralleri", "Calibrated wind farms"), show=True)
@@ -148,7 +158,13 @@ def lejant(ot: pd.DataFrame | None, kolon: str) -> str:
         f'background:{SIRALI[2]};opacity:{DUSUK_GUVEN_OPAKLIK};border:1px dashed #52514e;vertical-align:middle;margin-right:4px">'
         f"</span>{T('düşük güven (30 km içinde kalibre santral yok)', 'low confidence (no calibrated farm within 30 km)')}</span>"
     )
+    ozel = (
+        f'<br><span style="display:inline-block;width:14px;height:14px;border:2.2px solid #0b0b0b;vertical-align:middle;margin-right:4px"></span>'
+        f"{T('üst sınıra yakın (RES KF Türkiye gözlenen azamisinin üstünde)', 'near the upper bound (wind CF above the highest observed in Türkiye)')}"
+        f'<span style="display:inline-block;width:14px;height:14px;border:2.2px dotted #7f6bd1;vertical-align:middle;margin:0 4px 0 12px"></span>'
+        f"{T('ada (denizaltı kablosu gerekir)', 'island (submarine cable required)')}"
+    )
     return (
         f'<div style="font-size:12px;line-height:1.6"><b>{T(ad_tr, ad_en)}</b> ({birim}; {T("koyu = daha cazip", "dark = more attractive")})<br>'
-        f"{kutu}{guven}</div>"
+        f"{kutu}{guven}{ozel}</div>"
     )

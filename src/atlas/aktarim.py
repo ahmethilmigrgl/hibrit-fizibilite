@@ -88,8 +88,11 @@ def komsular(enlem: float, boylam: float, tan: dict, cfg: dict, haric: int | Non
     benzer = ((d["rakim_m"] - tan["rakim_m"]).abs() <= a["rakim_farki_m"]) & (
         (d["karmasiklik"] - tan["karmasiklik"]).abs() <= a["karmasiklik_farki"]
     )
-    if a["kiyi_benzerlik"]:
+    kb = a["kiyi_benzerlik"]
+    if kb is True or kb == "sinif":  # ikili sınıf: kıyı < 20 km / iç
         benzer &= (d["kiyi_km"] < 20) == (tan["kiyi_km"] < 20)
+    elif kb == "oran":  # sürekli: |ln((d1 + 10) / (d2 + 10))| ≤ eşik (20 km eşiğindeki kırılmayı önler)
+        benzer &= np.abs(np.log((d["kiyi_km"] + 10) / (tan["kiyi_km"] + 10))) <= a.get("kiyi_oran_esik", 0.7)
     return d[benzer & (d["mesafe_km"] <= a["orta_km"])].sort_values("mesafe_km").head(a["azami_komsu"])
 
 
@@ -134,12 +137,30 @@ def tahmin(
         K = sum(wi * mat[int(i)] for wi, i in zip(w, k["epias_id"]))
     else:  # gwa_olcekli
         R = sum(wi * mat[int(i)] / ci[int(i)] for wi, i in zip(w, k["epias_id"]))
+        R = r_duzelt(R, len(k), a, haric)
         K = c * R
     gv = deger(cfg["v2"]["guven"])
     guven = "yüksek" if k["mesafe_km"].iloc[0] <= gv["yuksek_km"] else "orta"
     return K, {"yontem": yontem, "c": c, "guven": guven, "komsu": k["ad"].tolist(), "mesafe_km": k["mesafe_km"].round(1).tolist()}
 
 
+def r_duzelt(R: np.ndarray, n: int, a: dict, haric: int | None = None) -> np.ndarray:
+    """
+    Komşu artığının büzülmesi ve sınırı (Revizyon R2):
+      büzülme: R ← (n·R + n0·R_ulusal) / (n + n0)  (n = komşu sayısı; tek komşulu tahminler ulusal medyana çekilir)
+      sınır:   R matrisinin ortalaması [alt, üst] dışına çıkarsa matris orantılı ölçeklenir
+    """
+    n0 = float(a.get("r_buzulme_n0", 0) or 0)
+    if n0 > 0:
+        R = (n * R + n0 * ulusal_artik(haric)) / (n + n0)
+    sinir = a.get("r_sinir")
+    if sinir:
+        m = float(R.mean())
+        R = R * float(np.clip(m, sinir[0], sinir[1])) / m
+    return R
+
+
+@lru_cache(maxsize=256)
 def ulusal_artik(haric: int | None = None) -> np.ndarray:
     """Atlastaki tüm kullanılabilir santrallerin GWA sonrası artık matrislerinin (R = K / c) hücre bazında medyanı."""
     df, mat = atlas()

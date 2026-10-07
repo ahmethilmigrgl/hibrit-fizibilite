@@ -347,6 +347,138 @@ Yüksek seviyede RMSE'yi birkaç uç değer büyütüyor (medyan 2,4); Monte Car
 
 **Yeniden üretilen tablolar** (beş saha, tutarlılık): bkz. `docs/v2_C_arayuz.md §2`.
 
+## 5c. Revizyon R: ilk 10 makullüğü, aktarım kuralı, modern türbin doğrulaması ve adalar
+
+### Trakya hücreleri (Çerkezköy, Lalapaşa)
+
+`src/v2_R1_ilk10_inceleme.py` → `outputs/v2R/R1_*`. Değerler ön tarama hücresinin temsilî noktasında.
+
+| Hücre | GWA (2 km) | ERA5 100 m | c | Komşu(lar) | Aktarılan R | KF (önce) |
+|---|---|---|---|---|---|---|
+| Tekirdağ / Çerkezköy | 7,10 | 6,39 | 1,11 | Yamaçtepe (22 km, gözlenen %34,5) | 1,14 | %46,6 |
+| Edirne / Lalapaşa (42,00/26,75) | 6,48 | 5,53 | 1,17 | Süloğlu (4 km, gözlenen %40,9) | 1,18 | %43,7 |
+| Edirne / Lalapaşa (42,00/26,50) | 6,35 | 5,09 | 1,25 | Süloğlu (15 km) | 1,18 | %42,5 |
+
+**Arazi benzerliği ihlal edilmiyordu.** Hücreler ve komşuları düz (karmaşıklık 0,03–0,06), benzer rakımda ve aynı kıyı sınıfında. Kıyı ya da sırt düzeltmesi iç bölgeye taşınmıyor.
+
+Sorun iki yerden geliyordu:
+
+1. **Tek komşu.** Trakya'da 10 kalibre santralin R'si 0,87–1,18 (medyan ~1,06). Çerkezköy ve Lalapaşa bu dağılımın tepesindeki tek bir santrale dayanıyordu.
+2. **20 km'lik ikili kıyı eşiği.** Çerkezköy kıyıya 21,7 km uzakta. Silivri (9,2 km), Tayakadın ve Çanta, 30 km içinde ve aynı düz arazide olmalarına rağmen "farklı sınıf" sayılıyordu.
+
+**Kanıt.** Aynı türbinle (E-141) gözlenen modern Silivri RES %41,9 (GWA 8,03). Daha az rüzgârlı Çerkezköy hücresi (GWA 7,10) ise %46,6 tahmin ediliyordu.
+
+### Aktarım kuralı değişikliği
+
+`src/v2_R2_kural_varyantlari.py` → `outputs/v2R/R2_kural_varyantlari.csv`. Birini dışarıda bırak doğrulaması: 90 santral, kendi türbini, yerleşim modu.
+
+| Varyant | RMSE | Medyan | P90 | Ort. hata | En kötü %10 fazla tahmin | Tek komşulu RMSE |
+|---|---|---|---|---|---|---|
+| Önceki (ikili kıyı, büzülme yok) | 7,17 | 5,09 | 11,41 | −1,05 | 8,51 | 6,85 |
+| Kıyı oranı 0,7 | 7,12 | 5,03 | 11,41 | −0,84 | 8,51 | 6,96 |
+| Büzülme n0 = 2 | 6,91 | 4,44 | 11,10 | −0,62 | 8,05 | 5,34 |
+| R sınırı (P10–P90) | 7,09 | 4,83 | 11,41 | −1,03 | 8,51 | 6,56 |
+| **Kıyı oranı 0,7 + büzülme n0 = 2 (seçilen)** | **6,87** | **4,44** | **11,10** | **−0,52** | **8,05** | **6,08** |
+| Rakım farkı 300 m | 7,12 | 5,09 | 11,41 | −0,99 | 8,51 | 7,40 |
+| Karmaşıklık farkı 0,03 | 7,18 | 5,09 | 11,41 | −0,97 | 8,51 | 7,10 |
+
+**Yeni kural.**
+- **Kıyı benzerliği:** |ln((d₁+10)/(d₂+10))| ≤ 0,7, ikili sınıf yerine.
+- **Komşu artığının büzülmesi:** R ← (n·R + 2·R_ulusal)/(n + 2), n = komşu sayısı.
+  - Tek komşulu bir tahmin, ulusal medyanla 1:2 ağırlıklanır.
+  - Üç komşulu bir tahmin 3:2 ağırlıklanır.
+
+**Anlamlılık.** Eşleştirilmiş bootstrap'ta RMSE farkı −0,30 puan, %90 GA −0,55 … −0,07 (P = 0,99). 17 santral > 1 puan iyileşti, 8'i kötüleşti.
+
+**Denenip seçilmeyenler.**
+- R sınırı, büzülmenin üstüne kazanç getirmedi.
+- Rakım ve karmaşıklık eşiklerini sıkılaştırmak tek komşulu hatayı artırdı.
+- Benzerlik ölçütünün üç bileşeni (rakım ≤ 400 m, karmaşıklık ≤ 0,04, kıyı) korunuyor; düzeltmenin büyüklüğüne ayrıca sınır konmadı.
+
+**Güven seviyeleri** (yeni kural). Mutlak KF hatası, puan:
+
+| Seviye | n | Medyan (GA) | P90 (GA) | Ort. hata |
+|---|---|---|---|---|
+| Yüksek (benzer komşu ≤ 30 km) | 41 | 3,4 (2,0–4,3) | 10,4 (8,0–12,7) | −0,05 |
+| Düşük | 49 | 5,6 (4,6–7,8) | 11,4 (10,6–12,5) | −0,91 |
+
+**Sonuç hücrelerde.**
+- Çerkezköy artık üç komşuya dayanıyor (Çanta, Tayakadın, Yamaçtepe): %46,6 → %42,0, Silivri'nin gözlenen %41,9'una eşit.
+- Lalapaşa hücreleri ilk 10'dan çıktı.
+- Trakya'nın ilk 50'deki hücre sayısı 14 → 7.
+
+### Balıkesir ve Biga neden ilk 10'da değildi?
+
+**Bölge santralleri.**
+- GWA yüksek: türbin konumlarında 7,2–9,4 m/s.
+- Gözlenen KF: %28–42.
+- R: Balıkesir ve Biga'da 0,84–0,98; Trakya'da 1,02–1,18.
+- Yani GWA bu bölgede rüzgârı olduğundan yüksek gösteriyor; Trakya'da ise düşük.
+
+**Olası neden.** Bölge Türkiye'nin en yoğun santral kümesi. Santraller arası iz kaybı ve türbülans gözlenen üretime giriyor ama GWA'da yok.
+
+**Etkisi.** Hücreler bu düşük artığı devralıyor. Hücre ortalaması, sırt yerine temsilî nokta (2 km yerleşim yalnız o noktanın çevresi) ve tek değerli harita etkisi de buna ekleniyor.
+
+**Yeni kuralla:**
+- Balıkesir/Biga'nın ilk 50'deki hücre sayısı 10 → 17.
+- Karacabey 5., Ezine 10. sırada.
+- Erdek, Bayramiç, Ayvacık ve Çanakkale merkez 13–20. sıralarda.
+
+### Modern türbin doğrulaması
+
+`src/v2_R3_modern_turbin.py` → `outputs/v2R/R3_*`.
+
+**1. Modern alt küme.** Vekil rotor ≥ 120 m ya da özgül güç ≤ 300 W/m²; 12 santral (SWT120 5, E-141 3, V100 2, SWT130 1, GE130 1). Birini dışarıda bırak tahmininde:
+
+| Küme | Ort. hata | Medyan mutlak | RMSE |
+|---|---|---|---|
+| Modern | +1,1 | 4,7 | 8,0 |
+| Diğerleri | −0,8 | — | 6,7 |
+
+Sistematik bir fazla tahmin yok. Dağılımın genişliği iki aykırı santralden geliyor: Söke −18, Meryem −11.
+
+**2. Salt türbin kazancı.** Santralin kendi kalibre K'sıyla E-141 / 120 m KF'si eksi kendi türbiniyle KF'si:
+
+| Santral grubu | Medyan kazanç | Aralık |
+|---|---|---|
+| Eski türbinli | +6,8 | P10–P90: 5,2–8,4 |
+| Modern | +1,2 | — |
+
+Türbin bazında: E-92 +7,6, GE103 +6,3, V90 +7,2, V112 +6,2, V117 +3,9, SWT120 +3,4, E-141 +0,5.
+
+**"Modern türbin varsayımı gözlenenin 1–5 puan üstünü açıklıyor" iddiası düzeltildi.** Salt türbin kazancı daha büyük (~7 puan). Santral hücrelerinde modelin gözlenenden yalnız 1–5 puan yüksek çıkması, hücre noktalarının santral türbin konumlarından biraz daha az rüzgârlı olduğunu gösteriyor. Bu bir abartma işareti değil.
+
+**3. Hatay (+9 puan).** Belen/Atik hücresi (önce %47,3, yeni kuralla %45,2), santrallerin gözlenen %32,4–32,7'si.
+
+| Bileşen | Puan | Açıklama |
+|---|---|---|
+| Türbin kazancı | ~+7 | Aynı santral konumlarında E-141 ile %39–41 |
+| Konum | ~+6–8 | Hücrenin 2 km yerleşimi, santral türbinlerinin durduğu yerlerden (GWA 7,2–7,9) belirgin biçimde daha rüzgârlı sırt hücreleri seçiyor (GWA 9,4) |
+
+Bu karmaşık arazide (karmaşıklık 0,18) GWA belirsizliği büyük. Hücre, gözlenen azamiye çok yakın olduğu için ihtiyatla değerlendirilmeli.
+
+**4. Üst sınır.**
+- Türkiye'de gözlenen en yüksek santral KF'si %45,6 (Geres RES); P95 %41,6.
+- Aynı santral konumlarında E-141 ile model P95 %49,1, azami %52,0.
+- Tahmini RES KF'si gözlenen azamiyi (%45,6) aşan hücre ve sahalar haritada kalın kenarla, saha kartında ve sonuçlarda "üst sınıra yakın, ihtiyatla değerlendirin" notuyla işaretleniyor (`config v2.uygulama.ust_sinir_kf`).
+- Yeni ön taramada 2 hücre: Gökçeada %47,2 ve Gürün %45,7; ikisi de düşük güvenli.
+
+### Adalar ve şebeke erişimi
+
+**Tespit** (`src/kaynaklar/adalar.py`). Sınır ızgarasının 8-komşulu bağlı bileşenleri: en büyük bileşen anakara, diğerleri ada.
+- **İstisnalar:** Sinop yarımadası (kıstak, ızgarada ayrık) ve Ayvalık/Cunda (köprü) kara bağlantılı sayılıyor (`config v2.adalar.kara_bagli`).
+- **Ön taramada ada hücreleri (7):** Gökçeada 4, Bozcaada 1, Marmara 2. Sıralamalarda (ilk 10, Türkiye yüzdeliği) varsayılan olarak hariç; kullanıcı dahil edebiliyor.
+
+**Bağlantı durumu** (araştırılabilen kadar; kaynaklar config'te). Mevcut kabloların gerilim seviyesini ve taşıma kapasitesini doğrulayamadım.
+
+| Ada | Bulgu | Kaynak |
+|---|---|---|
+| Gökçeada | 1989'dan beri Kumlimanı'ndan ~2 km'lik denizaltı kablosuyla şebekeye bağlı | Yerel haber |
+| Bozcaada | 1989'dan beri Geyikli'den (~4 deniz mili) denizaltı kablosuyla bağlı; adada 10,2 MW'lık bir RES işletmede | Kaymakamlık |
+| Marmara Adası | 1989'dan beri ~11 km'lik denizaltı kablosuyla bağlı; Marmara'daki adalara toplam ~70 km kablo | EMO Güney Marmara raporu, haberler |
+
+Bunlar adaların tüketimini karşılayan dağıtım ölçeğinde bağlantılar görünüyor. 50 MW ölçeğinde bir santral için yeni bir iletim seviyesi denizaltı bağlantısı gerekmesi muhtemel; bu maliyet modelde yok. Uygulama ada sahalarında bunu açıkça uyarıyor.
+
 ## 6. A5 — Sahaya bağlı parametreler
 
 - **İl/ilçe:** geoBoundaries ilçe sınırları 1 km ızgaraya rasterize edildi (973 ilçe, 81 il). Nokta → il/ilçe ve "Türkiye
