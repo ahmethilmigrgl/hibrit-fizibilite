@@ -39,6 +39,12 @@ sayfalar = [
         icon=":material/menu_book:",
         url_path="vaka",
     ),
+    st.Page(
+        str(KOK / "uygulama" / "sayfa_cok_kriterli.py"),
+        title=T("Çok kriterli saha seçimi", "Multi-criteria site selection"),
+        icon=":material/tune:",
+        url_path="cok-kriterli",
+    ),
     st.Page(str(KOK / "uygulama" / "sayfa_yontem.py"), title=T("Yöntem", "Method"), icon=":material/functions:", url_path="yontem"),
 ]
 sayfa = st.navigation(sayfalar, position="top")

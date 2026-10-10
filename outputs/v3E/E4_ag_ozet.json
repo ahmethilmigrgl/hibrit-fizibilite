@@ -1,0 +1,28 @@
+{
+ "dugum": 179811,
+ "kenar": 235944,
+ "toplam_km": 123907.55714201764,
+ "kaynak": [
+  "Aliağa limanları (Nemport, Batı Liman, SOCAR)",
+  "Bandırma Limanı (Çelebi)",
+  "Gemlik limanları (Gemport, Borusan)",
+  "Samsunport",
+  "Port Akdeniz",
+  "TPI Composites (İzmir tesisleri)",
+  "Nordex Türkiye (nasel montajı)",
+  "Ateş Wind Power (kule)",
+  "Gesbey (kule)"
+ ],
+ "kaynak_aga_km": [
+  4.41,
+  0.19,
+  2.46,
+  1.21,
+  1.61,
+  0.83,
+  0.22,
+  0.26,
+  6.09
+ ],
+ "sure_s": 75.28512382507324
+}

@@ -1,0 +1,80 @@
+﻿id,enlem,boylam,ad,icao,iata
+n254413522,38.72642,30.60111,Afyon Havaalanı,LTAH,AFY
+n254442520,40.07919,32.56416,Akıncı Hava Üssü,LTAE,
+n254474131,41.10344,28.54941,İstanbul Hezarfen Havaalanı,LTBW,
+n8528043825,41.17933,40.85024,Rize-Artvin Havalimanı,LTFO,RZV
+w40610244,40.07995,32.56536,Akıncı Hava Üssü,LTAE,
+w51693589,36.98486,35.28735,Adana Şakirpaşa Havalimanı,LTAF,ADA
+w58778254,40.97665,28.82199,İstanbul Atatürk Havalimanı,LTBA,ISL
+w82118176,38.43824,38.09489,Malatya Havalimanı,LTAT,MLX
+w82369198,39.77653,30.57227,1. Ana Jet Üs Komutanlığı,LTBI,ESK
+w82371091,39.81057,30.51894,Eskişehir Hasan Polatkan Havalimanı,LTBY,AOE
+w83334472,40.25847,29.55463,Bursa Yenişehir Havalimanı (YEI),LTBR,YEI
+w84721791,37.78359,29.70031,Denizli Çardak Havaalanı,LTAY,DNZ
+w84721816,37.0962,30.64595,Karain Havaalanı,LTXE,
+w84761644,38.80748,27.83377,Akhisar Hava Meydan Komutanlığı,LTBT,
+w85603342,37.21896,40.62755,Mardin Prof. Dr. Aziz Sancar Havalimanı,LTCR,MQM
+w85873765,37.84798,30.35673,Isparta Süleyman Demirel Havalimanı,LTFC,ISE
+w86096185,38.77123,34.53033,Nevşehir Kapadokya Havalimanı,LTAZ,NAV
+w86096191,38.773,35.49441,Kayseri Erkilet Havaalanı,LTAU,ASR
+w88693314,38.7465,41.65707,Muş Sultan Alparslan  Havaalanı,LTCK,MSR
+w89134808,40.32038,27.97317,6. Ana Jet Üs Komutanlığı,LTBG,BDM
+w89226182,38.68403,29.47138,Uşak Havalimanı,LTBO,USQ
+w89667377,41.50689,32.08879,Çaycuma Havaalanı,LTAS,ONQ
+w91762440,36.94864,37.46802,Gaziantep Oğuzeli Uluslararası Havalimanı,LTAJ,GZT
+w92666076,39.71189,39.52252,Erzincan Yıldırım Akbulut Havalimanı,LTCD,ERC
+w93332563,37.92692,41.11586,14. İnsansız Uçak Sistemleri Üs Komutanlığı Askeri Havaalanı,LTCJ,BAL
+w94133216,37.97499,41.83499,Siirt Havaalanı,LTCL,SXZ
+w99869114,42.01892,35.07684,Sinop Havaalanı,LTCM,NOP
+w100706996,39.81516,36.90004,Sivas Nuri Demirağ Havalimanı,LTAR,VAS
+w103010312,36.29828,32.3012,Gazipaşa-Alanya Havalimanı,LTFG,GZP
+w113941280,39.62174,27.92228,Balıkesir Merkez Havaalanı,LTBF,BZI
+w114715741,37.00833,35.42736,İncirlik Hava Üssü,LTAG,UAB
+w116618464,37.8172,27.88866,Çıldır Havaalanı,LTBD,CII
+w123063927,40.13436,26.42567,Çanakkale Havalimanı,LTBH,CKZ
+w127071926,41.25564,36.56304,Samsun Çarşamba Havalimanı,LTFH,SZF
+w127158253,37.97789,32.56179,Konya Havalimanı,LTAN,KYA
+w130008380,38.46941,43.33527,Van Ferit Melen Havalimanı,LTCI,VAN
+w132928025,40.99499,39.78892,Trabzon Uluslararası Havalimanı,LTCG,TZX
+w135625621,37.72843,38.4653,Adıyaman Havalimanı,LTCP,ADF
+w138331677,39.73815,32.3798,Temelli Eğitim Yardımcı Meydanı,LT01,
+w146253941,37.53986,36.96416,Kahramanmaraş Havaalanı,LTCN,KCM
+w148550587,40.20291,25.88573,Gökçeada Havalimanı,LTFK,GKD
+w150871752,40.23009,29.00448,Bursa Yunuseli Hava Kampüsü,LTBE,
+w181394713,37.44791,38.9008,Şanlıurfa GAP Havalimanı,LTCS,GNY
+w183771833,40.83754,35.51966,Amasya Merzifon Havalimanı,LTAP,MZH
+w184630469,39.9755,43.88276,Iğdır Şehit Bülent Aydın Havalimanı,LTCT,IGD
+w189030279,41.51215,36.1187,Ondokuz Mayıs Havaalanı,LTFI,NIL
+w191006090,40.73226,30.08918,Cengiz Topel Havaalanı,LTBQ,KCO
+w192090074,37.2487,27.66681,Milas-Bodrum Havalimanı,LTFE,BJV
+w196694118,38.73107,30.60017,17’nci Hava ve Füze Savunma Üs Komutanlığı,LTAH,AFY
+w196854286,39.45004,31.36376,Sivrihisar Hava Meydan Komutanlığı,LTAV,
+w214629496,36.36752,36.2881,Hatay Havaalanı,LTDA,HTY
+w215056346,41.1392,27.91281,Tekirdağ Çorlu Atatürk Havalimanı,LTBU,TEQ
+w222364846,40.78742,26.60677,Keşan Askeri Havaalanı,LTFL,
+w230977596,40.68376,29.3768,18. Ana Üs Komutanlığı,LTBP,
+w231716340,36.7085,28.78359,Dalaman Havalimanı,LTBS,DLM
+w231996136,37.35988,42.06336,Şırnak Şerafettin Elçi Havalimanı,LTCV,NKT
+w238791443,37.97876,32.56205,3. Ana Jet Üs Komutanlığı,LTAN,KYA
+w252778982,37.95019,27.33339,Selçuk-Efes Havaalanı,LTFB,IZM
+w290108845,39.11624,30.12782,Zafer Havalimanı,LTBZ,KZR
+w307989913,37.94447,41.12172,Batman Havaalanı,LTCJ,BAL
+w308553267,38.51573,27.01369,Çiğli 2. Ana Jet Üssü,LTBL,IGL
+w321235857,39.42695,30.01402,Kütahya Askeri Havaalanı,LTBN,
+w349521671,40.96639,38.0851,Ordu Giresun Havalimanı,LTCB,OGU
+w383226837,39.95446,41.17229,Erzurum Havalimanı,LTCE,ERZ
+w393474956,38.51835,26.97605,Kaklıç Hava Üssü,LTFA,
+w404921820,39.95411,32.6829,Ankara Havaalanı,LTAD,ANK
+w440701548,38.2882,27.16038,Adnan Menderes Havalimanı,LTBJ,ADB
+w457961591,40.99145,29.21732,Samandıra Hava Üssü,LTBX,
+w500446007,37.13869,27.6711,Bodrum Imsık Havaalanı,LTBV,BXN
+w617250503,39.93411,32.73487,Güvercinlik Üssü,LTAB,
+w630320796,40.12248,32.99868,Esenboğa Uluslararası Havalimanı,LTAC,ESB
+w703459075,36.8912,35.06031,Çukurova Uluslararası Havalimanı,LTDB,COV
+w812730062,41.27187,28.73767,İstanbul Havalimanı,LTFM,IST
+w899387352,40.38168,27.30405,Karabiga Airport,LTKA,
+w902229739,40.32069,36.38442,Tokat Havalimanı,LTAW,TJK
+w929806292,37.86325,30.3595,Isparta Kılıç Hava Meydanı,LTFN,
+w1126178655,40.82207,29.33649,Tuzla Hava Üssü,LTIC,
+w1193923512,39.80383,32.84477,Ufuk Danişmend Polis Heliportu,LTHA,
+w1456541331,40.24814,29.56269,Yenişehir Yolören Hava Meydan Komutanlığı,LTBR,YEI

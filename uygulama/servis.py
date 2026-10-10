@@ -21,7 +21,56 @@ def on_tarama() -> pd.DataFrame | None:
     if p is None:
         return None
     d = pd.read_parquet(p)
-    return d[d["hata"] == ""].reset_index(drop=True)
+    d = d[d["hata"] == ""].reset_index(drop=True)
+    c = veri_katmani.yol("atlas/cbs_hucre.parquet", zorunlu=False)
+    if c is not None:  # v3 Faz E: hücre altyapı sütunları (bağlantı, eğim, uygun alan, göç, lojistik)
+        cb = pd.read_parquet(c)[
+            [
+                "hucre_enlem",
+                "hucre_boylam",
+                "baglanti_usd_mw",
+                "trafo_km",
+                "trafo_ad",
+                "egim_ort",
+                "uygun_oran",
+                "goc_azami",
+                "lojistik_usd_mw",
+            ]
+        ]
+        cb = cb.rename(columns={"goc_azami": "goc_hucre", "uygun_oran": "uygun_hucre"})
+        d = d.drop(columns=[x for x in ("goc_azami", "uygun_oran") if x in d.columns]).merge(
+            cb, on=["hucre_enlem", "hucre_boylam"], how="left"
+        )
+        d["baglanti_kusd_mw"] = d["baglanti_usd_mw"] / 1000
+    return d
+
+
+@st.cache_data(show_spinner=False, max_entries=64)
+def altyapi(enlem: float, boylam: float, baglanti_mw: float, yaricap_km: float) -> dict | None:
+    """v3 Faz E: seçilen nokta için bağlantı, lojistik ve alan özeti (src/cbs/altyapi.py); veri yoksa None."""
+    from src.cbs import altyapi as A
+    from src.saha import saha_cfg, saha_olustur
+
+    try:
+        s = saha_olustur("secim", enlem, boylam, baglanti_mw=baglanti_mw)
+        return A.hesapla(enlem, boylam, baglanti_mw, saha_cfg(s), yaricap_km)
+    except Exception:
+        return None
+
+
+@st.cache_data(show_spinner=False)
+def katman(ad: str) -> dict | None:
+    """Harita altyapı katmanı (GeoJSON) ya da tablo: trafo, tedarik."""
+    import json
+
+    if ad == "trafo":
+        p = veri_katmani.yol("atlas/trafo_merkezleri.csv", zorunlu=False)
+        return None if p is None else pd.read_csv(p).query("kv >= 154").to_dict(orient="list")
+    if ad == "tedarik":
+        p = veri_katmani.yol("atlas/tedarik_kaynaklari.csv", zorunlu=False)
+        return None if p is None else pd.read_csv(p).to_dict(orient="list")
+    p = veri_katmani.yol(f"atlas/katman_{ad}.geojson", zorunlu=False)
+    return None if p is None else json.loads(p.read_text(encoding="utf-8"))
 
 
 @st.cache_data(show_spinner=False)

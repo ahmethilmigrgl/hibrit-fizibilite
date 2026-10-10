@@ -1,0 +1,60 @@
+{
+ "baglanti": {
+  "yeka_usd_mw_aralik": [
+   52857.142857142855,
+   230500.0
+  ],
+  "yeka_hat_km_medyan": 36.0,
+  "model_hucre_trafo_km_medyan": 14.014607941361657,
+  "model_hucre_hat_km_medyan": 17.518259926702072,
+  "model_baglanti_usd_mw_50mw": [
+   128078.40791809553,
+   174972.76145622705,
+   243521.8890831213
+  ],
+  "mevcut_res_hucre_trafo_km_medyan": 8.246714067638674
+ },
+ "lojistik": {
+  "lojistik_capex_payi": [
+   0.03574288804290155,
+   0.05331488477236945,
+   0.08143504566049424
+  ],
+  "lojistik_usd_mw": [
+   41104.32124933678,
+   61312.117488224874,
+   93650.30250956838
+  ],
+  "teslim_ay": [
+   8.015120446847579,
+   8.042517641900943,
+   8.096396680168011
+  ],
+  "kule_400km_tasima_payi": 0.10514541387024609,
+  "not": "Cotrell vd. (2014): kule taşıması, kule sermaye + taşıma maliyetinin %8'inden az. Kule fiyatı 2.000 $/t TAHMİN."
+ },
+ "on_tarama": {
+  "hucre": 1457,
+  "bb_v2_medyan": 90.09046936035156,
+  "bb_v3_medyan": 95.65032958984375,
+  "fark_yuzdelik": [
+   0.27068023681640624,
+   4.2208099365234375,
+   10.984573364257814
+  ],
+  "spearman_v2_v3": 0.9273503070784396,
+  "esik_alti_58_v2": 49,
+  "esik_alti_58_v3": 43,
+  "fark_isletme_kayip_yuzdelik": [
+   -0.8446548461914063,
+   0.0,
+   0.0
+  ],
+  "fark_altyapi_yuzdelik": [
+   0.5653579711914063,
+   4.436882019042969,
+   11.126332092285157
+  ],
+  "ilk10_ortak": 8
+ }
+}

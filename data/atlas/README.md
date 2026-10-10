@@ -35,3 +35,12 @@ herkes aynı lisansla paylaşmalı ve "© OpenStreetMap katkıcıları" atfını
   12 × 24 ay × saat ortalamaları bulunur.
 - `piyasa/saatlik.parquet` ulusal düzeyde saatlik piyasa verisi içerir. Bu, v2 Faz A6'da uygulamaya gömülmesi istenen
   pakettir; EPİAŞ'ın "kaynak gösterilerek çoğaltma" koşuluyla dağıtılır.
+| `trafo_merkezleri.csv` | v3 E1: OSM trafo merkezleri (4.231; 2.320'sinin gerilimi biliniyor) — konum, ad, operatör, azami kV | OpenStreetMap (Geofabrik PBF) | **ODbL 1.0** |
+| `havalimanlari.csv` | v3 E1: OSM havalimanları (79) | OpenStreetMap | **ODbL 1.0** |
+| `cbs_hucre.parquet` | v3 E2/E4: 1.464 ön tarama hücresi için bağlantı (hedef TM, kV, uzaklık, maliyet), 2 km alan özeti (dışlama payları, eğim, koruma, göç), lojistik (maliyet, teslim süresi, kaynaklar), hücrede mevcut RES (`src/v3_E2_hucre_tablosu.py`) | OSM türevleri + Copernicus DEM + kendi modelim | **ODbL 1.0** (OSM'den türetilmiş) |
+| `katman_agir_yol.geojson`, `katman_hat.geojson`, `katman_koruma.geojson` | v3 E5: harita katmanları (sadeleştirilmiş; `src/v3_E5_harita_katmanlari.py`) | OpenStreetMap | **ODbL 1.0** |
+| `katman_goc.geojson`, `goc_koridorlari.json` | v3 E1/E5: yaklaşık kuş göç koridorları (eksen + risk tamponları) | Yayınlardan elle sayısallaştırma (Doğa Derneği, Jobson vd. 2021, Belen izleme çalışmaları) | CC BY 4.0 — **yaklaşık**, ÇED çalışmasının yerini tutmaz |
+| `tedarik_kaynaklari.csv` | v3 E4: proje kargosu limanları ve yerli bileşen üreticileri (konum, bileşen, kapasite, doğrulama, kaynak) | Şirket ve liman sayfaları, TÜREB/DARGEB | CC BY 4.0 (olgusal bilgi) |
+| `teias_yeka_baglanti.csv` | v3 E2: YEKA RES-2025 TEİAŞ bağlantı görüşleri | ETKB duyurusu | Kamu bilgisi; kaynak anılır |
+| `lojistik_referans.json` | v3 E4: mevcut santral hücrelerinin medyan lojistik maliyeti ve teslim süresi (CAPEX referansı) | Kendi modelim | CC BY 4.0 |
+| `v3_cok_kriterli_dogrulama.json` | v3 E3: AHP profilleri, ilk 10'lar, ROC/AUC doğrulaması (`src/v3_E3_cok_kriterli.py`) | Kendi modelim (OSM türbin konumlarıyla etiket) | **ODbL 1.0** |

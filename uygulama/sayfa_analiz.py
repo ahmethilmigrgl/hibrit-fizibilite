@@ -244,6 +244,7 @@ def saha_karti(kv: dict) -> dict | None:
                 ),
                 "uyari",
             )
+        altyapi_karti(sc, kv)
         if b["hucre"]:
             h = b["hucre"]
             st.caption(
@@ -260,6 +261,44 @@ def saha_karti(kv: dict) -> dict | None:
                 )
             )
     return b
+
+
+def altyapi_karti(sc: dict, kv: dict) -> None:
+    """v3 Faz E: en yakın trafo merkezi, bağlantı maliyeti, dışlama kesişimleri, göç uyarısı, lojistik maliyeti ve rota."""
+    a = servis.altyapi(round(sc["enlem"], 4), round(sc["boylam"], 4), float(kv["baglanti_mw"]), float(kv["yerlesim_yaricap_km"]))
+    if not a or not a.get("baglanti"):
+        return
+    bg, lj, al = a["baglanti"], a.get("lojistik"), a.get("alan") or {}
+    st.html(f'<div class="esik-kas ara">{T("Altyapı ve lojistik", "Infrastructure and logistics")}</div>')
+    c = st.columns(2)
+    B.kpi_karti(c[0], T("Şebeke bağlantısı", "Grid connection"), f"{sayi(bg['toplam_usd'] / 1e6, 1)} M$",
+                aciklama=f"{sayi(bg['usd_mw'] / 1000, 0)} {T('bin $/MW', 'k$/MW')} · {sayi(bg['kv'], 0)} kV")  # fmt: skip
+    if lj:
+        B.kpi_karti(c[1], T("Lojistik (tahmini)", "Logistics (estimate)"), f"{sayi(lj['usd_mw'] / 1000, 0)} {T('bin $/MW', 'k$/MW')}",
+                    aciklama=T(f"teslim ~{sayi(lj['teslim_ay'], 1)} ay", f"delivery ~{sayi(lj['teslim_ay'], 1)} months"))  # fmt: skip
+    t = bg["hedef_trafo"]
+    st.caption(
+        T(f"En yakın uygun trafo merkezi: {t['ad']} ({sayi(t['kv'], 0)} kV), kuş uçuşu {sayi(t['km'], 1)} km; ağır nakliye yoluna "
+          f"{sayi((bg['yol_m'] or 0) / 1000, 1)} km. TEİAŞ bağlanabilir kapasitesi lisanslı projeler için yayımlanmadığından doğrulanamaz.",
+          f"Nearest suitable substation: {t['ad']} ({sayi(t['kv'], 0)} kV), {sayi(t['km'], 1)} km straight-line; heavy-haul road "
+          f"{sayi((bg['yol_m'] or 0) / 1000, 1)} km. TEİAŞ connection capacity is not published for licensed projects and cannot be verified.")
+    )  # fmt: skip
+    if lj and lj.get("plan"):
+        bil = {"kanat": T("kanat", "blades"), "kule": T("kule", "tower"), "nasel": T("nasel", "nacelle"), "gobek": T("göbek", "hub")}
+        st.caption(T("Tedarik rotası (en ucuz plan, ulaştırma LP'si): ", "Supply plan (cheapest, transportation LP): ")
+                   + " · ".join(f"{bil.get(p['bilesen'], p['bilesen'])}: {p['kaynak']} ({sayi(p['km'], 0)} km)" for p in lj["plan"]))  # fmt: skip
+    if al:
+        dis = [f"{k} %{sayi(100 * v, 0)}" for k, v in al.get("dislanan", {}).items() if v > 0.005]
+        st.caption(T(f"Saha alanının %{sayi(100 * al['uygun_oran'], 0)}'i dışlamalardan arınmış", f"{sayi(100 * al['uygun_oran'], 0)}% of the site area is free of exclusions")
+                   + (": " + ", ".join(dis) if dis else "") + T(f" · ortalama eğim {sayi(al['egim_ort'], 1)}°", f" · mean slope {sayi(al['egim_ort'], 1)}°"))  # fmt: skip
+        if al.get("goc_azami", 0) >= 1:
+            B.uyari_kutusu(
+                T("**Göç koridoru:** saha bilinen bir süzülen kuş göç darboğazına " + ("çok yakın (yüksek risk)." if al["goc_azami"] == 2 else "yakın (orta risk).")
+                  + " Katman yaklaşıktır; yerinde ornitoloji çalışmasının (en az iki göç dönemi) yerini tutmaz.",
+                  "**Migration corridor:** the site is " + ("very close to (high risk)" if al["goc_azami"] == 2 else "near (medium risk)")
+                  + " a known soaring-bird bottleneck. The layer is approximate and does not replace an on-site ornithology study."),
+                "uyari",
+            )  # fmt: skip
 
 
 # ---------------------------------------------------------------- varsayımlar
@@ -642,11 +681,12 @@ def tam_sonuc(s) -> None:
         negatif=[(i, 1) for i, v in enumerate(g["e_npv"]) if v < 0],
     )
     if o.get("v3"):  # v3 Faz D: türbin yerleşimi + işletme ve bakım
-        from uygulama.v3_bolumler import bakim_bolumu, kayip_bolumu, yerlesim_bolumu
+        from uygulama.v3_bolumler import bakim_bolumu, kayip_bolumu, lojistik_bolumu, yerlesim_bolumu
 
         yerlesim_bolumu(o, s.saha)
         kayip_bolumu(o)
         bakim_bolumu(o)
+        lojistik_bolumu(s)
     B.bolum_basligi(
         T("Neyi izlemeli", "What to monitor"), T("kararı değiştirecek tetikleyiciler", "triggers that would change the decision")
     )
@@ -781,7 +821,7 @@ def sayfa() -> None:
                 "0.25° land cells, default settings · click a cell to choose a site") + "</div>"
         )  # fmt: skip
         kolon = st.pills(
-            T("Harita katmanı", "Map layer"), list(H.KATMANLAR), format_func=lambda k: T(*H.KISA_AD[k]), key="katman",
+            T("Harita katmanı", "Map layer"), [k for k in H.KATMANLAR if ot is None or k in ot.columns], format_func=lambda k: T(*H.KISA_AD[k]), key="katman",
             default="basabas_en_iyi", required=True, label_visibility="collapsed",
         )  # fmt: skip
         if ot is None:
@@ -800,9 +840,14 @@ def sayfa() -> None:
             merkez, zoom = (sc["enlem"], sc["boylam"]), 9
         else:
             merkez, zoom = (39.0, 35.2), 6
+        secili = st.pills(
+            T("Altyapı katmanları", "Infrastructure layers"), list(H.ALTYAPI), format_func=lambda k: T(*H.ALTYAPI[k]), key="altyapi_katman",
+            selection_mode="multi", default=[],
+        )  # fmt: skip
+        alt = {k: servis.katman(k) for k in (secili or [])}
         m = H.harita(
             ot, kolon, servis.santraller(), (sc["enlem"], sc["boylam"]) if sc else None, st.session_state.get("adaylar"), None, merkez, zoom,
-            tema=tema,
+            tema=tema, altyapi=alt or None,
         )  # fmt: skip
         try:
             from streamlit_folium import st_folium

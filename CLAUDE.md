@@ -200,3 +200,22 @@ Config `v3.kayip` (göreli kayıp kuralı, taban kayıp ≈ %6,3), `v3.yerlesim`
 seçimle kesin temsil eder. Atlas: iz kaybı artığı açıklamadı → matrisler güncellenmedi (`atlas_iz_arindirma: false`), göreli
 kural kullanılır. Betikler `src/v3_D*.py` → `outputs/v3D/`; testler `tests/test_v3_D.py`. Veri: `data/atlas/osm_turbinler.csv`,
 `santral_iz_kaybi.csv`, `v3_hizli_tablolar.csv`; yön gridi `data/grid/era5_yon_tr/v1/` (repoda yok). Veri sürümü `v3D-2026-10`.
+
+**Ön adım (Ö1–Ö4, 2026-10-10):** ✅ bkz. `docs/v3_E_cbs_cok_kriterli_lojistik.md` §0. İşletme modeli `src/bakim/isletme.py`
+(`config v3.isletme`: varsayılan FSA 20 $/kW-yıl + sahip kalemleri 14 = 34; `KullaniciVarsayimlari(isletme_modeli="kendi")`),
+kayıp tablosu `src/uretim/kayip.py` (`v3.kayip.tablo`), bakım duyarlılığı `data/atlas/v3_bakim_duyarlilik.json`; betikler
+`src/v3_E0_*.py` → `outputs/v3E/E0_*`; testler `tests/test_v3_E0.py`.
+
+**Faz E durumu (2026-10-10):** ✅ bkz. `docs/v3_E_cbs_cok_kriterli_lojistik.md` §1–8. Modüller `src/cbs/` (katmanlar: CBS gridi +
+`CBSDislama` → Faz D dışlama arayüzü; baglanti: mesafe/gerilim maliyeti; lojistik: ağır nakliye ağı + ulaştırma LP'si; altyapi:
+motora uygulama — `teknoloji.sebeke.capex`, `res.capex` lojistik farkı, COD'ye teslim gecikmesi; cok_kriterli: AHP/TOPSIS/
+dayanıklılık/AUC; kriterler: hücre tablosu, profiller, değer fonksiyonu). Anahtar `KullaniciVarsayimlari(altyapi_maliyetleri=True)`
+(False = ön adım sonrası davranış). Config `v3.cbs`, `v3.baglanti`, `v3.lojistik`, `v3.cok_kriterli` (TOPSIS değer fonksiyonu
+standardizasyonu; `normalizasyon: vektor` klasik). Çevrimdışı: Geofabrik PBF `data/raw/osm_pbf/` → `src/v3_E1_osm_katmanlar.py`
+(pyosmium) → `src/v3_E1_cbs_grid.py` (`data/grid/cbs_tr/v1`), eğim `src/v3_E1_egim_grid.py` (`data/grid/egim_tr/v1`), nakliye ağı
+`src/v3_E4_nakliye_agi.py` (`data/grid/lojistik_tr/v1`), hücre tablosu `src/v3_E2_hucre_tablosu.py`, ön tarama
+`src/v3_E2_on_tarama.py` (v2 sürümü `outputs/v3E/on_tarama_v2.parquet`), çok kriterli `src/v3_E3_cok_kriterli.py`, harita
+katmanları `src/v3_E5_harita_katmanlari.py`, doğrulama `src/v3_E6_*.py` → `outputs/v3E/`. Arayüz: altyapı katmanları (isteğe
+bağlı, açılışta yüklenmez), saha kartı bağlantı/lojistik, tam analizde "Lojistik ve bağlantı", yeni sayfa `uygulama/sayfa_cok_kriterli.py`
+(`/cok-kriterli`). WDPA lisansı nedeniyle koruma alanları OSM'den; TEİAŞ lisanslı kapasite yayımlamıyor (ana sınırlama).
+Testler `tests/test_v3_E.py`.

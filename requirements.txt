@@ -32,3 +32,5 @@ streamlit-folium==0.27.4
 # v3 (Faz D): iz modeli (DTU PyWake, MIT) ve ayrık olay simülasyonu (SimPy, MIT)
 py_wake==2.6.20
 simpy==4.1.2
+# v3 (Faz E): OSM PBF işleme (yalnız çevrimdışı betikler: src/v3_E1_osm_katmanlar.py; BSD-2)
+osmium==4.3.1

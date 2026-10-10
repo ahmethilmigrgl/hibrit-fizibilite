@@ -15,6 +15,33 @@ Proje aşamalar halinde geliştirildi. Her aşama bir commit; revizyonlar ve ön
 | Tutarlılık 2 | YEKDEM yıllık opsiyon, ortak batarya sürücüsü, inşaata hazır takvim | +1,5 M$ | Durum tespiti + ≤1,5 M$ teklif |
 | **Nihai (Aşama 9 A)** | **Fiyat ortalaması: 58 $/MWh medyan değil beklenen değer** | **−1,7 M$** | **Rafa kaldır, tetikleyicileri izle** |
 
+## [3.0.0-E] — 2026-10-10 (dal `v3-ie`, yayınlanmadı)
+
+### v3 ön adım (Ö1–Ö4) — Faz D tutarlılık konuları
+- O&M kapsam mutabakatı: varsayılan işletme modeli tam kapsamlı servis sözleşmesi (FSA 20 + sahip kalemleri 14 = 34 $/kW-yıl);
+  Faz D'nin 25,5 bin $'ı sahip kalemlerini içermiyordu. Kendi bakımı seçeneği; başabaş filo 16 türbin.
+- Kayıp tablosu (IEC 61400-15 kategorileri): çift sayım yok; v2'nin %12'si = kategoriler %11,3 + kalibrasyon farkı %0,8.
+- Bakım parametre duyarlılığı + tornado (arayüzde); strateji sıralamasını çeviren eşikler.
+- Üç sahada üç aşama: E[NPV] Faz D'ye göre 1,0–1,6 M$ düştü, v2'ye göre hâlâ 2,8–4,4 M$ iyi; karar değişmedi.
+
+### v3 Faz E — Coğrafi katmanlar, çok kriterli saha seçimi, lojistik
+Ayrıntılar `docs/v3_E_cbs_cok_kriterli_lojistik.md`, çıktılar `outputs/v3E/`.
+- **Coğrafi katmanlar** (çevrimdışı, OSM Geofabrik PBF + Copernicus DEM): sınıflı yollar, gerilimli hat ve trafo
+  merkezleri, yerleşim, havalimanı, koruma alanı (WDPA lisansı nedeniyle OSM), 250 m eğim, yaklaşık kuş göç koridorları →
+  250 m mesafe gridleri ve 1.464 hücrelik altyapı tablosu.
+- **Mesafeye bağlı şebeke bağlantısı** (gerilim kuralı, TEİAŞ ihale birim maliyetleri) sabit 120 bin $/MW yerine;
+  YEKA RES-2025 görüşleriyle doğrulama. TEİAŞ lisanslı kapasite yayımlamıyor → ana sınırlama.
+- **CBS dışlamaları türbin yerleşimine** bağlandı (Faz D arayüzü): yerleşim/yol/hat/havalimanı tamponları, eğim, koruma.
+- **Lojistik:** ağır nakliye ağı (180 bin düğüm) + ulaştırma LP'si (limanlar, yerli üreticiler); CAPEX'e referansa göre
+  fark, teslim süresi COD'ye.
+- **Çok kriterli seçim:** dışlama + AHP (ikili karşılaştırma, CR) + TOPSIS (değer fonksiyonu standardizasyonu; klasik
+  vektör normalizasyonunun ekonomiyi bastırdığı bulundu) + Dirichlet dayanıklılığı + mevcut santrallerle ROC/AUC
+  (ekonomi profili 0,87; açığa çıkan tercih: şebekeye yakınlık %34, göç %2).
+- **Arayüz:** isteğe bağlı altyapı katmanları, saha kartında bağlantı/lojistik/göç uyarısı, tam analizde "Lojistik ve
+  bağlantı", yeni sayfa "Çok kriterli saha seçimi".
+- **Etki:** Türkiye başabaş medyanı +4,4 $/MWh, 58 altı hücre 49 → 43, ekonomik ilk 10'un 8'i aynı; Ezine E[NPV] −1,95 →
+  −1,63, Gürün −2,91 → −6,98, Susurluk −1,37 → −3,34 M$; karar değişmedi (rafa kaldır).
+
 ## [3.0.0-D] — 2026-10-10 (dal `v3-ie`, yayınlanmadı)
 
 ### v3 Faz D — Türbin yerleşimi optimizasyonu + bakım ve güvenilirlik

@@ -67,6 +67,7 @@ class KullaniciVarsayimlari:
         "yeni"  # yeni: kullanılabilirlik ve O&M ayrık olay simülasyonundan; sabit: v1 OPEX + kalibrasyondaki kullanılabilirlik
     )
     bakim_stratejisi: str | None = None  # None → config v3.bakim.strateji (duzeltici / takvim / durum)
+    altyapi_maliyetleri: bool = True  # v3 Faz E: mesafeye bağlı bağlantı + lojistik CAPEX (v3 açıkken ve CBS verisi varsa)
     isletme_modeli: str | None = None  # None → config v3.isletme.model (fsa: tam kapsamlı servis sözleşmesi / kendi: kendi bakımı)
     ekstra: dict = field(default_factory=dict)  # gelişmiş: config anahtar yolu → değer
 

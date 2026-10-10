@@ -1,0 +1,26 @@
+                                    olcum  sure_s
+                 açılış (soğuk, masaustu)     2.7
+açılış (sıcak, yeniden yükleme, masaustu)     0.6
+        4 altyapı katmanı açma (masaustu)     5.0
+            çok kriterli sayfa (masaustu)     1.1
+                     açılış (ılık, mobil)     1.7
+   açılış (sıcak, yeniden yükleme, mobil)     0.6
+           4 altyapı katmanı açma (mobil)     5.1
+               çok kriterli sayfa (mobil)     0.8
+           ekran tema  gorunum  yatay_tasma  tasan_oge ornek
+E_altyapi_harita acik masaustu        False          0      
+    E_saha_karti acik masaustu        False          0      
+      E_lojistik acik masaustu        False          0      
+  E_cok_kriterli acik masaustu        False          0      
+E_altyapi_harita acik    mobil        False          0      
+    E_saha_karti acik    mobil        False          0      
+      E_lojistik acik    mobil        False          0      
+  E_cok_kriterli acik    mobil        False          0      
+E_altyapi_harita koyu masaustu        False          0      
+    E_saha_karti koyu masaustu        False          0      
+      E_lojistik koyu masaustu        False          0      
+  E_cok_kriterli koyu masaustu        False          0      
+E_altyapi_harita koyu    mobil        False          0      
+    E_saha_karti koyu    mobil        False          0      
+      E_lojistik koyu    mobil        False          0      
+  E_cok_kriterli koyu    mobil        False          0      

@@ -155,3 +155,348 @@ Karar kuralı: CMS teklifi türbin başına yılda ~2.300 $'ın altındaysa ve a
 - Kendi bakımı (8–10 türbinlik filoda organizasyon sabit gideri 0,6 M$/yıl): O&M 42–47 bin $, E[NPV] 2,5–3,5 M$ daha kötü.
   Tek saha için FSA'nın doğru varsayılan olduğunu doğruluyor.
 - **Karar hiçbir aşamada değişmedi:** rafa kaldır. Başabaş fiyat 59,3–61,1 $/MWh (senaryo 58).
+
+---
+
+## 1. Faz E özeti
+
+| | |
+|---|---|
+| Kod | `src/cbs/` — `katmanlar.py` (CBS gridi okuma, dışlama katmanları, alan özeti), `baglanti.py` (mesafeye bağlı bağlantı), `lojistik.py` (nakliye ağı, ulaştırma LP'si), `altyapi.py` (motora uygulama), `cok_kriterli.py` (AHP, TOPSIS, dayanıklılık, ROC/AUC), `kriterler.py` (hücre kriter tablosu, profiller) |
+| Çevrimdışı betikler | `src/v3_E1_osm_katmanlar.py` (Geofabrik PBF → katmanlar), `src/v3_E1_egim_grid.py` (Copernicus DEM → eğim), `src/v3_E1_kaynak_veri.py` (limanlar, üreticiler, göç koridorları, YEKA bağlantı görüşleri), `src/v3_E1_cbs_grid.py` (250 m mesafe gridleri), `src/v3_E4_nakliye_agi.py` (ağır nakliye ağı + Dijkstra), `src/v3_E2_hucre_tablosu.py` (1.464 hücre altyapı tablosu), `src/v3_E2_on_tarama.py` (v3 ön tarama), `src/v3_E3_cok_kriterli.py`, `src/v3_E5_harita_katmanlari.py`, `src/v3_E6_once_sonra.py`, `src/v3_E6_dogrulama.py` |
+| Uygulamaya giden küçük dosyalar | `data/atlas/`: `cbs_hucre.parquet`, `trafo_merkezleri.csv`, `havalimanlari.csv`, `tedarik_kaynaklari.csv`, `goc_koridorlari.json`, `teias_yeka_baglanti.csv`, `lojistik_referans.json`, `katman_*.geojson`, `v3_cok_kriterli_dogrulama.json` |
+| Ağır gridler (repoda yok) | `data/grid/cbs_tr/v1` (77 MB, 250 m mesafe/koruma/göç), `data/grid/egim_tr/v1` (eğim, rakım), `data/grid/lojistik_tr/v1/ag.npz` (ağ + kaynaklardan en kısa mesafeler) |
+| Config | `v3.cbs` (tamponlar, yol sınıfları), `v3.baglanti` (gerilim kuralı, $/km, TM, fider), `v3.lojistik` (bileşen seferleri, taşıma birim maliyeti, süreler, kapasite) |
+| Kullanıcı anahtarı | `KullaniciVarsayimlari(altyapi_maliyetleri=True)` — kapatılırsa ön adım sonrası davranış (sabit 120 bin $/MW, CBS dışlaması yok) |
+
+Mimari kural korunur: OSM, DEM, EPİAŞ yalnız çevrimdışı betiklerde işlenir. Uygulama çalışırken yalnız `data/atlas` ve
+`data/grid` altındaki ön hesaplanmış dosyaları okur (`src/veri_katmani.py`); dış API çağrısı yok.
+
+## 2. Veri kaynakları ve lisans kararları (E1)
+
+| Katman | Kaynak | Lisans / koşul | Karar |
+|---|---|---|---|
+| Yollar (sınıflı), iletim hatları ve trafo merkezleri (gerilimli), yerleşimler, havalimanları, koruma alanları | OpenStreetMap, Geofabrik Türkiye PBF (2026-10-08) | ODbL 1.0 — atıf + türev veritabanı ODbL ile paylaşılır | Kullanıldı; türev dosyalar `data/atlas/README.md`'de ODbL olarak işaretli |
+| Koruma alanları (resmî) | WDPA / Protected Planet | Yeniden dağıtım ve ticari kullanım yasak; türev ürünler için izin gerekir | **Kullanılmadı** → OSM `boundary=protected_area` / `leisure=nature_reserve` (eksik olabilir; sınırlama olarak yazıldı) |
+| Eğim, rakım | Copernicus DEM GLO-90 (AWS açık veri) | Ücretsiz, atıf zorunlu (© DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018, ESA Copernicus) | Kullanıldı; 250 m karo başına ortalama/azami eğim |
+| Limanlar, yerli üreticiler | Liman işletmelerinin ve üreticilerin kendi sayfaları, TÜREB, DARGEB | Olgusal bilgi (konum, ürün) | Doğrulanmayanlar (`dogrulandi=False`) hesaba girmez |
+| Kuş göç koridorları | Doğa Derneği, Jobson vd. (2021), Belen RES izleme çalışmaları | Yayınlardan elle sayısallaştırılmış **yaklaşık** eksenler (CC BY 4.0 olarak paylaşılır) | Dışlama değil, değerlendirme kriteri + açık uyarı |
+| TEİAŞ bağlantı kapasitesi | TEİAŞ, ETKB | — | **Lisanslı RES için trafo merkezi bazında yayımlanmıyor** (yalnız lisanssız üretim için bölgesel kapasite ve YEKA yarışmasına özel bağlantı görüşleri). Ana sınırlama olarak raporlanır; YEKA RES-2025 görüşleri doğrulamada kullanıldı |
+
+## 3. Mesafeye bağlı şebeke bağlantı maliyeti (E2)
+
+**Parametreler:** bağlantı gücü $P$ [MW]; gerilim kuralı $V(P)$ (≤ 30 MW 34,5 kV; ≤ 300 MW 154 kV; üstü 400 kV);
+$c^{hat}_V$ [$/km], $C^{TM}_V$ proje yükseltici TM, $C^{fid}_V$ TEİAŞ TM'de hat fideri; güzergâh çarpanı $g = 1{,}25$;
+erişim yolu $c^{yol}$ [$/km], RES CAPEX'inde varsayılan ilk $d_0 = 2$ km.
+
+**Hedef trafo merkezi:** gerilimi $\ge \max(V, 154)$ (400 kV projede ≥ 380) olan en yakın OSM trafo merkezi; uzaklık $d_{TM}$.
+
+$$
+C_{bag} = C^{TM}_V + C^{fid}_V + g\, d_{TM}\, c^{hat}_V + g\, \max(0,\; d_{yol} - d_0)\, c^{yol}
+$$
+
+$d_{yol}$: sahadan ağır nakliyeye uygun en yakın yola uzaklık (250 m grid). Motor `teknoloji.sebeke.capex = C_bag / P`
+olarak kullanır (v1 sabit 120 bin $/MW yerine); hızlı tarama, tam analiz ve ön tarama aynı fonksiyonu kullanır.
+
+**Sezgi.** Sabit kalemler (TM + fider ≈ 5,3 M$) 50 MW'lık projede 106 bin $/MW eder; her ek km hat ≈ 3,75 bin $/MW.
+Bu nedenle v1'in 120 bin $/MW varsayımı trafo merkezine ~4 km'deki bir sahaya karşılık gelir; Türkiye medyanı (14 km)
+v1'in üzerinde kalır.
+
+**Kapsam dışı:** TEİAŞ kapasite tahsis katkı payı (YEKA/yarışma), sistem güçlendirme (EİH yenileme), kamulaştırma.
+
+## 4. CBS dışlamaları ve türbin yerleşimine bağlantı (E2)
+
+Faz D'nin `DislamaKatmani` arayüzü (`maske(enlem, boylam) → bool`) korunur; `src/cbs/katmanlar.CBSDislama` her kural için
+bir katmandır. 250 m gridde önceden hesaplanmış uzaklıklar okunur (Öklid uzaklık dönüşümü, `scipy.ndimage`).
+
+| Kural | Eşik | Kaynak |
+|---|---|---|
+| Yerleşim tamponu | 500 m | TAHMİN (ulusal asgari mesafe yok; gürültü yönetmeliği uygulaması 300–500 m) |
+| Otoyol | 1,5 (H + L) | KGM uygulaması (ikincil kaynak) |
+| Devlet / il yolu | 1,25 (H + L) | KGM uygulaması (ikincil kaynak) |
+| İletim hattı | 1,5 (H + L) | TAHMİN (devrilme mesafesi) |
+| Havalimanı | 5 km | TAHMİN (SHGM görüşü proje bazında) |
+| Eğim | ortalama > 15° | TAHMİN (literatür 10–15°) |
+| Koruma alanı | içinde | OSM |
+
+$H$ göbek yüksekliği, $L$ kanat uzunluğu (≈ D/2). Tam analizde altyapı açıkken `motor.v3.baglam_kur` bu katmanları
+`yerlesim.analiz.hazirla(dislama=...)`'ya verir; aday noktalar elenir, sığan en fazla türbin sayısı azalabilir
+(Ezine: 28 → 19 türbin; tasarımı bağlamadı).
+
+## 5. Çok kriterli saha seçimi (E3)
+
+### 5.1 Dışlayıcı kısıtlar ve değerlendirme kriterleri
+
+Dışlayıcı (telafi edilemez): koruma alanı payı ≥ %50; 2 km yarıçapta uygun alan < %10 (§4 dışlamalarından arta kalan);
+ada (kullanıcı dahil etmedikçe); hesaplanamayan başabaş.
+
+Değerlendirme (telafi edilebilir, TOPSIS):
+
+| Kriter | Gösterge | Yön |
+|---|---|---|
+| Ekonomi | en iyi standart tasarımın başabaş fiyatı [$/MWh] | maliyet |
+| Şebeke | uygun gerilimli en yakın TM'ye uzaklık [km] | maliyet |
+| Yol | ağır nakliye yoluna uzaklık [km] | maliyet |
+| Eğim | 2 km yarıçapta ortalama eğim [°] | maliyet |
+| Göç | göç koridoru riski (0/1/2) | maliyet |
+| Güven | rüzgâr tahmini güveni (yüksek 1 / düşük 0) | fayda |
+| Lojistik | bileşen teslim maliyeti [$/MW] | maliyet |
+
+Ekonomi kriteri bağlantı ve lojistik maliyetini zaten içerir; şebeke ve lojistik kriterlerinin ayrıca yer alması
+**risk** boyutudur (uzun hat = izin/kamulaştırma ve kapasite riski; uzun rota = teslim gecikmesi riski). Ekonomik
+sıralamayla karşılaştırma bu çift etkiyi görünür kılmak içindir.
+
+### 5.2 AHP (Analitik Hiyerarşi Süreci)
+
+**Kümeler:** kriterler $i, j \in \{1..n\}$. **Parametre:** ikili karşılaştırma matrisi $A$, $a_{ij}$ ∈ Saaty ölçeği
+{1/9 … 9}, $a_{ji} = 1/a_{ij}$, $a_{ii} = 1$.
+
+Ağırlıklar $A$'nın en büyük özdeğerine ($\lambda_{maks}$) ait özvektördür: $A w = \lambda_{maks} w$, $\sum_i w_i = 1$.
+
+Tutarlılık: $CI = (\lambda_{maks} - n)/(n - 1)$, $CR = CI / RI_n$ (Saaty rastgele indeksi; $RI_7 = 1{,}32$).
+$CR > 0{,}10$ ise arayüz uyarır. Tam tutarlı bir matriste ($a_{ij} = s_i/s_j$) $\lambda_{maks} = n$, $CR = 0$.
+
+Hazır profiller önem puanlarından $a_{ij} = s_i / s_j$ ile kurulur (tam tutarlı):
+
+| Profil | Ekonomi | Şebeke | Yol | Eğim | Göç | Güven | Lojistik |
+|---|---|---|---|---|---|---|---|
+| Ekonomi öncelikli | 9 | 3 | 2 | 2 | 1 | 3 | 3 |
+| Risk/çevre öncelikli | 3 | 2 | 2 | 5 | 9 | 6 | 1 |
+| Dengeli | 6 | 3 | 2 | 3 | 4 | 4 | 2 |
+
+### 5.3 Standardizasyon (değer fonksiyonu) ve TOPSIS
+
+Karar matrisi $X_{mi}$ (hücre $m$, kriter $i$). Her kriter doğrusal bir **değer fonksiyonuyla** ortak [0, 1] ölçeğe taşınır
+(Malczewski 2006, GIS-MCDA'da olağan standardizasyon):
+
+$$
+r_{mi} = \min\!\Big(1,\ \max\!\Big(0,\ \frac{x_{mi} - x^{kötü}_i}{x^{iyi}_i - x^{kötü}_i}\Big)\Big)
+$$
+
+| Kriter | En iyi (1) | Kabul edilemez (0) |
+|---|---|---|
+| Başabaş fiyat | 50 $/MWh | 90 $/MWh |
+| Trafo uzaklığı | 0 km | 40 km |
+| Yol uzaklığı | 0 km | 20 km |
+| Eğim | 0° | 15° |
+| Göç riski | 0 | 2 |
+| Güven | yüksek | düşük |
+| Lojistik | 30 bin $/MW | 120 bin $/MW |
+
+(`config v3.cok_kriterli`, TAHMİN; uçlar uygun hücrelerin dağılımından.) Böylece $w_i$, "kriter $i$'de en iyiden kabul
+edilemeze geçişin önemi" anlamını kazanır. Bundan sonra tüm kriterler faydadır; ağırlıklı $v_{mi} = w_i r_{mi}$.
+
+**Neden klasik vektör normalizasyonu değil?** İlk denemede klasik TOPSIS ($r_{mi} = x_{mi}/\sqrt{\sum_m x_{mi}^2}$)
+kullanıldı. Başabaş fiyatın göreli aralığı dar (iyi hücreler 50–65 $/MWh, ortalamaya göre ±%15), trafo uzaklığınınki geniş
+(0,5–60 km, birkaç kat). Vektör normalizasyonu her sütunu kendi büyüklüğüyle böldüğü için dar aralıklı kriteri bastırdı:
+"dengeli" profilde (ekonomi ağırlığı %25) ilk sıraya 65 $/MWh'lik Marmaraereğlisi çıktı, ilk 10'un 7'si 60 $/MWh'nin
+üstündeydi. Değer fonksiyonuyla ilk sıra Çerkezköy (50,8), ilk 10'un tamamı ≤ 60,3. Karşılaştırma
+`outputs/v3E/E3_ilk10_dengeli_vektor.csv`; `normalizasyon: vektor` ile eski davranış geri gelir.
+
+TOPSIS: ideal $A^+$ (her sütunun en büyüğü) ve anti-ideal $A^-$ (en küçüğü). Uzaklıklar
+$D^\pm_m = \lVert v_m - A^\pm \rVert_2$, yakınlık katsayısı $C_m = D^-_m / (D^+_m + D^-_m) \in [0, 1]$; uygunluk puanı
+$100\,C_m$.
+
+### 5.4 Dayanıklılık
+
+Ağırlıklar $\tilde w \sim \text{Dirichlet}(\alpha w)$, $\alpha = 50$ ile örneklenir (ortalama $w$, her ağırlık yaklaşık
+±%20–40 göreli oynar); her örnekte TOPSIS yeniden çalışır. $P(\text{ilk 10})_m$ = hücrenin ilk 10'a girdiği örneklerin
+oranı (çalışma betiğinde 1.000, arayüzde 300 örnek).
+
+### 5.5 Doğrulama: mevcut santraller
+
+Etiket $y_m = 1$: hücrede OSM rüzgâr türbini var (geliştiricilerin gerçek kararları). AUC = rastgele bir santralli
+hücrenin santralsiz bir hücreden yüksek puan alma olasılığı (Mann–Whitney $U / (n_1 n_0)$). "Gerçek dünya tercihleri":
+ağırlık simpleksinde rastgele arama (4.000 Dirichlet(1) örneği + köşeler) ile AUC'yi en büyükleyen ağırlıklar.
+
+**Döngüsellik:** güven kriteri tanımı gereği kalibre santrallere ≤ 30 km yakınlıktır, başabaş fiyat da santrallerden
+kalibre edilen katsayıları kullanır. Bu yüzden açığa çıkan tercih ağırlıkları güven kriteri dışarıda bırakılarak aranır
+ve ayrıca yalnız rüzgâr KF'li varyant raporlanır. Mevcut santraller "seçilmiş" yerleri gösterir, "en iyi" yerleri değil
+(ör. erken dönem santraller iletim hattına yakın, eski türbinler).
+
+## 6. Lojistik (E4)
+
+### 6.1 Ağır nakliye ağı
+
+OSM otoyol/devlet/il yolu (+ bağlantı kolları) ve koşullu ikincil yollar kavşaklarda bölünerek yönsüz grafa
+dönüştürülür (179.811 düğüm, 235.944 kenar, 123.908 km). Kenar ağırlığı
+$w_e = \ell_e \cdot \rho_{sınıf} \cdot \rho_{yokuş}$: ikincil yol $\rho = 1{,}5$; ≥ 200 m'lik kesitte eğim > %10 ise
+$\rho_{yokuş} = 1{,}5$ (TAHMİN; kanat römorkları). Her doğrulanmış kaynaktan Dijkstra (scipy) → tüm düğümlere etkin
+mesafe ve öncül; ağ dışı uçlar kuş uçuşu × 1,3. Bir sahaya rota = en yakın ağ düğümünden öncül zinciri.
+
+### 6.2 Ulaştırma LP'si
+
+**Kümeler:** bileşenler $c$ (kanat, kule, nasel, göbek), kaynaklar $s$ (yerli üretici ya da ithalat limanı),
+sahalar $j$. **Parametreler:** $u_{csj}$ türbin seti başına teslim maliyeti, $D_{cj}$ talep (türbin sayısı),
+$K_{cs}$ yıllık kapasite (biliniyorsa).
+
+$$
+u_{csj} = n_c\,\big(F + I + \tau\, m_c\, d_{sj}\big) + \mathbb{1}[s\ \text{liman}]\; N^{navlun}_c
+$$
+
+$n_c$ sefer sayısı, $m_c$ sefer başına kütle [t], $\tau$ = 0,40 $/t-km (Cotrell vd. 2014, enflasyonla), $F$ sefer sabit,
+$I$ izin/eskort, $d_{sj}$ etkin yol mesafesi.
+
+**Değişken:** $x_{csj} \ge 0$ (türbin seti). **Amaç:** $\min \sum u_{csj} x_{csj}$.
+**Kısıtlar:** $\sum_s x_{csj} = D_{cj}$ (talep), $\sum_j x_{csj} \le K_{cs}$ (kapasite).
+
+Tek sahada LP her bileşen için en ucuz kaynağı seçer; yapı Faz F'de çoklu saha ve kapasitelerle aynen kullanılır
+(talep kısıtının gölge fiyatı = o sahaya bir türbin daha getirmenin marjinal lojistik maliyeti).
+
+**Teslim süresi:** $T_{cs} = T^0_{c,\,yerli/ithal} + d_{sj} / (300\ \text{km/gün}) / 30$; saha teslim süresi
+$\max_c T$ (seçilen kaynaklarla).
+
+### 6.3 CAPEX ve takvime bağlantı
+
+RES CAPEX'i (1,15 M$/MW) teslim edilmiş türbini varsayar. Referans = mevcut santralli 171 hücrenin medyanı
+(43,2 bin $/MW, 8,0 ay; `data/atlas/lojistik_referans.json`). Motor:
+`res.capex += lojistik_usd_mw − referans`, tam analizde COD örnekleri `+= max(0, teslim − referans)` ay
+(türbin tedariki Aşama 7 CPM'inde kritik yolda).
+
+## 7. Sonuçlar ve doğrulama (E6)
+
+### 7.1 Bağlantı maliyeti doğrulaması (`outputs/v3E/E6_baglanti_dogrulama.csv`)
+
+| Proje (YEKA RES-2025) | MW | kV | TEİAŞ hattı (km) | Formül (M$) | bin $/MW | Aynı ilde modelin trafo uzaklığı (medyan km) |
+|---|---|---|---|---|---|---|
+| Sivas | 500 | 400 | 210 | 79,8 | 160 | 17,6 |
+| Balıkesir-1 | 160 | 400 | 46 | 25,7 | 161 | 11,3 |
+| Balıkesir-2 | 120 | 400 | 52 | 27,7 | 231 | 11,3 |
+| Balıkesir-3 | 110 | 400 | 26 | 19,1 | 173 | 11,3 |
+| Aydın-Denizli | 140 | 154 | 14 | 7,4 | 53 | 9,1 |
+| Kütahya | 120 | 154 | 24 | 8,9 | 74 | 13,8 |
+
+- Model 50 MW'lık hücrelerde 128 / 175 / 244 bin $/MW (p10 / medyan / p90) veriyor; YEKA projelerine uygulanan aynı
+  formül 53–231 bin $/MW. v1'in 120 bin $/MW'si aralığın alt yarısında.
+- **TEİAŞ'ın atadığı hatlar modelin "en yakın trafo" uzaklığından 2–12 kat uzun** (medyan 36 km; Sivas 210 km).
+  TEİAŞ kapasitesi olan merkezi atar; model kapasiteyi bilmediği için bağlantı maliyetini **düşük tahmin etme eğiliminde**.
+  Mevcut santralli hücrelerde en yakın uygun trafo 8,2 km (tüm hücrelerde 14,0 km): mevcut santraller trafoya yakın
+  kurulmuş (bkz. §7.4 açığa çıkan tercih).
+
+### 7.2 Lojistik payı
+
+- Lojistik maliyeti RES CAPEX'inin %3,6 / 5,3 / 8,1'i (p10 / medyan / p90); 41 / 61 / 94 bin $/MW.
+- 400 km'lik kule taşımasının "kule + taşıma" maliyetindeki payı %10,5 (kule fiyatı 2.000 $/t TAHMİN). Cotrell vd.
+  (2014) ABD için < %8 diyor; Türkiye'de sefer başına izin/eskort ve sefer sabit gideri payı biraz büyütüyor. Aynı
+  büyüklük sırası.
+- Teslim süresi 8,0–8,1 ay (bileşen hazırlık süreleri baskın; mesafe en fazla birkaç gün ekliyor). COD kayması pratikte
+  sıfır (Gürün +0,03 ay): lojistik, takvim riskinden çok maliyet kalemi.
+
+| Saha | Kanat | Kule | Nasel + göbek | $/MW | Hedef TM (km) | Bağlantı (bin $/MW) |
+|---|---|---|---|---|---|---|
+| Ezine | TPI İzmir (241 km) | Ateş Bergama (183 km) | Bandırma limanı (208 km) | 38.755 | TEİAŞ Ezine 154 kV (1,6) | 112 |
+| Gürün | TPI İzmir (1.084 km) | **Samsunport, ithal** (453 km) | Samsunport (453 km) | 68.943 | Kangal RES TM (17,5) | 206 |
+| Susurluk | TPI İzmir (208 km) | Gesbey Bandırma (89 km) | Bandırma limanı (65 km) | 32.624 | Poyraz RES Susurluk TM (11,4) | 149 |
+
+Gürün'de LP, kuleyi yerli fabrikadan 1.000 km taşımak yerine (6 sefer × 60 t × 0,40 $/t-km ≈ 144 bin $ + sefer giderleri)
+ithal edip Samsun'dan getirmeyi seçiyor: ulaştırma problemi sezgiye aykırı ama doğru bir sonuç veriyor.
+
+### 7.3 Türkiye ön tarama haritası (`outputs/v3E/E6_on_tarama_karsilastirma.csv`)
+
+Üç sürüm: v2 → v3 altyapısız (iz tablosu + FSA + kullanılabilirlik) → v3 (+ mesafeye bağlı bağlantı + lojistik).
+
+| | v2 | v3 |
+|---|---|---|
+| Başabaş fiyat medyanı (1.457 hücre, adalar hariç) | 90,1 $/MWh | 95,7 $/MWh |
+| 58 $/MWh altındaki hücre | 49 | 43 |
+| Ekonomik ilk 10'da ortak | 8 / 10 | |
+| Sıra korelasyonu (Spearman) | 0,93 | |
+
+- Değişimin ayrıştırması: ön adım (iz/FSA/kullanılabilirlik) medyanda 0 (p10 −0,8 $/MWh; medyan hücrenin en iyi tasarımı
+  GES olduğu için RES değişimleri etkilemiyor); **altyapı** medyanda **+4,4** (p10 +0,6, p90 +11,1) $/MWh. 60 $/MWh altı
+  84 iyi hücrede altyapı etkisi daha küçük: medyan +1,3 (en çok +6,9): iyi rüzgâr sahaları zaten şebekeye yakın.
+- İlk 10'dan çıkanlar: **Sivas-Gürün** (49,5 → 54,2; trafo 17,5 km, lojistik 69 bin $/MW) ve **İzmir-Urla**
+  (51,0 → 53,8). Girenler: Balıkesir-Erdek, İzmir-Karaburun (ikinci hücre).
+
+**v3 ekonomik ilk 10** (en düşük başabaş, adalar hariç): Bursa-Karacabey 50,2 · Manisa-Soma 50,3 · İzmir-Karaburun 50,5
+(düşük güven) · Tekirdağ-Çerkezköy 50,8 · Hatay-Belen 51,7 · İzmir-Çeşme 52,1 · İzmir-Bergama 52,2 · Çanakkale-Ezine 52,5 ·
+Balıkesir-Erdek 52,7 · İzmir-Karaburun 52,9.
+
+### 7.4 Çok kriterli sıralama ve doğrulama (`data/atlas/v3_cok_kriterli_dogrulama.json`)
+
+Dışlama: 1.464 hücreden 98'i koruma alanı, 101'i uygun alan < %10, 4'ü ada → 1.261 sıralanır. Karacabey'in ekonomik
+1. hücresi (%100 koruma alanı, Karacabey Longozu çevresi) ve Karaburun'un düşük güvenli hücresi (uygun alan yetersiz) elenir.
+
+| Sıra | Ekonomik (dışlama sonrası) | Dengeli profil (P(ilk 10)) | Risk/çevre profili |
+|---|---|---|---|
+| 1 | Soma 50,4 | Çerkezköy 50,8 (%100) | Bergama 60,1 |
+| 2 | Çerkezköy 50,8 | Çeşme 52,1 (%90) | Çeşme 52,1 |
+| 3 | Belen 51,7 | Karacabey 55,5 (%99) | Çerkezköy 50,8 |
+| 4 | Çeşme 52,1 | Karacabey 55,8 (%87) | Gönen 62,9 |
+| 5 | Bergama 52,2 | Silivri 56,2 (%91) | Büyükçekmece 59,7 |
+| 6 | Ezine 52,5 | Karesi 57,6 (%91) | Marmaraereğlisi 65,3 |
+| 7 | Urla 53,8 | Büyükçekmece 59,7 (%77) | Ergene 65,1 |
+| 8 | Soma 53,8 | Bergama 60,1 (%66) | Uzunköprü 63,3 |
+| 9 | Urla 54,0 | Akhisar 57,1 (%54) | Karacabey 55,5 |
+| 10 | Bayramiç 54,2 | Saray 60,3 (%46) | Karacabey 55,8 |
+
+- **Belen:** ekonomik 3. → ekonomi profili 27. → dengeli 82. → risk/çevre 1.241. (göç riski 2: Amanos–Belen
+  geçidi). Ekonomik sıralamanın en iyi sahalarından biri, çevresel tartıda en kötülerden.
+- **Dayanıklılık:** ilk 6 sıra (Çerkezköy, Karacabey, Karesi, Silivri, Çeşme) ağırlık örneklerinin ≥ %87'sinde ilk 10'da;
+  8–10. sıralar %45–65: ilk 10'un son üçü ağırlık seçimine bağlı.
+
+**Doğrulama (171 santralli hücre / 1.464):**
+
+| Puan | AUC |
+|---|---|
+| Rüzgâr KF (tek kriter) | 0,80 |
+| Başabaş fiyat | 0,79 |
+| Lojistik maliyeti | 0,79 |
+| Trafo uzaklığı | 0,76 |
+| Güven (döngüsel) | 0,73 |
+| Yol, eğim, göç | 0,54 / 0,49 / 0,46 |
+| Ekonomi öncelikli profil | **0,87** |
+| Dengeli profil | 0,84 |
+| Risk/çevre profili | 0,71 |
+| Açığa çıkan tercih (güven hariç) | **0,88** |
+
+**Gerçek dünya tercihleri** (güven hariç, AUC 0,876): ekonomi %33, **şebekeye yakınlık %34**, lojistik %18, yol %8,
+eğim %5, **göç %2**. Yorum: Türkiye'deki geliştiriciler trafo merkezine yakınlığa rüzgâr kadar önem vermiş, kuş göçünü
+neredeyse hiç tartmamış (göçün tek başına AUC'si 0,46 < 0,5: santraller göç koridorlarında rastgeleden biraz *fazla*).
+Eğimin AUC'si 0,49: santraller rüzgârlı sırtlarda, düz arazi tercihi yok. Bu ağırlıklar normatif değil betimseldir.
+
+### 7.5 Üç sahada tam analiz: Faz E öncesi / sonrası (2 çekirdek, soğuk önbellek; `outputs/v3E/E6_once_sonra.csv`)
+
+| Saha | Kip | RES MW | Türbin | CAPEX (M$) | Bağlantı (M$) | Lojistik ($/MW) | Uygun alan | E[NPV] (M$) | P(NPV>0) | Başabaş | Karar | Süre (s) |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Ezine | öncesi | 33,6 | 8 | 55,1 | 6,0 (sabit) | ort. | – | −1,95 | %40 | 60,3 | rafa kaldır | 54 |
+| Ezine | sonrası | 25,2 | 6 | 44,6 | 5,6 | 38.755 | %46 | **−1,63** | %39 | 60,5 | rafa kaldır | 46 |
+| Gürün | öncesi | 37,8 | 9 | 60,1 | 6,0 (sabit) | ort. | – | −2,91 | %38 | 61,1 | rafa kaldır | 66 |
+| Gürün | sonrası | 29,4 | 7 | 55,1 | 10,3 | 68.943 | %89 | **−6,98** | %25 | 67,4 | rafa kaldır | 55 |
+| Susurluk | öncesi | 42,0 | 10 | 65,0 | 6,0 (sabit) | ort. | – | −1,37 | %43 | 59,3 | rafa kaldır | 72 |
+| Susurluk | sonrası | 42,0 | 10 | 66,0 | 7,4 | 32.624 | %44 | **−3,34** | %37 | 61,3 | rafa kaldır | 70 |
+
+- **Ezine iyileşti** (+0,3 M$): TEİAŞ Ezine TM 1,6 km'de (5,6 M$ < 6,0) ve lojistik referansın altında. CBS dışlamaları
+  yerleşim alanının yarısını kapattı (yerleşim ve yol tamponları) ama MILP zaten küçük bir santral (6 türbin) seçiyor.
+- **Gürün kötüleşti** (−4,1 M$): bağlantı 10,3 M$ (Kangal TM 17,5 km), lojistik referansın 26 bin $/MW üstünde; başabaş
+  61 → 67 $/MWh. Hızlı taramadaki "en iyi ilk 10" sahalarından biri gerçek altyapıyla listeden düşüyor.
+- **Susurluk kötüleşti** (−2,0 M$): bağlantı +1,4 M$; ayrıca dışlamalar (uygun alan %44) türbinleri daha az rüzgârlı
+  konumlara itiyor (konum kazancı 1,011 → 0,990, KF %36,0 → %35,1).
+- Karar hiçbir sahada değişmedi: rafa kaldır.
+
+### 7.6 Süreler (2 çekirdek benzetimi)
+
+| Ölçüm | Faz E öncesi | Faz E sonrası |
+|---|---|---|
+| Tam analiz (3 saha) | 54–72 s | 46–70 s |
+| Hızlı tarama, soğuk / sıcak profil | 2,9–3,8 / 2,5–3,3 s (Faz D) | 3,4–5,0 / 2,9–4,6 s |
+| Uygulama açılışı, soğuk / sıcak (tarayıcı, masaüstü) | 2,2 / 0,5 s (v2 C8) | 2,7 / 0,6 s |
+| Dört altyapı katmanını açma | – | 5,0 s (yalnız seçilince yüklenir) |
+| Çok kriterli sayfa (300 örnekli dayanıklılık dahil) | – | 0,8–1,1 s |
+
+Tam analiz kısaldı, çünkü dışlamalar aday nokta sayısını azaltıyor (Ezine 208 → 96). Hızlı tarama ~0,5 s uzadı (bağlantı
++ lojistik + 2 km alan özeti). Açılış, katmanlar isteğe bağlı olduğu için değişmedi. Ekran görüntüleri `docs/img/v3/E_*`
+(açık/koyu, masaüstü/mobil); 16 ekranın hiçbirinde yatay taşma yok (`outputs/v3E/E6_tasma.csv`).
+
+## 8. Sınırlamalar
+
+1. **TEİAŞ bağlantı kapasitesi** lisanslı RES için yayımlanmıyor (ana sınırlama, §7.1). Bağlantı maliyeti alt sınır
+   niteliğinde; kapasite tahsis katkı payı, EİH yenilemeleri ve kamulaştırma dahil değil.
+2. **OSM eksikleri:** trafo merkezlerinin %45'inde gerilim etiketi yok (bu merkezler hedef olamaz → uzaklık fazla
+   tahmin edilebilir); koruma alanları resmî listeden eksik olabilir (WDPA kullanılamadı).
+3. **Göç koridorları yaklaşık:** altı koridor yayınlardan elle sayısallaştırıldı; ÇED kuş izlemesinin yerini tutmaz.
+4. **Tamponlar** (yerleşim 500 m, havalimanı 5 km, eğim 15°) TAHMİN; karayolu kuralı ikincil kaynaktan.
+5. **Lojistik:** sefer sayıları, kütleler, sabit giderler ve teslim süreleri TAHMİN; köprü/tünel/viraj yarıçapı kısıtları
+   ağda yok (yalnız yol sınıfı ve eğim). Yerli fabrika kapasiteleri tek saha için bağlayıcı değil.
+6. **Çok kriterli doğrulama betimseldir:** mevcut santraller seçilmiş yerlerdir, en iyi yerler değil; güven ve başabaş
+   kriterleri santrallerden kalibre edildiği için AUC iyimser.

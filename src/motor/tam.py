@@ -158,6 +158,9 @@ def tam_analiz(h: Hazirlik, kv: KullaniciVarsayimlari, ilerleme=None) -> dict:
     ilerleme(0.7, "Monte Carlo")
     t2 = time.perf_counter()
     cod_ay = np.load(KOK / "results" / "takvim_cod_ornekleri.npz")[ASAMA_ANAHTAR[kv.proje_asamasi]].astype(float)
+    lj = ((h.cfg["_saha"].get("altyapi") or {}).get("lojistik")) or {}
+    if lj.get("gecikme_ay"):  # v3 E4: türbin tedariki kritik yolda; sahanın teslim süresi referanstan uzunsa COD kayar
+        cod_ay = cod_ay + float(lj["gecikme_ay"])
     r = MC.yakinsayan_mc(o, t, tb_T, tb_Y, yapilar, cod_ay, sigma, kv.sfk_katilimi, ilerleme=ilerleme)
     sure["monte_carlo_s"] = time.perf_counter() - t2
     met = r["metrik"]

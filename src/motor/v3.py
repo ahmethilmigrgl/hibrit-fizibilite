@@ -154,7 +154,20 @@ def baglam_kur(h: Hazirlik):
         float(gref),
         h.saha.yerlesim_yaricap_km,
         h.cfg,
+        dislama=_cbs_dislama(h),
     )
+
+
+def _cbs_dislama(h: Hazirlik) -> list | None:
+    """v3 E2: altyapı maliyetleri açıksa CBS dışlamaları (yerleşim/yol/hat/havalimanı tamponu, eğim, koruma) yerleşime girer."""
+    if not h.cfg["_saha"].get("altyapi"):
+        return None
+    from src.cbs import katmanlar
+    from src.yerlesim.turbin import kutuphane_turbini
+
+    cr = h.cfg["uretim"]["ruzgar"]
+    gob = float(deger(cr["gobek_yuksekligi"]))
+    return katmanlar.dislama_katmanlari(h.cfg, gob, kutuphane_turbini(deger(cr["turbin_modeli"]), gob).D)
 
 
 def tam_once(h: Hazirlik, kv) -> dict:

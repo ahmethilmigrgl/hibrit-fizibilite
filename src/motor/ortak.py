@@ -206,6 +206,31 @@ def hazirla(saha_girdi: Saha | dict, kv: KullaniciVarsayimlari, ilerleme=None, p
                 ),
             )
         )
+    if v3 and kv.altyapi_maliyetleri:  # v3 Faz E: mesafeye bağlı bağlantı ve lojistik maliyeti
+        from src.cbs import altyapi
+
+        a = altyapi.hesapla(saha.enlem, saha.boylam, saha.baglanti_mw, cfg, saha.yerlesim_yaricap_km)
+        altyapi.uygula(cfg, a, saha.baglanti_mw)
+        cfg["_saha"]["altyapi"] = a
+        al = a.get("alan") or {}
+        if al.get("goc_azami", 0) >= 1:
+            uyari.append(
+                Uyari(
+                    "goc",
+                    ("Saha bilinen bir süzülen kuş göç darboğazına " + ("çok yakın (yüksek risk)" if al["goc_azami"] == 2 else "yakın (orta risk)")
+                     + ". Katman yaklaşıktır; yerinde ornitoloji çalışması (en az iki göç dönemi) gerekir."),
+                    ("The site is " + ("very close to (high risk)" if al["goc_azami"] == 2 else "near (medium risk)")
+                     + " a known soaring-bird migration bottleneck. The layer is approximate; an on-site ornithology study (at least two migration seasons) is required."),
+                )
+            )  # fmt: skip
+        if al.get("uygun_oran") is not None and al["uygun_oran"] < 0.25:
+            uyari.append(
+                Uyari(
+                    "dislama",
+                    f"Saha alanının yalnız %{100 * al['uygun_oran']:.0f}'i dışlama kurallarından (yerleşim, yol, hat, koruma, eğim) arınmış.",
+                    f"Only {100 * al['uygun_oran']:.0f}% of the site area is free of exclusions (settlements, roads, lines, protected areas, slope).",
+                )
+            )
     return Hazirlik(saha, cfg, df, profil_df_den(df), bilgi, guven, Varsayimlar.configten(cfg), uyari, v3)
 
 

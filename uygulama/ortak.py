@@ -99,7 +99,7 @@ ATIFLAR_EN = (
     "Global Wind Atlas 3.0, a free, web-based application developed, owned and operated by the Technical University of "
     "Denmark (DTU), released in partnership with the World Bank Group, utilizing data provided by Vortex, using funding "
     "provided by the Energy Sector Management Assistance Program (ESMAP) — https://globalwindatlas.info (CC BY 4.0). "
-    "Wind-farm locations © OpenStreetMap contributors (ODbL). Boundaries: geoBoundaries (Runfola et al. 2020), © OpenStreetMap "
+    "Wind-farm locations, roads, power lines, substations, settlements and protected areas © OpenStreetMap contributors (ODbL). Boundaries: geoBoundaries (Runfola et al. 2020), © OpenStreetMap "
     "contributors. Copernicus DEM GLO-90 © DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018 provided under "
     "COPERNICUS by the European Union and ESA; all rights reserved. Made with Natural Earth."
 )

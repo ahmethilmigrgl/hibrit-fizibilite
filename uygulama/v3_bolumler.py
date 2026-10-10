@@ -13,7 +13,7 @@ import numpy as np
 import plotly.graph_objects as go
 import streamlit as st
 
-from uygulama.ortak import RES, SOLUK, T, ciz, para, sayi, sekil, yuzde
+from uygulama.ortak import RES, SOLUK, T, ciz, md, para, sayi, sekil, yuzde
 from uygulama.tasarim import bilesenler as B
 from uygulama.tasarim.stil import aktif_tema
 from uygulama.tasarim.tokenlar import TEMALAR
@@ -321,3 +321,109 @@ def kayip_bolumu(o: dict) -> None:
 
 
 __all__ = ["bakim_bolumu", "kayip_bolumu", "para", "yerlesim_bolumu"]
+
+
+def lojistik_bolumu(s) -> None:
+    """v3 Faz E: tam analiz sonucunda bağlantı maliyeti, tedarik planı (ulaştırma LP'si) ve rota haritası."""
+    a = (s.saha or {}).get("altyapi") or {}
+    bg, lj = a.get("baglanti"), a.get("lojistik")
+    if not bg:
+        return
+    tema = aktif_tema()
+    t = TEMALAR[tema]
+    r, v = t["renk"], t["veri"]
+    B.bolum_basligi(
+        T("Lojistik ve bağlantı", "Logistics and grid connection"),
+        T("mesafeye bağlı maliyetler, en ucuz tedarik planı", "distance-based costs, cheapest supply plan"),
+    )
+    u = st.columns(4)
+    B.kpi_karti(u[0], T("Bağlantı maliyeti", "Connection cost"), f"{sayi(bg['toplam_usd'] / 1e6, 1)} M$",
+                aciklama=T(f"v1 sabit: {sayi(bg['v1_usd_mw'] * s.saha.get('baglanti_mw', 50) / 1e6, 1)} M$", f"v1 fixed: {sayi(bg['v1_usd_mw'] * s.saha.get('baglanti_mw', 50) / 1e6, 1)} M$"))  # fmt: skip
+    B.kpi_karti(
+        u[1],
+        T("Bağlantı hattı", "Connection line"),
+        f"{sayi(bg['hat_km'], 1)} km",
+        aciklama=f"{sayi(bg['kv'], 0)} kV · {sayi(bg['hedef_trafo']['km'], 1)} km",
+    )
+    if lj:
+        B.kpi_karti(u[2], T("Lojistik", "Logistics"), f"{sayi(lj['maliyet_usd'] / 1e6, 2)} M$",
+                    aciklama=T(f"{sayi(lj['usd_mw'] / 1000, 0)} bin $/MW · referans {sayi((lj.get('referans_usd_mw') or 0) / 1000, 0)}",
+                               f"{sayi(lj['usd_mw'] / 1000, 0)} k$/MW · reference {sayi((lj.get('referans_usd_mw') or 0) / 1000, 0)}"))  # fmt: skip
+        B.kpi_karti(u[3], T("Teslim süresi", "Delivery time"), f"{sayi(lj['teslim_ay'], 1)} {T('ay', 'months')}",
+                    aciklama=T(f"COD'ye +{sayi(lj.get('gecikme_ay', 0), 1)} ay", f"COD +{sayi(lj.get('gecikme_ay', 0), 1)} months"))  # fmt: skip
+    kal = {"proje_trafo_merkezi": ("Proje trafo merkezi", "Project substation"), "fider": ("TEİAŞ fideri", "TSO bay"),
+           "baglanti_hatti": ("Bağlantı hattı", "Connection line"), "erisim_yolu": ("Erişim yolu", "Access road")}  # fmt: skip
+    st.caption(md(T("Hedef trafo merkezi: ", "Target substation: ") + f"{bg['hedef_trafo']['ad']} ({sayi(bg['hedef_trafo']['kv'], 0)} kV). "
+               + T("Bağlantı kalemleri: ", "Connection items: ") + " · ".join(f"{T(*kal[k])} {sayi(x / 1e6, 2)} M$" for k, x in bg["kalemler_usd"].items())
+               + T(" · TEİAŞ kapasite tahsis katkı payı ve bağlantı kapasitesi dahil değil.", " · TSO capacity allocation contribution and capacity not included.")))  # fmt: skip
+    if not lj:
+        return
+    c = st.columns([1.3, 1], gap="medium")
+    with c[0]:
+        import folium
+
+        from uygulama.harita import BOS_KARO, _harita_css
+
+        e0, b0 = s.saha["enlem"], s.saha["boylam"]
+        m = folium.Map(location=[e0, b0], zoom_start=7, tiles=None, control_scale=True, prefer_canvas=True)
+        m.get_root().header.add_child(folium.Element(_harita_css(r, t["yazi"], t["streamlit"] == "dark")))
+        folium.TileLayer(BOS_KARO, attr="Eşik", name=T("Sade altlık", "Plain base map")).add_to(m)
+        folium.TileLayer("OpenStreetMap", name="OpenStreetMap", show=True).add_to(m)
+        renk = {"kanat": v["res"], "kule": v["ges"], "nasel": v["batarya"], "gobek": v["hibrit"]}
+        sinir = [[e0, b0]]
+        for p in lj["plan"]:
+            if p.get("rota"):
+                folium.PolyLine(
+                    p["rota"],
+                    color=renk.get(p["bilesen"], v["soluk"]),
+                    weight=3,
+                    opacity=0.85,
+                    tooltip=f"{p['bilesen']}: {p['kaynak']} · {sayi(p['km'], 0)} km",
+                ).add_to(m)
+                sinir += [p["rota"][0], p["rota"][-1]]
+        tt = bg["hedef_trafo"]
+        folium.PolyLine(
+            [[e0, b0], [tt["enlem"], tt["boylam"]]],
+            color=v["altin"],
+            weight=2.5,
+            dash_array="5 4",
+            tooltip=T("Bağlantı hattı (kuş uçuşu)", "Connection line (straight)"),
+        ).add_to(m)
+        folium.CircleMarker(
+            [tt["enlem"], tt["boylam"]],
+            radius=5,
+            color=v["altin"],
+            fill=True,
+            fill_opacity=1,
+            tooltip=f"{tt['ad']} · {sayi(tt['kv'], 0)} kV",
+        ).add_to(m)
+        folium.CircleMarker(
+            [e0, b0], radius=7, color=r["metin"], fill=True, fill_color=r["vurgu"], fill_opacity=1, tooltip=T("Saha", "Site")
+        ).add_to(m)
+        m.fit_bounds(
+            [
+                [min(x[0] for x in sinir) - 0.1, min(x[1] for x in sinir) - 0.1],
+                [max(x[0] for x in sinir) + 0.1, max(x[1] for x in sinir) + 0.1],
+            ]
+        )
+        from streamlit_folium import st_folium
+
+        st_folium(m, height=380, use_container_width=True, returned_objects=[], key="lojistik_haritasi")
+        st.caption(T("Renkli çizgiler: bileşen başına seçilen tedarik rotası (ağır nakliye ağı, OSM) · kesikli: trafo merkezine bağlantı",
+                     "Coloured lines: chosen supply route per component (heavy-haul network, OSM) · dashed: connection to the substation"))  # fmt: skip
+    with c[1]:
+        bil = {
+            "kanat": T("Kanat (3 sefer)", "Blades (3 trips)"),
+            "kule": T("Kule (6 sefer)", "Tower (6 trips)"),
+            "nasel": T("Nasel (2 sefer)", "Nacelle (2 trips)"),
+            "gobek": T("Göbek (1 sefer)", "Hub (1 trip)"),
+        }
+        B.karsilastirma_tablosu(
+            [T("Bileşen", "Component"), T("Kaynak", "Source"), "km", T("Türbin başına $", "$ per turbine"), T("Süre (ay)", "Time (months)")],
+            [[bil.get(p["bilesen"], p["bilesen"]), p["kaynak"], sayi(p["km"], 0), sayi(p["birim_usd"], 0), sayi(p["sure_ay"], 1)] for p in lj["plan"]],
+            mobilde_gizle=(2, 4),
+        )  # fmt: skip
+        st.caption(T("Ulaştırma LP'si: her bileşen için yerli üretici ya da ithalat limanı arasından toplam teslim maliyeti en düşük kaynak "
+                     "(sefer sabit gideri + izin/eskort + ton-km taşıma + ithalatta navlun). Faz F'de çoklu saha ve üretici kapasiteleriyle genişler.",
+                     "Transportation LP: for each component the cheapest delivered source among domestic factories and import ports "
+                     "(trip fixed cost + permits/escort + tonne-km haulage + sea freight for imports). Extends to multi-site with capacities in Phase F."))  # fmt: skip

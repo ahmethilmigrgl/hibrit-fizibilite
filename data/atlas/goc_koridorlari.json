@@ -1,0 +1,130 @@
+{
+ "aciklama": "YAKLAŞIK süzülen kuş göç darboğazları ve koridorları: literatürde adı geçen darboğazların kabaca çizilmiş eksenleri ve tampon yarıçapları (yüksek / orta risk). Yerinde ornitoloji çalışmasının (en az iki göç dönemi gözlem) yerini TUTMAZ; yalnız ön eleme ve uyarı içindir.",
+ "lisans": "CC BY 4.0 (kendi derlemem; kaynaklar her öğede)",
+ "koridorlar": [
+  {
+   "ad": "İstanbul Boğazı",
+   "eksen": [
+    [
+     41.23,
+     29.12
+    ],
+    [
+     41.1,
+     29.06
+    ],
+    [
+     40.99,
+     29.02
+    ]
+   ],
+   "yuksek_km": 10,
+   "orta_km": 40,
+   "kaynak": "Doğa Derneği: dünyanın en önemli üç süzülen kuş darboğazından biri; Bosphorus sayımları (Bird Study 2014; Forestist 2007 sonbahar sayımı; 2008'de 19 günde 141.844 yırtıcı)"
+  },
+  {
+   "ad": "Çanakkale Boğazı – Gelibolu",
+   "eksen": [
+    [
+     40.42,
+     26.68
+    ],
+    [
+     40.15,
+     26.39
+    ],
+    [
+     40.0,
+     26.2
+    ]
+   ],
+   "yuksek_km": 10,
+   "orta_km": 30,
+   "kaynak": "Batı Türkiye'de göç su yüzeyinin en dar olduğu iki darboğazda: İstanbul Boğazı ve Gelibolu Yarımadası–Çanakkale Boğazı (Bosphorus göç literatürü)"
+  },
+  {
+   "ad": "Amanos Dağları – Belen geçidi",
+   "eksen": [
+    [
+     36.2,
+     36.05
+    ],
+    [
+     36.49,
+     36.2
+    ],
+    [
+     36.9,
+     36.4
+    ],
+    [
+     37.2,
+     36.55
+    ]
+   ],
+   "yuksek_km": 15,
+   "orta_km": 40,
+   "kaynak": "Doğa Derneği (Amanos/Belen üç büyük darboğazdan biri); 'Migration dynamics of soaring birds between autumn 2015 and spring 2019 at the Belen pass' (650.151 süzülen kuş)"
+  },
+  {
+   "ad": "Doğu Karadeniz Dağları – Çoruh vadisi",
+   "eksen": [
+    [
+     41.52,
+     41.55
+    ],
+    [
+     41.36,
+     41.68
+    ],
+    [
+     41.18,
+     41.82
+    ],
+    [
+     40.82,
+     41.55
+    ]
+   ],
+   "yuksek_km": 15,
+   "orta_km": 35,
+   "kaynak": "Doğa Derneği (Doğu Karadeniz Dağları/Çoruh vadisi); Jobson vd. 2021 Sandgrouse 43 (Batum en yüksek sonbahar sayımlarından)"
+  },
+  {
+   "ad": "Doğu Karadeniz kıyı koridoru",
+   "eksen": [
+    [
+     41.4,
+     41.4
+    ],
+    [
+     41.02,
+     40.52
+    ],
+    [
+     41.0,
+     39.7
+    ]
+   ],
+   "yuksek_km": 0,
+   "orta_km": 25,
+   "kaynak": "Batum darboğazına uzanan kıyı göç hattı (Jobson vd. 2021); yalnız orta risk"
+  },
+  {
+   "ad": "Sarımazı (Ceyhan)",
+   "eksen": [
+    [
+     36.75,
+     35.7
+    ],
+    [
+     36.85,
+     35.85
+    ]
+   ],
+   "yuksek_km": 0,
+   "orta_km": 20,
+   "kaynak": "Jobson vd. 2021 Sandgrouse 43: Karadeniz–Akdeniz göç yolunun darboğazları arasında 'Sarımazı, Ceyhan'"
+  }
+ ]
+}

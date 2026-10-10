@@ -67,6 +67,7 @@ def analiz_et(
                 "kod": h.saha.kod,
                 "tarife_bolgesi": h.cfg["_saha"]["tarife_bolgesi"],
                 "turbin": h.cfg["_saha"]["turbin"],
+                "altyapi": h.cfg["_saha"].get("altyapi"),
                 "kalibrasyon": h.bilgi["kalibrasyon"],
                 "ruzgar_kaynagi": h.bilgi.get("ruzgar_kaynagi"),
             },

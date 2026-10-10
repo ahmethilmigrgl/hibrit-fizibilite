@@ -1,0 +1,20 @@
+  200/1464 (288 s)
+  400/1464 (423 s)
+  600/1464 (566 s)
+  800/1464 (727 s)
+  1000/1464 (891 s)
+  1200/1464 (1066 s)
+  1400/1464 (1242 s)
+Tamam (tam): 1464/1464 hücre, 1298 s → /Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/data/atlas/on_tarama.parquet
+Series([], )
+             il       ilce    res_kf   guven  sebeke_capex_usd_mw  basabas_en_iyi
+1127      Bursa  Karacabey  0.437049  yüksek        133386.531250       50.210442
+750      Manisa       Soma  0.455753  yüksek        159180.984375       50.352139
+601       İzmir  Karaburun  0.453186   düşük        181533.453125       50.457470
+1335   Tekirdağ  Çerkezköy  0.434921  yüksek        117295.117188       50.840725
+51        Hatay      Belen  0.468821  yüksek        117018.179688       51.650719
+453       İzmir      Çeşme  0.442437  yüksek        169802.875000       52.098328
+748       İzmir    Bergama  0.431046  yüksek        171623.859375       52.210930
+893   Çanakkale      Ezine  0.435515  yüksek        128037.960938       52.477760
+1124  Balıkesir      Erdek  0.420791  yüksek        125039.718750       52.656342
+528       İzmir  Karaburun  0.427640  yüksek        148001.546875       52.918800

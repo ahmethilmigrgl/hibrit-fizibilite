@@ -30,6 +30,9 @@ KATMANLAR = {
     "basabas_ges": ("GES başabaş fiyatı", "Solar break-even price", "$/MWh", False),
     "res_kf": ("RES kapasite faktörü", "Wind capacity factor", "%", True),
     "ges_kf": ("GES kapasite faktörü", "Solar capacity factor", "%", True),
+    "baglanti_kusd_mw": ("Şebeke bağlantı maliyeti (50 MW)", "Grid connection cost (50 MW)", "bin $/MW", False),
+    "egim_ort": ("Ortalama eğim (2 km yarıçap)", "Mean slope (2 km radius)", "°", False),
+    "uygunluk": ("Çok kriterli uygunluk (TOPSIS)", "Multi-criteria suitability (TOPSIS)", "/100", True),
 }
 KISA_AD = {
     "basabas_en_iyi": ("Başabaş", "Break-even"),
@@ -37,6 +40,17 @@ KISA_AD = {
     "basabas_ges": ("GES başabaş", "Solar break-even"),
     "res_kf": ("RES KF", "Wind CF"),
     "ges_kf": ("GES KF", "Solar CF"),
+    "baglanti_kusd_mw": ("Bağlantı", "Connection"),
+    "egim_ort": ("Eğim", "Slope"),
+    "uygunluk": ("Uygunluk", "Suitability"),
+}
+ALTYAPI = {
+    "trafo": ("Trafo merkezleri (≥154 kV)", "Substations (≥154 kV)"),
+    "hat": ("İletim hatları", "Transmission lines"),
+    "agir_yol": ("Ağır nakliye yolları", "Heavy-haul roads"),
+    "tedarik": ("Limanlar ve üreticiler", "Ports and manufacturers"),
+    "koruma": ("Koruma alanları", "Protected areas"),
+    "goc": ("Göç koridorları (yaklaşık)", "Migration corridors (approx.)"),
 }
 DUSUK_GUVEN_OPAKLIK, YUKSEK_GUVEN_OPAKLIK = 0.34, 0.86
 SINIF = 6
@@ -78,6 +92,9 @@ def _harita_css(r: dict, y: dict, koyu: bool) -> str:
 .leaflet-control-attribution{{background:{r["yuzey"]}cc!important;color:{r["metin_soluk"]};font-size:10px;}}
 .leaflet-control-attribution a{{color:{r["metin_soluk"]};}}
 .esik-secim{{width:22px;height:22px;border-radius:50%;background:{r["vurgu"]};border:3px solid {r["yuzey"]};box-shadow:0 0 0 2px {r["vurgu"]},0 2px 8px rgba(0,0,0,.35);}}
+.esik-tedarik{{width:22px;height:22px;border-radius:5px;background:{r["yuzey"]};color:{r["metin"]};border:1.5px solid {r["metin"]};
+  display:flex;align-items:center;justify-content:center;font:700 11px/1 '{y["sayi"]}',monospace;}}
+.esik-tedarik.soluk{{opacity:.5;border-style:dashed;}}
 .esik-aday{{width:22px;height:22px;border-radius:50%;background:{r["yuzey"]};color:{r["metin"]};border:2px solid {r["vurgu"]};
   font:600 11px/18px '{y["sayi"]}',monospace;text-align:center;}}
 </style>"""
@@ -93,6 +110,7 @@ def harita(
     merkez: tuple[float, float] = (39.0, 35.2),
     zoom: int = 6,
     tema: str = "acik",
+    altyapi: dict | None = None,
 ) -> folium.Map:
     t = TEMALAR[tema]
     r, sk = t["renk"], t["harita_skala"]
@@ -214,8 +232,66 @@ def harita(
             tooltip=T("Seçilen nokta", "Selected point"),
             icon=folium.DivIcon(html='<div class="esik-secim"></div>', icon_size=(22, 22), icon_anchor=(11, 11)),
         ).add_to(m)
+    if altyapi:
+        altyapi_ekle(m, altyapi, tema)
     folium.LayerControl(collapsed=True, position="topright").add_to(m)
     return m
+
+
+def altyapi_ekle(m: folium.Map, katmanlar: dict, tema: str) -> None:
+    """v3 Faz E altyapı katmanları (yalnız kullanıcı seçtiğinde eklenir; açılış süresini etkilemez)."""
+    t = TEMALAR[tema]
+    r, v = t["renk"], t["veri"]
+    if katmanlar.get("goc"):
+        folium.GeoJson(
+            katmanlar["goc"],
+            name=T(*ALTYAPI["goc"]),
+            style_function=lambda f: {"fillColor": r["uyari"], "color": r["uyari"], "weight": 0.8,
+                                      "fillOpacity": 0.28 if f["properties"]["risk"] == "yuksek" else 0.12},
+            tooltip=folium.GeoJsonTooltip(fields=["ad", "risk"], aliases=[T("Koridor", "Corridor"), T("Risk", "Risk")]),
+        ).add_to(m)  # fmt: skip
+    if katmanlar.get("koruma"):
+        folium.GeoJson(
+            katmanlar["koruma"],
+            name=T(*ALTYAPI["koruma"]),
+            style_function=lambda f: {"fillColor": v["hibrit"], "color": v["hibrit"], "weight": 0.6, "fillOpacity": 0.25},
+            tooltip=folium.GeoJsonTooltip(fields=["ad", "tur"], aliases=[T("Ad", "Name"), T("Tür", "Type")]),
+        ).add_to(m)
+    if katmanlar.get("agir_yol"):
+        folium.GeoJson(
+            katmanlar["agir_yol"],
+            name=T(*ALTYAPI["agir_yol"]),
+            style_function=lambda f: {
+                "color": r["metin_soluk"],
+                "weight": 1.6 if f["properties"]["sinif"] == "motorway" else 1.0,
+                "opacity": 0.8,
+            },
+        ).add_to(m)
+    if katmanlar.get("hat"):
+        folium.GeoJson(
+            katmanlar["hat"],
+            name=T(*ALTYAPI["hat"]),
+            style_function=lambda f: {"color": v["altin"], "weight": 1.6 if f["properties"]["kv"] >= 300 else 0.9, "opacity": 0.9},
+        ).add_to(m)
+    if katmanlar.get("trafo"):
+        fg = folium.FeatureGroup(name=T(*ALTYAPI["trafo"]))
+        d = katmanlar["trafo"]
+        for e, b, kv, ad in zip(d["enlem"], d["boylam"], d["kv"], d["ad"], strict=True):
+            folium.CircleMarker([e, b], radius=2.8 if kv < 300 else 4, color=v["batarya"], weight=1, fill=True, fill_opacity=0.9,
+                                tooltip=f"{html.escape(str(ad) if ad == ad else '(adsız)')} · {sayi(kv, 0)} kV").add_to(fg)  # fmt: skip
+        fg.add_to(m)
+    if katmanlar.get("tedarik"):
+        fg = folium.FeatureGroup(name=T(*ALTYAPI["tedarik"]))
+        d = katmanlar["tedarik"]
+        for ad, tur, e, b, dg, bil in zip(d["ad"], d["tur"], d["enlem"], d["boylam"], d["dogrulandi"], d["bilesenler"], strict=True):
+            ikon = T("L", "P") if tur == "liman" else T("Ü", "M")
+            folium.Marker(
+                [e, b],
+                tooltip=f"<b>{html.escape(ad)}</b><br>{html.escape(str(bil).replace(';', ', '))}" + ("" if dg else T(" · doğrulanmadı", " · unverified")),
+                icon=folium.DivIcon(html=f'<div class="esik-tedarik{"" if dg else " soluk"}">{ikon}</div>',
+                                    icon_size=(22, 22), icon_anchor=(11, 11)),
+            ).add_to(fg)  # fmt: skip
+        fg.add_to(m)
 
 
 def lejant(ot: pd.DataFrame | None, kolon: str, tema: str = "acik") -> str:

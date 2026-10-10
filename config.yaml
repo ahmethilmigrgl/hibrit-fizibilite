@@ -527,3 +527,86 @@ v3:
       35.000 $/MW-yıl alıp ayrıca sigorta (%0,35 CAPEX ≈ 4.000 $/MW-yıl) ve arazi kirası (1.500) ekliyordu → sigorta ve arazide kısmi çift sayım
       olasılığı. v3 Ö1: işletme gideri = FSA + sahip kalemleri (34 $/kW-yıl), sigorta/arazi/TEİAŞ/söküm ayrı. Tek sahalı 10–15 türbinlik
       projede varsayılan FSA (gerekçe docs/v3_E §0.1); kendi bakımının başabaş filo büyüklüğü outputs/v3E/E0_isletme_basabas.csv (Faz F girdisi)
+  cok_kriterli:
+    value:
+      deger_fonksiyonu:   # [en iyi (puan 1), kabul edilemez (puan 0)]; arası doğrusal
+        ekonomi: [50.0, 90.0]
+        ruzgar: [0.45, 0.20]
+        sebeke: [0.0, 40.0]
+        yol: [0.0, 20.0]
+        egim: [0.0, 15.0]
+        goc: [0.0, 2.0]
+        guven: [1.0, 0.0]
+        lojistik: [30000.0, 120000.0]
+      normalizasyon: deger_fonksiyonu   # deger_fonksiyonu | vektor (klasik TOPSIS; karşılaştırma için)
+    birim: "$/MWh, KF, km, km, derece, risk 0-2, 0/1, $/MW"
+    kaynak: "TAHMİN (Malczewski 2006 GIS-MCDA standardizasyonu; doğrusal değer fonksiyonu). Uçlar: başabaş 50 = Türkiye'nin en iyi hücreleri, 90 = 58 $/MWh fiyat senaryosunun ~1,5 katı (yatırım dışı); trafo 40 km ve yol 20 km ≈ uygun hücrelerin 95. yüzdeliği; eğim 15° = dışlama eşiği; lojistik 30–120 bin $/MW = hücre aralığı"
+    not: "Klasik TOPSIS vektör normalizasyonu, göreli aralığı dar kriterleri (başabaş 50–65) geniş aralıklı kriterlere (trafo 0,5–60 km) göre bastırıyordu: 'dengeli' profilde ilk sıra 65 $/MWh çıkıyordu. Değer fonksiyonu tüm kriterleri ortak [0,1] ölçeğe taşır; ağırlık 'en iyiden kabul edilemeze geçişin önemi' anlamını kazanır"
+  cbs:
+    value:
+      tampon:
+        yerlesim_m: 500.0
+        otoyol_kat: 1.5
+        devlet_il_yolu_kat: 1.25
+        iletim_hatti_kat: 1.5
+        havalimani_km: 5.0
+        egim_azami_derece: 15.0
+        koruma_alani: true
+      agir_yol_siniflari: ["motorway", "trunk", "primary", "motorway_link", "trunk_link", "primary_link"]
+      kosullu_yol_siniflari: ["secondary", "secondary_link"]
+      kosullu_yol_ceza: 1.5
+      yokus_ceza: {esik: 0.10, carpan: 1.5}
+    birim: "m; (H+L) katı (H göbek yüksekliği, L kanat uzunluğu); km; derece"
+    kaynak: >-
+      Karayolu: Karayolları Genel Müdürlüğü uygulaması — türbinin karayolu sınır çizgisine asgari mesafesi otoyolda 1,5·(H+L), devlet ve il
+      yollarında 1,25·(H+L) (ikincil derleme: alternaturk.org 'Rüzgar türbini yer seçimi', ruzgarenerjisi.com.tr §3.1; birincil metin
+      bulunamadı). Yerleşim: Türkiye'de ulusal asgari mesafe yok (3 Ekim 2026 RES teknik değerlendirme değişikliği de getirmiyor; yeşilhaber);
+      uygulamada Çevresel Gürültünün Değerlendirilmesi ve Yönetimi Yönetmeliği sınırları nedeniyle 300–500 m → TAHMİN 500 m. İletim hattı
+      1,5·(H+L), havalimanı 5 km, en büyük ortalama eğim 15° TAHMİN (çok kriterli RES yer seçimi literatüründe 10–15°; vinç ve yol yapımı;
+      SHGM/MSB görüşleri ve EİH güvenlik koridorları proje bazında). Koruma alanları dışlanır (OSM). Ağır nakliye: otoyol/devlet yolu/il yolu
+      (OSM motorway/trunk/primary) uygun; secondary koşullu (×1,5 maliyet); eğimi %10'u aşan yol kesitleri ×1,5 (TAHMİN; kanat römorkları dik
+      yokuşta kısıtlı, Cotrell vd. 2014)
+    not: "Faz D'nin dışlama katmanı arayüzüne bağlanır (src/cbs/katmanlar.py). Göç koridorları dışlama değil değerlendirme kriteri ve uyarıdır"
+  baglanti:
+    value:
+      gerilim_kurali: [{mw_ust: 30.0, kv: 34.5}, {mw_ust: 300.0, kv: 154.0}, {mw_ust: 100000.0, kv: 400.0}]
+      hat_usd_km: {"34.5": 40000.0, "154": 150000.0, "400": 330000.0}
+      trafo_merkezi_usd: {"34.5": 500000.0, "154": 4500000.0, "400": 9000000.0}
+      fider_usd: {"34.5": 150000.0, "154": 800000.0, "400": 1500000.0}
+      guzergah_carpani: 1.25
+      yol_usd_km: 150000.0
+      yol_dahil_km: 2.0
+      kur_tl_usd: 45.0
+    birim: "$ (reel 2026), $/km"
+    kaynak: >-
+      154 kV hat: TEİAŞ ihaleleri — H.821 Alibeyhöyüğü–Alakova 154 kV ~35,6 km tek devre 1272 MCM 178,6 M TL (~5 M TL/km), H.889
+      Korkuteli–Varsak ~52,4 km yaklaşık maliyet 497,8 M TL (~9,5 M TL/km, 2026), H.871 Malatya-1–Adıyaman 60,3 km 584,2 M TL (~9,7 M TL/km)
+      → 110–215 bin $/km (45 TL/$), merkez 150 bin. 154 kV TM: TEİAŞ '154 kV Karataş TM yapımı' 219,1 M TL, 'Kumluca TM yapımı' 227,3 M TL
+      (≈ 4,9–5,1 M$); 4 adet 154/33,6 kV 35/50 MVA mobil TM 463,1 M TL (≈ 2,6 M$/adet) → proje yükseltici TM 4,5 M$. 400 kV hat ve TM,
+      34,5 kV hat ve şalt, fider (hat fideri), saha erişim yolu TAHMİN (400 kV ≈ 2,2 × 154 kV hat; erişim yolu 150 bin $/km). Gerilim
+      kuralı TAHMİN (YEKA RES-2025 bağlantı görüşleri: 110–500 MW projeler 400 kV, 120–140 MW 154 kV). Güzergâh çarpanı 1,25 TAHMİN
+    not: >-
+      Bağlantı maliyeti = proje TM + TEİAŞ TM'de fider + hat (kuş uçuşu mesafe × güzergâh çarpanı × $/km) + ağır nakliye yoluna erişim yolu
+      (ilk 2 km RES CAPEX'inde varsayılır). Hedef: seçilen gerilim ya da üstündeki en yakın OSM trafo merkezi (power=substation). TEİAŞ
+      bağlantı kapasitesi (lisanslı projeler için trafo merkezi bazında yayımlanmıyor) ve TEİAŞ kapasite tahsis yarışması katkı payı dahil
+      DEĞİL. v1 sabit 120.000 $/MW'nin yerine geçer
+  lojistik:
+    value:
+      bilesenler:
+        kanat: {adet: 3, kutle_t: 20.0, ithal_navlun_usd: 15000.0, yerli_sure_ay: 5.0, ithal_sure_ay: 7.0}
+        kule: {adet: 6, kutle_t: 60.0, ithal_navlun_usd: 8000.0, yerli_sure_ay: 4.0, ithal_sure_ay: 6.0}
+        nasel: {adet: 2, kutle_t: 80.0, ithal_navlun_usd: 25000.0, yerli_sure_ay: 6.0, ithal_sure_ay: 8.0}
+        gobek: {adet: 1, kutle_t: 40.0, ithal_navlun_usd: 10000.0, yerli_sure_ay: 6.0, ithal_sure_ay: 8.0}
+      tasima: {usd_t_km: 0.40, sefer_sabit_usd: 3000.0, izin_eskort_usd: 1500.0, ag_disi_carpan: 1.3, km_gun: 300.0}
+      yerli_fiyat_farki: 0.0
+      gumruk_orani: 0.0
+      kapasite_turbin_yil: {"Gesbey (kule)": 72}
+    birim: "adet/türbin (sefer), ton/sefer, $, ay, $/ton-km, km/gün"
+    kaynak: >-
+      Taşıma birim maliyeti: Cotrell vd. (2014) NREL/TP-5000-61063 — kule kesitleri 0,50 $/metrik ton/mil (2013) ≈ 0,31 $/t-km; enflasyonla
+      2026 ≈ 0,40 $/t-km; taşıma, kulenin sermaye + taşıma maliyetinin %8'inden az. Sefer sayıları ve kütleler 4–4,5 MW, 140 m rotorlu türbin
+      için TAHMİN (kanat ~20 t × 3; 120 m göbek çelik kule ~360 t, 6 kesit; nasel + jeneratör 2 sefer; göbek 1). Sefer sabit gideri, izin/eskort,
+      ithal navlun ve liman elleçleme, teslim süreleri TAHMİN. Gümrük: AB menşeli bileşenlerde Gümrük Birliği nedeniyle 0 (TAHMİN; Çin menşeli
+      ek vergiler kapsam dışı). Kapasite: Gesbey yılda 430 kule (Beyçelik/Gesbey) ≈ 72 türbin seti (6 kesit) — tek saha için bağlayıcı değil;
+      Faz F çoklu saha ulaştırma probleminde kullanılacak
+    not: "Lojistik maliyeti CAPEX'e sahanın referansa göre farkı olarak eklenir (referans: mevcut santral hücrelerinin medyanı; RES CAPEX 1,15 M$/MW teslim edilmiş türbin varsayar). Teslim süresi farkı COD dağılımına eklenir (türbin tedariki kritik yolda, Aşama 7)"

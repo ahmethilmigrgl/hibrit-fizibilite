@@ -62,9 +62,28 @@ kaynak = pd.DataFrame(
             ),
             T("Kaynak gösterilerek", "With attribution"),
         ),
-        ("OpenStreetMap", T("RES santralleri ve türbin konumları/etiketleri", "Wind farms and turbine positions/tags"), "ODbL"),
+        (
+            "OpenStreetMap (Geofabrik)",
+            T(
+                "RES santralleri ve türbinler; yollar, iletim hatları ve trafo merkezleri, yerleşimler, havalimanları, koruma alanları",
+                "Wind farms and turbines; roads, power lines and substations, settlements, airports, protected areas",
+            ),
+            "ODbL",
+        ),
         ("geoBoundaries, Natural Earth", T("İl/ilçe sınırları, kıyı", "Province/district boundaries, coastline"), "ODbL / CC BY-SA / PD"),
-        ("Copernicus DEM GLO-90", T("Rakım ızgarası (0,02°)", "Elevation grid (0.02°)"), T("Atıfla serbest", "Free with attribution")),
+        (
+            "Copernicus DEM GLO-90",
+            T("Rakım ızgarası (0,02°), 250 m eğim", "Elevation grid (0.02°), 250 m slope"),
+            T("Atıfla serbest", "Free with attribution"),
+        ),
+        (
+            T("Yayınlardan sayısallaştırma", "Digitised from publications"),
+            T(
+                "Kuş göç koridorları (yaklaşık), limanlar ve yerli üreticiler, YEKA bağlantı görüşleri",
+                "Bird migration corridors (approx.), ports and domestic manufacturers, YEKA connection opinions",
+            ),
+            "CC BY 4.0",
+        ),
     ],
     columns=[T("Kaynak", "Source"), T("Kullanım", "Use"), T("Lisans", "Licence")],
 )
@@ -191,12 +210,16 @@ st.markdown(
         "- **Saha ölçümü yok:** rüzgâr tahmini yeniden analiz + komşu santral kalibrasyonuna dayanır; düşük güvenli bölgelerde tipik hata ±6, %90'da ±12 puan KF.\n"
         "- **Santral türbinleri vekildir:** OSM etiketleri eksik olduğunda birim güç kapasite / türbin adedinden, özgül güç güç sınıfından tahmin edilir.\n"
         "- **Tek komşu:** yüksek güvenli bir tahmin tek bir santrale dayanabilir; uygulama bunu ayrıca uyarır.\n"
-        "- **Modellenmeyenler:** arazi, imar ve izinler; türbinler arası iz etkisi (toplam kayıp %12 içinde ortalama); şebeke bağlantı kapasitesi ve TEİAŞ görüşü; yerel koşullar.\n"
+        "- **Modellenmeyenler:** arazi, imar ve izinler; yerel koşullar.\n"
+        "- **TEİAŞ bağlantı kapasitesi yayımlanmıyor:** bağlantı maliyeti en yakın uygun gerilimli trafo merkezine mesafeden hesaplanır; o merkezde kapasite olup olmadığı, kapasite tahsis katkı payı ve sistem güçlendirmeleri bilinmez. Lisanslı RES için ana sınırlama budur.\n"
+        "- **CBS katmanları OSM'den:** koruma alanları resmî listeden (WDPA, lisansı yeniden dağıtıma izin vermiyor) eksik olabilir; göç koridorları yaklaşıktır ve ÇED kuş izleme çalışmasının yerini tutmaz.\n"
         "- **SFK, YEKDEM ve PPA varsayımları** (fiyat, doyum, iskonto) tahmine dayanır; ayrıntı v1 belgelerinde.",
         "- **No on-site measurement:** the wind estimate relies on reanalysis + neighbouring farm calibration; in low-confidence areas the typical error is ±6, 90% ±12 CF points.\n"
         "- **Farm turbines are proxies:** when OSM tags are missing, unit rating is estimated from capacity / turbine count and specific power from the rating class.\n"
         "- **Single neighbour:** a high-confidence estimate may rely on one farm; the app flags this.\n"
-        "- **Not modelled:** land, zoning and permits; turbine wakes (averaged within the 12% total loss); grid connection capacity and TEİAŞ opinion; local conditions.\n"
+        "- **Not modelled:** land, zoning and permits; local conditions.\n"
+        "- **TEİAŞ connection capacity is not published:** the connection cost uses the distance to the nearest substation of suitable voltage; whether it has capacity, the capacity allocation contribution and system reinforcements are unknown. This is the main limitation for licensed wind.\n"
+        "- **GIS layers come from OSM:** protected areas may be incomplete versus the official list (WDPA's licence does not allow redistribution); migration corridors are approximate and do not replace an EIA bird survey.\n"
         "- **SFK, YEKDEM and PPA assumptions** (prices, saturation, discount) are estimates; see the v1 documents.",
     )
 )
