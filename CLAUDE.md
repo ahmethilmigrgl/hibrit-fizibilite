@@ -226,3 +226,14 @@ arazi kirası çift sayılmış (35.000 $/MW-yıl "her şey dahil" + ayrı kalem
 Excel'de seçilebilir (96/96 mutabık); v1 belgelerine yalnız "Düzeltme notu" kutusu. v2 motorunda da var, v3 FSA'da yok.
 Ö2: bağlantı mesafesi belirsizliği — atanan/en yakın oran (YEKA RES-2025/26, `data/atlas/baglanti_orani.json`, ln r ~ N(−0,31; 0,94)),
 config `v3.baglanti.belirsizlik`; CAPEX beklenen değerle, MC'de `girdi["capex_sebeke"]` çarpanı.
+
+**Faz F durumu (2026-10-11):** ✅ bkz. `docs/v3_F_portfoy_performans.md`. Portföy `src/portfoy/` (adaylar: 40 aday × 2–4 tasarım ×
+2.000 ortak senaryo — fiyat, ERA5 hava yılı, SFK, CAPEX, YEKDEM ortak tohumla; model hatası, bağlantı, COD sahaya özgü
+`tohum_saha`; sinerji: işletme ölçeği/kendi bakımı, Poisson taban stok havuzu, toplu indirim, çok sahalı ulaştırma; model:
+scipy.optimize.milp (HiGHS) ortalama–CVaR, Rockafellar–Uryasev, ε-kısıt etkin sınır; analiz: çeşitlendirme varyans
+ayrıştırması, kaba kuvvet). Motor MC `mc_calistir(..., tohum_saha=)` ve dönüşte `ortak`. İzleme `src/izleme/` (aylık oran,
+bölgesel/YAT ayıklama, akran ağırlığı b, kayan taban [t−30, t−7], Shewhart/EWMA/CUSUM ARL0 = 48 ay blok bootstrap,
+yapay arıza testi). Betikler `src/v3_F1_adaylar.py` (~4 saat), `src/v3_F3_portfoy.py`, `src/v3_F4_performans.py` (aylık güncelleme),
+`src/v3_F6_tarayici.py`; paketler `data/atlas/portfoy/`, `data/atlas/izleme/`; config `v3.portfoy`, `v3.performans`
+(`santral_adlari_goster: false`). Sayfalar `uygulama/sayfa_portfoy.py`, `sayfa_performans.py`. Testler `tests/test_v3_F.py`.
+Sürüm etiketi v3.0.0-rc1 (push yok).

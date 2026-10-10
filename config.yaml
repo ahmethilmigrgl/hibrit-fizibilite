@@ -532,6 +532,77 @@ v3:
       35.000 $/MW-yıl alıp ayrıca sigorta (%0,35 CAPEX ≈ 4.000 $/MW-yıl) ve arazi kirası (1.500) ekliyordu → sigorta ve arazide kısmi çift sayım
       olasılığı. v3 Ö1: işletme gideri = FSA + sahip kalemleri (34 $/kW-yıl), sigorta/arazi/TEİAŞ/söküm ayrı. Tek sahalı 10–15 türbinlik
       projede varsayılan FSA (gerekçe docs/v3_E §0.1); kendi bakımının başabaş filo büyüklüğü outputs/v3E/E0_isletme_basabas.csv (Faz F girdisi)
+  portfoy:
+    value:
+      aday_sayisi: 40
+      aday_min_km: 60.0
+      il_azami: 2
+      aday_basabas_ust: 70.0
+      baglanti_mw: 50.0
+      n_mc: 2000
+      tohum: 42
+      varyant_kucuk: 0.6
+      varyant_buyuk: 1.4
+      varyant_asgari_turbin: 3
+      cvar_alfa: 0.05
+      butce_musd: 300.0
+      bolge_kapasite_mw: 150.0
+      trafo_kapasite_mw: 100.0
+      toplu_indirim: [[150.0, 0.02], [300.0, 0.03]]
+      kendi_bolge_ussu_usd_yil: 150000.0
+      havuz_transfer_km_gun: 400.0
+      havuz_elleclem_saat: 12.0
+      turbin_capex_payi: 0.70
+      insaat_penceresi_yil: 2
+      liman_kapasite_set_yil: 60
+    birim: "adet, km, $/MWh, MW, M$, oran; toplu_indirim: [toplam RES MW eşiği, türbin CAPEX indirimi]; $/yıl; km/gün; saat"
+    kaynak: >-
+      Aday sayısı ve yayılım (≥ 60 km, il başına ≤ 2) Faz F kapsamından (30–50 hücre, farklı bölgeler); başabaş üst sınırı 70 $/MWh
+      (58 $/MWh fiyat senaryosunun ~%20 üstü: yatırıma aday olabilecek hücreler). Tasarım seçenekleri MILP tasarımının %60 ve %140'ı
+      (TAHMİN; ayrık seçenek kümesi). Bütçe 300 M$ ≈ 4–5 tek saha (TAHMİN; duyarlılık). Bölge/trafo kapasitesi: TEİAŞ lisanslı
+      bağlantı kapasitesi yayımlanmadığı için parametre (docs/v3_E §8; duyarlılık 50–∞ MW). Toplu tedarik indirimi: çerçeve
+      anlaşmaları (EDF–Vestas, VERBUND–Nordex 700 MW, EDF–Nordex ~900 MW) fiyat avantajı sağlar ama oran yayımlanmaz → TAHMİN
+      %2/%3, duyarlılık 0–%5. Kendi bakımında bölge üssü (araç, depo, ekip başı) 0,15 M$/yıl TAHMİN (organizasyon sabit gideri
+      0,6 M$/yıl v3.isletme.kendi). Havuz transferi: ağır vasıta ~400 km/gün + 12 saat elleçleme (TAHMİN; v3.lojistik.km_gun 300
+      km/gün kanat konvoyu içindi, yedek parça tek araçla). Türbinin RES CAPEX'indeki payı %70 (IRENA Renewable Power Generation Costs:
+      kara RES'te türbin %64–84). Ulaştırma: portföy aynı 2 yıllık pencerede kurulur; yerli üretici kapasitesi v3.lojistik.kapasite_turbin_yil
+      × pencere, liman elleçleme kapasitesi bileşen başına 60 set/yıl TAHMİN (proje kargosu iskele ve stok sahası sınırı; duyarlılık)
+    not: "Faz F portföy optimizasyonu (src/portfoy/). Ortak senaryolar tüm adaylarda aynı tohumla (fiyat, hava yılı, SFK, CAPEX, düzenleyici olaylar); sahaya özgü belirsizlikler (RES model hatası, bağlantı mesafesi, COD) aday kodundan türetilen tohumla"
+  performans:
+    value:
+      santral_adlari_goster: false
+      donem: M
+      taban_donem: 24
+      taban_turu: kayan          # kayan: her ay için taban = [t−30, t−7] aylarının medyanı (6 aya kadar arıza tabanı kirletmez); sabit: ilk taban_donem
+      kayan_pencere: [7, 30]
+      asgari_gecerli_gun: 15
+      akran_km: 100.0
+      akran_asgari: 3
+      hedef_arl0_donem: 48
+      ewma_lambda: 0.2
+      cusum_k: 0.5
+      bootstrap_blok: 12
+      bolgesel_dusus_orani: 0.6
+      bolgesel_santral_payi: 0.5
+      yat_gun_yuzdelik: 0.95
+      kapasite_olay_esigi: 0.08
+      kalici_pencere: 6
+      kalici_alarm: 3
+      kalici_dusus: 0.03
+      yapay_ariza: {dusus: [0.03, 0.05, 0.10], sure_donem: [1, 3, 6], tekrar: 600}
+    birim: "dönem (M = ay), gün, km, oran"
+    kaynak: >-
+      SPC: Montgomery (2019) 'Introduction to Statistical Quality Control' — EWMA λ = 0,05–0,25 küçük kaymalar için, CUSUM k =
+      kaydırılacak büyüklüğün yarısı (1σ kayma → k = 0,5); parametreler hedef ARL0'a göre seçilir. İzleme birimi AY: haftalık
+      model/gözlem oranının doğal gürültüsü ~%17–19 (ERA5 hücresinin sahaya özgü hava hatası; akranla birleşim yalnız ~%8 azaltıyor),
+      aylık ~%10 (outputs/v3F/F4_gurultu.csv). ARL0 = 48 ay (santral başına yanlış alarm yaklaşık 4 yılda bir; 90 santrallik filoda
+      ayda ~2) TAHMİN. Taban dönem 24 ay. Akran yarıçapı 100 km ve bölgesel düşüş eşikleri TAHMİN. Kalıcı sapma: son 6 ayın ≥ 3'ünde
+      EWMA alarmı ve ortalama açık ≥ %3
+    not: >-
+      Santral adları varsayılan olarak GÖSTERİLMEZ (santral_adlari_goster: false): sonuçlar bir modelden türetilmiştir (ERA5 + atlas
+      kalibrasyonu + akran karşılaştırması); kalıcı sapmanın nedeni model hatası, kesinti, planlı bakım, veri sorunu ya da gerçek
+      performans kaybı olabilir ve santral sahibinin bilgisi olmadan ayırt edilemez. Herkese açık uygulamada ad göstermek doğrulanmamış
+      bir iddiayı belirli bir şirkete bağlar. Uygulama il + anonim kod gösterir; yerel/analist kullanımında true yapılabilir
   cok_kriterli:
     value:
       deger_fonksiyonu:   # [en iyi (puan 1), kabul edilemez (puan 0)]; arası doğrusal

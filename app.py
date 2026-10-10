@@ -45,6 +45,13 @@ sayfalar = [
         icon=":material/tune:",
         url_path="cok-kriterli",
     ),
+    st.Page(str(KOK / "uygulama" / "sayfa_portfoy.py"), title=T("Portföy", "Portfolio"), icon=":material/hub:", url_path="portfoy"),
+    st.Page(
+        str(KOK / "uygulama" / "sayfa_performans.py"),
+        title=T("Performans izleme", "Performance monitoring"),
+        icon=":material/monitor_heart:",
+        url_path="performans",
+    ),
     st.Page(str(KOK / "uygulama" / "sayfa_yontem.py"), title=T("Yöntem", "Method"), icon=":material/functions:", url_path="yontem"),
 ]
 sayfa = st.navigation(sayfalar, position="top")

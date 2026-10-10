@@ -120,7 +120,11 @@ def main() -> None:
     ok = df[df["hata"] == ""]
     print(f"Tamam ({kip}): {len(ok)}/{len(df)} hücre, {time.time() - t0:.0f} s → {hedef}")
     print(df.loc[df["hata"] != "", "hata"].str.split(":").str[0].value_counts().to_string())
-    print(ok[~ok["ada"]].nsmallest(10, "basabas_en_iyi")[["il", "ilce", "res_kf", "guven", "sebeke_capex_usd_mw", "basabas_en_iyi"]].to_string())
+    print(
+        ok[~ok["ada"]]
+        .nsmallest(10, "basabas_en_iyi")[["il", "ilce", "res_kf", "guven", "sebeke_capex_usd_mw", "basabas_en_iyi"]]
+        .to_string()
+    )
 
 
 if __name__ == "__main__":

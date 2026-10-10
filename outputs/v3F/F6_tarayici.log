@@ -1,0 +1,24 @@
+                                    olcum  sure_s
+            performans sayfası (masaustu)     1.6
+        portföy sayfası, λ = 0 (masaustu)     1.8
+portföy optimizasyonu, λ = 0,2 (masaustu)    18.5
+               performans sayfası (mobil)     1.4
+           portföy sayfası, λ = 0 (mobil)     0.8
+   portföy optimizasyonu, λ = 0,2 (mobil)     2.0
+               ekran tema  gorunum  yatay_tasma  tasan_oge ornek
+ F_performans_harita acik masaustu        False          0      
+   F_performans_kart acik masaustu        False          0      
+           F_portfoy acik masaustu        False          0      
+F_portfoy_ayristirma acik masaustu        False          0      
+ F_performans_harita acik    mobil        False          0      
+   F_performans_kart acik    mobil        False          0      
+           F_portfoy acik    mobil        False          0      
+F_portfoy_ayristirma acik    mobil        False          0      
+ F_performans_harita koyu masaustu        False          0      
+   F_performans_kart koyu masaustu        False          0      
+           F_portfoy koyu masaustu        False          0      
+F_portfoy_ayristirma koyu masaustu        False          0      
+ F_performans_harita koyu    mobil        False          0      
+   F_performans_kart koyu    mobil        False          0      
+           F_portfoy koyu    mobil        False          0      
+F_portfoy_ayristirma koyu    mobil        False          0      

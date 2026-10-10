@@ -1,0 +1,361 @@
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:55: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  ay = g.groupby(g.index.tz_convert("Europe/Istanbul").to_period("M")).quantile(0.995)
+/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/izleme/veri.py:57: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  kap_s = pd.Series(kap.reindex(g.index.tz_convert("Europe/Istanbul").to_period("M")).to_numpy(), index=g.index)
+90 394560

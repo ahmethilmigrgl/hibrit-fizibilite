@@ -85,7 +85,9 @@ def hucre(r: dict) -> dict:
 def main() -> None:
     ot = pd.read_parquet(ATLAS / "on_tarama.parquet")
     with ProcessPoolExecutor(max_workers=4) as hv:
-        satir = list(hv.map(hucre, ot[["hucre_enlem", "hucre_boylam", "enlem", "boylam", "turbin"]].to_dict(orient="records"), chunksize=20))
+        satir = list(
+            hv.map(hucre, ot[["hucre_enlem", "hucre_boylam", "enlem", "boylam", "turbin"]].to_dict(orient="records"), chunksize=20)
+        )
     d = pd.DataFrame(satir)
     tr = pd.read_csv(ATLAS / "osm_turbinler.csv")
     he = np.round(tr["enlem"] * 4) / 4

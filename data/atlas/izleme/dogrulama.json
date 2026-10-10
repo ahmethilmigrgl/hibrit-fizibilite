@@ -1,0 +1,263 @@
+{
+ "kart_parametreleri": {
+  "shewhart": 2.436062120426505,
+  "ewma": 2.2175154342684213,
+  "cusum": 3.3970701039548423
+ },
+ "donem": "M",
+ "hedef_arl0_donem": 48,
+ "arl1_donem": {
+  "3%": {
+   "shewhart": 34.686143572621035,
+   "ewma": 22.38,
+   "cusum": 25.256333333333334
+  },
+  "5%": {
+   "shewhart": 26.572,
+   "ewma": 14.648333333333333,
+   "cusum": 16.646333333333335
+  },
+  "10%": {
+   "shewhart": 12.339,
+   "ewma": 6.466,
+   "cusum": 7.094666666666667
+  }
+ },
+ "sigma0_medyan": 0.10577143673156741,
+ "yapay_ariza": [
+  {
+   "kart": "shewhart",
+   "dusus": 0.03,
+   "sure_donem": 1,
+   "yakalama": 0.07445008460236886,
+   "gecikme_medyan_donem": 0.0,
+   "n": 591
+  },
+  {
+   "kart": "ewma",
+   "dusus": 0.03,
+   "sure_donem": 1,
+   "yakalama": 0.155668358714044,
+   "gecikme_medyan_donem": 0.0,
+   "n": 591
+  },
+  {
+   "kart": "cusum",
+   "dusus": 0.03,
+   "sure_donem": 1,
+   "yakalama": 0.18274111675126903,
+   "gecikme_medyan_donem": 0.0,
+   "n": 591
+  },
+  {
+   "kart": "shewhart",
+   "dusus": 0.03,
+   "sure_donem": 3,
+   "yakalama": 0.1113013698630137,
+   "gecikme_medyan_donem": 1.0,
+   "n": 584
+  },
+  {
+   "kart": "ewma",
+   "dusus": 0.03,
+   "sure_donem": 3,
+   "yakalama": 0.2465753424657534,
+   "gecikme_medyan_donem": 1.0,
+   "n": 584
+  },
+  {
+   "kart": "cusum",
+   "dusus": 0.03,
+   "sure_donem": 3,
+   "yakalama": 0.2688356164383562,
+   "gecikme_medyan_donem": 0.0,
+   "n": 584
+  },
+  {
+   "kart": "shewhart",
+   "dusus": 0.03,
+   "sure_donem": 6,
+   "yakalama": 0.20442930153321975,
+   "gecikme_medyan_donem": 3.0,
+   "n": 587
+  },
+  {
+   "kart": "ewma",
+   "dusus": 0.03,
+   "sure_donem": 6,
+   "yakalama": 0.3594548551959114,
+   "gecikme_medyan_donem": 2.0,
+   "n": 587
+  },
+  {
+   "kart": "cusum",
+   "dusus": 0.03,
+   "sure_donem": 6,
+   "yakalama": 0.3645655877342419,
+   "gecikme_medyan_donem": 1.5,
+   "n": 587
+  },
+  {
+   "kart": "shewhart",
+   "dusus": 0.05,
+   "sure_donem": 1,
+   "yakalama": 0.08768971332209106,
+   "gecikme_medyan_donem": 0.0,
+   "n": 593
+  },
+  {
+   "kart": "ewma",
+   "dusus": 0.05,
+   "sure_donem": 1,
+   "yakalama": 0.18718381112984822,
+   "gecikme_medyan_donem": 0.0,
+   "n": 593
+  },
+  {
+   "kart": "cusum",
+   "dusus": 0.05,
+   "sure_donem": 1,
+   "yakalama": 0.209106239460371,
+   "gecikme_medyan_donem": 0.0,
+   "n": 593
+  },
+  {
+   "kart": "shewhart",
+   "dusus": 0.05,
+   "sure_donem": 3,
+   "yakalama": 0.1371527777777778,
+   "gecikme_medyan_donem": 1.0,
+   "n": 576
+  },
+  {
+   "kart": "ewma",
+   "dusus": 0.05,
+   "sure_donem": 3,
+   "yakalama": 0.2725694444444444,
+   "gecikme_medyan_donem": 1.0,
+   "n": 576
+  },
+  {
+   "kart": "cusum",
+   "dusus": 0.05,
+   "sure_donem": 3,
+   "yakalama": 0.2743055555555556,
+   "gecikme_medyan_donem": 0.0,
+   "n": 576
+  },
+  {
+   "kart": "shewhart",
+   "dusus": 0.05,
+   "sure_donem": 6,
+   "yakalama": 0.22241379310344828,
+   "gecikme_medyan_donem": 2.0,
+   "n": 580
+  },
+  {
+   "kart": "ewma",
+   "dusus": 0.05,
+   "sure_donem": 6,
+   "yakalama": 0.42586206896551726,
+   "gecikme_medyan_donem": 2.0,
+   "n": 580
+  },
+  {
+   "kart": "cusum",
+   "dusus": 0.05,
+   "sure_donem": 6,
+   "yakalama": 0.4362068965517241,
+   "gecikme_medyan_donem": 2.0,
+   "n": 580
+  },
+  {
+   "kart": "shewhart",
+   "dusus": 0.1,
+   "sure_donem": 1,
+   "yakalama": 0.1404399323181049,
+   "gecikme_medyan_donem": 0.0,
+   "n": 591
+  },
+  {
+   "kart": "ewma",
+   "dusus": 0.1,
+   "sure_donem": 1,
+   "yakalama": 0.24534686971235195,
+   "gecikme_medyan_donem": 0.0,
+   "n": 591
+  },
+  {
+   "kart": "cusum",
+   "dusus": 0.1,
+   "sure_donem": 1,
+   "yakalama": 0.2436548223350254,
+   "gecikme_medyan_donem": 0.0,
+   "n": 591
+  },
+  {
+   "kart": "shewhart",
+   "dusus": 0.1,
+   "sure_donem": 3,
+   "yakalama": 0.328719723183391,
+   "gecikme_medyan_donem": 1.0,
+   "n": 578
+  },
+  {
+   "kart": "ewma",
+   "dusus": 0.1,
+   "sure_donem": 3,
+   "yakalama": 0.4826989619377163,
+   "gecikme_medyan_donem": 1.0,
+   "n": 578
+  },
+  {
+   "kart": "cusum",
+   "dusus": 0.1,
+   "sure_donem": 3,
+   "yakalama": 0.49653979238754326,
+   "gecikme_medyan_donem": 1.0,
+   "n": 578
+  },
+  {
+   "kart": "shewhart",
+   "dusus": 0.1,
+   "sure_donem": 6,
+   "yakalama": 0.4318181818181818,
+   "gecikme_medyan_donem": 2.0,
+   "n": 572
+  },
+  {
+   "kart": "ewma",
+   "dusus": 0.1,
+   "sure_donem": 6,
+   "yakalama": 0.6765734265734266,
+   "gecikme_medyan_donem": 2.0,
+   "n": 572
+  },
+  {
+   "kart": "cusum",
+   "dusus": 0.1,
+   "sure_donem": 6,
+   "yakalama": 0.7115384615384616,
+   "gecikme_medyan_donem": 2.0,
+   "n": 572
+  }
+ ],
+ "yanlis_alarm_yil_gercek_normal": {
+  "shewhart": 0.2322328833956741,
+  "ewma": 0.28102130427711824,
+  "cusum": 0.2771182306066027
+ },
+ "yanlis_alarm_yil_teorik": 0.25,
+ "n_santral": 90,
+ "durum_sayim": {
+  "normal": 60,
+  "izleniyor": 16,
+  "kalici_sapma": 10,
+  "veri_yetersiz": 4
+ },
+ "son_donem": "2025-12-01",
+ "dislanan_gun_payi": {
+  "bolgesel": 0.06997921735604218,
+  "yat": 0.0006843065693430657
+ }
+}

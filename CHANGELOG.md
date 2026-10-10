@@ -16,6 +16,39 @@ Proje aşamalar halinde geliştirildi. Her aşama bir commit; revizyonlar ve ön
 | Nihai (Aşama 9 A) | Fiyat ortalaması: 58 $/MWh medyan değil beklenen değer | −1,7 M$ | Rafa kaldır, tetikleyicileri izle |
 | **Düzeltme (v3, Ekim 2026)** | **Sigorta + arazi kirası çift sayımı kaldırıldı ([docs/v1_duzeltme_notu.md](docs/v1_duzeltme_notu.md))** | **+0,9 M$** | **Durum tespiti + ≤0,9 M$ teklif** |
 
+## [3.0.0-rc1] — 2026-10-11 (dal `v3-ie`, etiket v3.0.0-rc1, yayınlanmadı)
+
+### Faz F ön adım
+- **v1 düzeltme notu** ([docs/v1_duzeltme_notu.md](docs/v1_duzeltme_notu.md)): RES sigortası ve arazi kirası 35.000 $/MW-yıl'lık
+  "her şey dahil" O&M'in hem içinde hem ayrı kalem olarak sayılıyordu. Düzeltilmiş baz vaka: E[NPV] −1,66 → +0,92 M$,
+  P(NPV>0) %42 → %49, CVaR %5 −28,0 → −25,1. Karar (b) rafa kaldır → (a) durum tespiti + ≤0,9 M$ teklif. v1 içerikleri
+  değişmedi; rapor, memo, Excel ve Vaka sayfasında not kutusu var. Excel'de seçilebilir (96/96 mutabık). v2'de aynı sorun
+  var (+2,4…2,6 M$, karar değişmiyor); v3 FSA'da yok.
+- **Bağlantı mesafesi belirsizliği:** YEKA RES-2025/2026 görüşlerinden (14 alan) atanan / en yakın oranı: medyan 0,73,
+  log-σ 0,94. Monte Carlo'da senaryo başına; etkisi kuyrukta (Gürün CVaR −3,3 M$).
+
+### Faz F — Portföy optimizasyonu ve performans izleme
+Ayrıntılar `docs/v3_F_portfoy_performans.md`, çıktılar `outputs/v3F/`.
+- **Portföy** (`src/portfoy/`):
+  - 40 aday × 148 tasarım, 2.000 ortak senaryo. Fiyat, ERA5 hava yılı, SFK, CAPEX ve YEKDEM ortak; model hatası,
+    bağlantı ve COD sahaya özgü.
+  - Bölgeler arası korelasyon: saatlik uzunluk ölçeği 293 km; NPV korelasyonu 0,60.
+  - İki aşamalı stokastik ortalama–CVaR MILP'i (Rockafellar–Uryasev), ε-kısıt etkin sınır.
+  - Sinerjiler: işletme ölçeği +6,9, toplu alım +2,5, yedek parça havuzu +1,7 (Poisson taban stok, METRIC), ulaştırma 0 M$.
+  - Çeşitlendirme ayrıştırması: varyansın %70'i ortak piyasa, %18'i hava korelasyonu, %12'si sahaya özgü.
+  - Aynı CVaR'da optimal portföy en iyi tek saha.
+  - Yatırım yok: fiyat ≤ 46 $/MWh ya da λ ≥ 0,40.
+  - Kaba kuvvet ve CVaR doğrulaması.
+- **Performans izleme** (`src/izleme/`):
+  - 90 kalibre santral, aylık oran (haftalık gürültü %17–19 olduğu için).
+  - Bölgesel ve YAT ayıklama, kapasite olayları.
+  - Akran ağırlığı, kayan taban, Shewhart/EWMA/CUSUM (ARL0 = 48 ay, blok bootstrap).
+  - Yapay arıza: 6 ay süren %10 düşüşte %71 yakalama; yanlış alarm 0,28 / santral-yıl.
+  - Durum: 60 normal, 16 izleniyor, 10 kalıcı sapma.
+  - Santral adları varsayılan gizli.
+- **Arayüz:** "Portföy" ve "Performans izleme" sayfaları (portföy çözümü ≤ 21 s, performans sayfası ≤ 1,6 s; 2 çekirdek).
+- **Kapanış:** docs'taki markdown kod örnekleri ruff ile biçimlendirildi; gizli bilgi taraması temiz; tüm testler geçiyor.
+
 ## [3.0.0-E] — 2026-10-10 (dal `v3-ie`, yayınlanmadı)
 
 ### v3 ön adım (Ö1–Ö4) — Faz D tutarlılık konuları

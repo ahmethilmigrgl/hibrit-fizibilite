@@ -1,0 +1,60 @@
+{
+ "kart_parametreleri": {
+  "shewhart": 2.436062120426505,
+  "ewma": 2.2175154342684213,
+  "cusum": 3.3970701039548423
+ },
+ "donem": "M",
+ "hedef_arl0_donem": 48,
+ "arl1_donem": {
+  "3%": {
+   "shewhart": 34.686143572621035,
+   "ewma": 22.38,
+   "cusum": 25.256333333333334
+  },
+  "5%": {
+   "shewhart": 26.572,
+   "ewma": 14.648333333333333,
+   "cusum": 16.646333333333335
+  },
+  "10%": {
+   "shewhart": 12.339,
+   "ewma": 6.466,
+   "cusum": 7.094666666666667
+  }
+ },
+ "sigma0_medyan": 0.10577143673156741,
+ "yanlis_alarm_yil_gercek_normal": {
+  "shewhart": 0.2322328833956741,
+  "ewma": 0.28102130427711824,
+  "cusum": 0.2771182306066027
+ },
+ "yanlis_alarm_yil_teorik": 0.25,
+ "n_santral": 90,
+ "durum_sayim": {
+  "normal": 60,
+  "izleniyor": 16,
+  "kalici_sapma": 10,
+  "veri_yetersiz": 4
+ },
+ "son_donem": "2025-12-01",
+ "dislanan_gun_payi": {
+  "bolgesel": 0.06997921735604218,
+  "yat": 0.0006843065693430657
+ }
+}
+Traceback (most recent call last):
+  File "/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/v3_F4_performans.py", line 49, in <module>
+    main()
+  File "/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/src/v3_F4_performans.py", line 36, in main
+    .pivot_table(index=["dusus", "sure_hafta"], columns="kart", values=["yakalama", "gecikme_medyan_hafta"])
+     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/.venv/lib/python3.11/site-packages/pandas/core/frame.py", line 11161, in pivot_table
+    return pivot_table(
+           ^^^^^^^^^^^^
+  File "/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/.venv/lib/python3.11/site-packages/pandas/core/reshape/pivot.py", line 267, in pivot_table
+    table = __internal_pivot_table(
+            ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ahmethilmigorgulu/Desktop/hibrit-fizibilite/.venv/lib/python3.11/site-packages/pandas/core/reshape/pivot.py", line 315, in __internal_pivot_table
+    raise KeyError(i)
+KeyError: 'gecikme_medyan_hafta'

@@ -6,9 +6,10 @@ Ezine hattını (üretim → piyasa → finans → MILP → Monte Carlo → kara
 
 ```python
 from src.motor import analiz_et, KullaniciVarsayimlari
+
 s = analiz_et({"ad": "Kangal", "enlem": 39.08, "boylam": 37.40}, "hizli", KullaniciVarsayimlari(baglanti_mw=50))
-s.ozet, s.tablolar, s.grafikler, s.nedenler, s.uyarilar   # JSON özet, DataFrame'ler, grafik verisi, gerekçeler
-s.kaydet(Path("cikti/"))                                  # sonuc.json + tablolar/*.parquet
+s.ozet, s.tablolar, s.grafikler, s.nedenler, s.uyarilar  # JSON özet, DataFrame'ler, grafik verisi, gerekçeler
+s.kaydet(Path("cikti/"))  # sonuc.json + tablolar/*.parquet
 ```
 
 ## 1. Mimari

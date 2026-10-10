@@ -166,7 +166,12 @@ def nakit_akislari(t: Tasarim, tablo: dict, c: Sabitler, girdi: dict) -> dict:
     dengesizlik = v.dengesizlik["ges"] * gelir_ges + v.dengesizlik["res"] * (gelir_res - esz) * (1 - azaltim)
     satilan = E_ges + E_res + E_d
     capex = capex_kalemleri(t, v)
-    cm = {"res": girdi["capex_res"], "ges": girdi["capex_ges"], "bess": girdi["capex_bess"], "sebeke": girdi.get("capex_sebeke", np.ones(n))}
+    cm = {
+        "res": girdi["capex_res"],
+        "ges": girdi["capex_ges"],
+        "bess": girdi["capex_bess"],
+        "sebeke": girdi.get("capex_sebeke", np.ones(n)),
+    }
     capex_top = sum(capex[kk] * cm[kk] for kk in capex)  # (n,)
     sabit_opex = ((v.opex_ges + v.arazi_ges) * t.ges_mw + (v.opex_res + v.arazi_res) * t.res_mw) * girdi["opex"]
     bess_opex = v.opex_bess_oran * capex["bess"] * girdi["capex_bess"]

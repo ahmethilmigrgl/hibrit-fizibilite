@@ -66,7 +66,8 @@ konum + iz hesabı için birim güç, rotor çapı, göbek.
 ```python
 class DislamaKatmani(Protocol):
     ad: str
-    def maske(self, enlem, boylam) -> np.ndarray: ...   # True = türbin konamaz
+
+    def maske(self, enlem, boylam) -> np.ndarray: ...  # True = türbin konamaz
 ```
 Şimdilik `MevcutTurbinTamponu` ve `KaraMaskesi`. **Faz E'de** yol, yerleşim, koruma alanı ve eğim katmanları aynı
 arayüzle `SahaAlani(dislama=[...])` listesine eklenecek; yerleşim kodu değişmeyecek.

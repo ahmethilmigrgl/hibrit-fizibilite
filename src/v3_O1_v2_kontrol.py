@@ -28,7 +28,9 @@ def main() -> None:
             os.environ["V1_CIFT_SAYIM"] = ortam
             x = d3.calistir("tam", "once", ad, e, b, ("tablolar", "sonuc", "rapor"), "yerlesim_bakim=False, altyapi_maliyetleri=False")
             if x:
-                satir.append({"saha": ad, "kip": kip, **{k: x[k] for k in ("res_mw", "bess_mw", "e_npv", "p_pozitif", "cvar5", "basabas", "karar")}})
+                satir.append(
+                    {"saha": ad, "kip": kip, **{k: x[k] for k in ("res_mw", "bess_mw", "e_npv", "p_pozitif", "cvar5", "basabas", "karar")}}
+                )
                 print(satir[-1], flush=True)
     os.environ.pop("V1_CIFT_SAYIM", None)
     (CIKTILAR / "v3F").mkdir(parents=True, exist_ok=True)

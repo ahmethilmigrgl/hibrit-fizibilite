@@ -13,6 +13,10 @@
 get a quick scan in seconds or a full optimisation + Monte Carlo analysis in minutes; see [Türkiye-wide app](#türkiye-wide-app-v2).
 The original Ezine study (v1.0.0) remains as a case study below.
 
+**v3 (branch `v3-ie`, 3.0.0-rc1):** industrial-engineering extensions to the app; see [v3 extensions](#industrial-engineering-extensions-v3).
+**Correction note:** v1 double-counted insurance and land lease; corrected, the Ezine recommendation turns from "shelve" to
+"due diligence + ≤0.9 M$ offer" ([docs/v1_duzeltme_notu.md](docs/v1_duzeltme_notu.md)).
+
 The case study sizes solar (PV), wind and battery storage behind a **50 MW grid connection** at Çanakkale-Ezine, Türkiye, to
 **maximise project NPV**. It then stress-tests that answer under uncertainty. The pipeline goes end to end:
 
@@ -58,6 +62,17 @@ Run locally with one command (after the environment and data packages are in pla
 |---|---|
 | <img src="docs/img/tasarim/birlesim/01_acilis_masaustu.jpg" alt="Opening screen (light)"> | <img src="docs/img/tasarim/birlesim/01_acilis_masaustu_koyu.jpg" alt="Opening screen (dark)"> |
 | <img src="docs/img/tasarim/birlesim/04_tam_masaustu.jpg" alt="Full analysis (light)"> | <img src="docs/img/tasarim/birlesim/07_ada_masaustu_koyu.jpg" alt="Island warning (dark)"> |
+
+## Industrial-engineering extensions (v3)
+
+| Phase | What | Key result | Docs |
+|---|---|---|---|
+| D | Turbine layout optimisation (MILP / GA / simulated annealing, PyWake wakes, ERA5 wind rose); maintenance discrete-event simulation (SimPy), PM scheduling MILP, base-stock spares | Explicit wakes and smaller optimal plants; condition-based maintenance best in 20 of 24 sensitivity cases | [v3_D](docs/v3_D_yerlesim_bakim.md) |
+| E | OSM/DEM GIS layers, distance-based grid connection, CBS exclusions in layout, heavy-haul network + transportation LP, AHP/TOPSIS multi-criteria site selection validated against existing wind farms | Break-even median +4.4 $/MWh with real infrastructure; revealed preferences: grid proximity 34%, bird migration 2% (AUC 0.88) | [v3_E](docs/v3_E_cbs_cok_kriterli_lojistik.md) |
+| F | Multi-site portfolio: 40 candidates × 2–4 designs on 2,000 **common scenarios** (same price, ERA5 weather year, market and regulatory events), two-stage stochastic mean–CVaR MILP, synergies (O&M scale, spare pooling, bulk purchase, multi-site transport), efficient frontier; plant performance monitoring with peer-adjusted SPC (Shewhart/EWMA/CUSUM) | Risk-neutral portfolio E[NPV] +41 M$ (5 sites); synergies +9.4 M$; 70% of portfolio variance is common market risk; no investment below 46 $/MWh or for λ ≥ 0.40; monitoring catches 71% of 10%/6-month drops at 0.28 false alarms per plant-year | [v3_F](docs/v3_F_portfoy_performans.md) |
+
+New app pages: multi-criteria site selection, portfolio, performance monitoring (plant names hidden by default: results are
+model-derived).
 
 ## Case study (v1.0.0): key findings
 

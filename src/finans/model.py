@@ -326,8 +326,10 @@ def proje_degerle(
             continue
         sebeke_payi = pay[tek] / top_mw
         maliyet = (capex[tek] + capex["sebeke"] * sebeke_payi) * (capex_akisi[:nb] / max(capex_top, 1e-9) * df[:nb]).sum()
-        isl_maliyet = opx + sebeke_payi * v.teias_kapasite * k.sebeke_mw + v.sigorta_oran * (
-            capex[tek] * (0.0 if (tek == "res" and v.sigorta_res_haric) else 1.0) + capex["sebeke"] * sebeke_payi
+        isl_maliyet = (
+            opx
+            + sebeke_payi * v.teias_kapasite * k.sebeke_mw
+            + v.sigorta_oran * (capex[tek] * (0.0 if (tek == "res" and v.sigorta_res_haric) else 1.0) + capex["sebeke"] * sebeke_payi)
         )
         isl_maliyet = (
             isl_maliyet + v.teias_enerji * ur + (v.sokum[tek] * pay[tek]) * (np.arange(1, N + 1) == min(N, getattr(v, f"omur_{tek}")))

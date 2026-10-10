@@ -127,3 +127,17 @@ küçük türetilmiş tabloları ve `data/grid/cbs_tr` gridini okur, hiçbir dı
 | **TEİAŞ bağlantı kapasitesi** | **Bulunamadı (lisanslı RES için).** TEİAŞ yalnız lisanssız üretim için bölgesel bağlanabilir kapasite ve YEKA yarışmalarına özel görüş yayımlıyor; trafo merkezi bazında lisanslı kapasite tablosu yok | — | Ana sınırlama olarak raporlanır |
 | **Cotrell vd. (2014)**, *Analysis of Transportation and Logistics Challenges Affecting the Deployment of Larger Wind Turbines*, NREL/TP-5000-61063 | Taşıma birim maliyeti (0,50 $/t/mil kule kesitleri) ve taşımanın kule maliyetindeki payı | ABD kamu yayını | Kaynak olarak anılır |
 | **pyosmium 4.3** (BSD-2), **networkx** (BSD-3; kullanılmadı, scipy.sparse.csgraph tercih edildi) | Çevrimdışı OSM işleme | BSD | — |
+
+## v3 (dal `v3-ie`) — Faz F: portföy ve performans izleme
+
+Yeni bir dış veri kaynağı indirilmedi. Portföy, Faz A–E paketlerini ve motoru kullanır. Performans izleme, Faz A'da
+önbelleğe alınmış EPİAŞ santral üretimini (kaynak gösterilerek kullanım koşulu) ve ERA5 hücre serilerini çevrimdışı
+işler. Uygulamaya yalnız türetilmiş aylık ve günlük oranlar girer.
+
+| Kaynak | Faz F'de kullanım | Lisans / koşul | Atıf |
+|---|---|---|---|
+| **EPİAŞ Şeffaflık Platformu — santral bazında gerçek zamanlı üretim** (önbellek, 2014–2026) | Performans izleme: günlük ve aylık gözlenen/beklenen oranı. Ham saatlik veri `data/raw` dışına çıkmaz | Kaynak gösterilerek kullanılabilir | "Kaynak: EPİAŞ Şeffaflık Platformu (seffaflik.epias.com.tr)" |
+| **IRENA, Renewable Power Generation Costs** | Türbinin kara RES kurulum maliyetindeki payı %64–84 → toplu indirim hesabında %70 | Kamu yayını | Kaynak olarak anılır |
+| **Çerçeve anlaşması duyuruları** (EDF Renewables–Vestas; VERBUND–Nordex 700 MW, 2026; EDF power solutions UK–Nordex ~900 MW) | Toplu türbin alımının fiyat avantajı sağladığı (oran yayımlanmıyor → TAHMİN %2/%3) | Basın duyurusu | Kaynak olarak anılır |
+| **Montgomery (2019), *Introduction to Statistical Quality Control*; Sherbrooke (2004), *Optimal Inventory Modeling of Systems* (METRIC)** | EWMA/CUSUM parametre seçimi ve ARL; Poisson taban stok, beklenen bekleyen sipariş (EBO) | Ders kitapları | Kaynak olarak anılır |
+| **Rockafellar & Uryasev (2000), "Optimization of conditional value-at-risk", *Journal of Risk* 2(3)** | Portföy MILP'inde CVaR doğrusallaştırması | Bilimsel yayın | Kaynak olarak anılır |

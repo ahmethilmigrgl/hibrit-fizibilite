@@ -74,7 +74,13 @@ def main() -> None:
                 continue
             p = hat.buffer(km / 111.32, quad_segs=8)
             p = shapely.transform(p, lambda xy, cos=cos: np.c_[xy[:, 0] / cos, xy[:, 1]])
-            f.append({"type": "Feature", "properties": {"ad": c["ad"], "risk": sev, "kaynak": c["kaynak"]}, "geometry": mapping(yuvarla(p.simplify(0.01)))})
+            f.append(
+                {
+                    "type": "Feature",
+                    "properties": {"ad": c["ad"], "risk": sev, "kaynak": c["kaynak"]},
+                    "geometry": mapping(yuvarla(p.simplify(0.01))),
+                }
+            )
     yaz("katman_goc.geojson", f)
 
 

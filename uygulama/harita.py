@@ -325,3 +325,45 @@ def lejant(ot: pd.DataFrame | None, kolon: str, tema: str = "acik") -> str:
         f'<div class="esik-lejant"><div><div class="baslik">{T(ad_tr, ad_en)}, {birim_m} '
         f'<span style="font-weight:400;color:var(--metin-soluk)">· {yon}</span></div><div class="siniflar">{kutu}</div></div>{anahtar}</div>'
     )
+
+
+def nokta_haritasi(
+    df: pd.DataFrame, renk: list[str], ipucu: list[str], tema: str = "acik", boyut: list[float] | None = None, cizgiler: list | None = None
+) -> folium.Map:
+    """v3 Faz F: sade altlık üzerinde nokta katmanı (portföy adayları, izlenen santraller). Renkler çağıran taraftan,
+    yalnız tasarım belirteçlerinden (TEMALAR) verilir."""
+    t = TEMALAR[tema]
+    r = t["renk"]
+    m = folium.Map(location=[39.0, 35.2], zoom_start=6, tiles=None, control_scale=True, prefer_canvas=True, min_zoom=5)
+    m.fit_bounds([[35.8, 25.7], [42.1, 44.8]])
+    m.get_root().header.add_child(folium.Element(_harita_css(r, t["yazi"], t["streamlit"] == "dark")))
+    folium.TileLayer(BOS_KARO, attr="geoBoundaries · Natural Earth", name=T("Sade altlık", "Plain base map")).add_to(m)
+    alt = _altlik()
+    if alt is not None:
+        folium.GeoJson(
+            alt,
+            control=False,
+            interactive=False,
+            style_function=lambda f: {
+                "fillColor": r["kara"],
+                "fillOpacity": 1 if f["properties"]["tur"] == "ulke" else 0,
+                "color": r["sinir"],
+                "weight": 0.7 if f["properties"]["tur"] == "il" else 0.9,
+            },
+        ).add_to(m)
+    for c in cizgiler or []:
+        folium.PolyLine(
+            c["nokta"], color=c.get("renk", r["metin_soluk"]), weight=c.get("kalinlik", 1.5), opacity=0.7, dash_array="4 4"
+        ).add_to(m)
+    for i, rr in enumerate(df.itertuples()):
+        folium.CircleMarker(
+            [rr.enlem, rr.boylam],
+            radius=(boyut[i] if boyut is not None else 6),
+            color=r["yuzey"],
+            weight=1.2,
+            fill=True,
+            fill_color=renk[i],
+            fill_opacity=0.92,
+            tooltip=ipucu[i],
+        ).add_to(m)
+    return m
