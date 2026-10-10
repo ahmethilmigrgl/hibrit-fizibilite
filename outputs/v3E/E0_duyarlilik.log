@@ -1,0 +1,86 @@
+temel {'duzeltici': 1017, 'takvim': 912, 'durum': 896}
+duzeltici_kat_carpani alt 1.1 durum < takvim < duzeltici 15.8 48.5
+duzeltici_kat_carpani ust 1.8 durum < takvim < duzeltici 15.8 146.9
+duzeltici_olcek_carpani alt 0.65 durum < takvim < duzeltici 15.8 268.8
+duzeltici_olcek_carpani ust 0.95 durum < duzeltici < takvim 15.8 -6.0
+weibull_beta_carpani alt 0.7 durum < takvim < duzeltici 26.0 57.1
+weibull_beta_carpani ust 1.3 durum < takvim < duzeltici 14.7 131.5
+cms_tespit_carpani alt 0.5 takvim < durum < duzeltici -10.7 104.9
+cms_tespit_carpani ust 1.2 durum < takvim < duzeltici 26.4 104.9
+pf_araligi_carpani alt 0.5 takvim < durum < duzeltici -7.0 104.9
+pf_araligi_carpani ust 1.5 durum < takvim < duzeltici 35.4 104.9
+planli_maliyet_carpani alt 0.5 durum < takvim < duzeltici 16.2 104.9
+planli_maliyet_carpani ust 0.9 durum < takvim < duzeltici 15.5 104.9
+cms_maliyeti alt 600.0 durum < takvim < duzeltici 24.2 104.9
+cms_maliyeti ust 3000.0 takvim < durum < duzeltici -9.4 104.9
+ekip_saat_ucreti alt 30.0 durum < takvim < duzeltici 15.8 104.9
+ekip_saat_ucreti ust 70.0 durum < takvim < duzeltici 15.8 104.9
+vinc_maliyeti_carpani alt 0.5 durum < takvim < duzeltici 17.2 89.3
+vinc_maliyeti_carpani ust 1.75 durum < takvim < duzeltici 13.9 128.4
+degisim_orani_carpani alt 0.5 takvim < durum < duzeltici -5.9 32.5
+degisim_orani_carpani ust 2.0 durum < takvim < duzeltici 60.9 183.9
+onleyici_malzeme alt 3000.0 durum < takvim < duzeltici 15.8 153.2
+onleyici_malzeme ust 12000.0 durum < takvim < duzeltici 15.8 8.3
+tedarik_suresi_carpani alt 0.5 durum < takvim < duzeltici 18.2 70.5
+tedarik_suresi_carpani ust 1.5 durum < takvim < duzeltici 14.6 132.1
+eşik {'parametre': 'duzeltici_olcek_carpani', 'etiket': 'Önleyici bakımın etkisi: bakımsız yaşlanma (Weibull ölçek çarpanı)', 'olcu': 'delta_takvim', 'temel': 0.8, 'esik': 0.9317705944884594, 'yon': 'artarsa'}
+eşik {'parametre': 'cms_tespit_carpani', 'etiket': 'Durum izlemenin yakalama olasılığı (çarpan)', 'olcu': 'delta_durum', 'temel': 1.0, 'esik': 0.7443078678777673, 'yon': 'azalırsa'}
+eşik {'parametre': 'pf_araligi_carpani', 'etiket': 'P-F aralığı (çarpan; 30–120 gün)', 'olcu': 'delta_durum', 'temel': 1.0, 'esik': 0.6501767218149462, 'yon': 'azalırsa'}
+eşik {'parametre': 'cms_maliyeti', 'etiket': 'CMS maliyeti [$/türbin-yıl]', 'olcu': 'delta_durum', 'temel': 1200.0, 'esik': 2332.140197889547, 'yon': 'artarsa'}
+eşik {'parametre': 'degisim_orani_carpani', 'etiket': 'Büyük bileşen değişim oranları (çarpan)', 'olcu': 'delta_durum', 'temel': 1.0, 'esik': 0.726370285927967, 'yon': 'azalırsa'}
+{
+ "temel": {
+  "duzeltici": 1016926.3905851564,
+  "takvim": 911978.8426461464,
+  "durum": 896128.8798756928
+ },
+ "temel_delta_durum": 15849.962770453654,
+ "temel_delta_takvim": 104947.54793900996,
+ "senaryo_sayisi": 24,
+ "en_iyi_sayim": {
+  "durum": 20,
+  "takvim": 4
+ },
+ "esikler": [
+  {
+   "parametre": "duzeltici_olcek_carpani",
+   "etiket": "Önleyici bakımın etkisi: bakımsız yaşlanma (Weibull ölçek çarpanı)",
+   "olcu": "delta_takvim",
+   "temel": 0.8,
+   "esik": 0.9317705944884594,
+   "yon": "artarsa"
+  },
+  {
+   "parametre": "cms_tespit_carpani",
+   "etiket": "Durum izlemenin yakalama olasılığı (çarpan)",
+   "olcu": "delta_durum",
+   "temel": 1.0,
+   "esik": 0.7443078678777673,
+   "yon": "azalırsa"
+  },
+  {
+   "parametre": "pf_araligi_carpani",
+   "etiket": "P-F aralığı (çarpan; 30–120 gün)",
+   "olcu": "delta_durum",
+   "temel": 1.0,
+   "esik": 0.6501767218149462,
+   "yon": "azalırsa"
+  },
+  {
+   "parametre": "cms_maliyeti",
+   "etiket": "CMS maliyeti [$/türbin-yıl]",
+   "olcu": "delta_durum",
+   "temel": 1200.0,
+   "esik": 2332.140197889547,
+   "yon": "artarsa"
+  },
+  {
+   "parametre": "degisim_orani_carpani",
+   "etiket": "Büyük bileşen değişim oranları (çarpan)",
+   "olcu": "delta_durum",
+   "temel": 1.0,
+   "esik": 0.726370285927967,
+   "yon": "azalırsa"
+  }
+ ]
+}

@@ -176,10 +176,14 @@ def bakim_bolumu(o: dict) -> None:
         T(f"ayrık olay simülasyonu, {b['R']} ömür", f"discrete-event simulation, {b['R']} lifetimes"),
     )
     u = st.columns(4)
-    B.kpi_karti(u[0], T("Kullanılabilirlik (enerji)", "Availability (energy)"), yuzde(100 * b["A_enerji"], 1),
-                aciklama=f"P10–P90 {yuzde(100 * sec['A_enerji_p10'], 1)}–{yuzde(100 * sec['A_enerji_p90'], 1)}")  # fmt: skip
-    B.kpi_karti(u[1], "O&M", f"{sayi(b['om_usd_mw_yil'] / 1000, 1)} {T('bin $/MW-yıl', 'k$/MW-yr')}",
-                aciklama=T("v1 sabit varsayım 35,0", "v1 fixed assumption 35.0"))  # fmt: skip
+    isl = o.get("isletme") or {}
+    A_g = isl.get("kullanilabilirlik", b["A_enerji"])
+    B.kpi_karti(u[0], T("Kullanılabilirlik (enerji)", "Availability (energy)"), yuzde(100 * A_g, 1),
+                aciklama=T(f"simülasyon P10–P90 {yuzde(100 * sec['A_enerji_p10'], 1)}–{yuzde(100 * sec['A_enerji_p90'], 1)}",
+                           f"simulation P10–P90 {yuzde(100 * sec['A_enerji_p10'], 1)}–{yuzde(100 * sec['A_enerji_p90'], 1)}"))  # fmt: skip
+    mad = {"fsa": ("FSA (tam kapsamlı servis)", "FSA (full service)"), "kendi": ("kendi bakımı", "self-perform")}
+    B.kpi_karti(u[1], "O&M", f"{sayi(isl.get('usd_mw_yil', 0) / 1000, 1)} {T('bin $/MW-yıl', 'k$/MW-yr')}",
+                aciklama=T(*mad.get(isl.get("model"), (str(isl.get("model")), str(isl.get("model"))))))  # fmt: skip
     B.kpi_karti(u[2], T("Kayıp gelir", "Lost revenue"), f"{sayi(sec['kayip_gelir_yil'] / 1e3, 0)} {T('bin $/yıl', 'k$/yr')}",
                 aciklama=f"{sayi(sec['kayip_mwh_yil'] / 1000, 1)} GWh/{T('yıl', 'yr')}")  # fmt: skip
     cz = b["cizelge"]
@@ -187,7 +191,7 @@ def bakim_bolumu(o: dict) -> None:
                 aciklama=T("bahar kampanyasına göre", "vs spring campaign"))  # fmt: skip
     B.karsilastirma_tablosu(
         [T("Strateji", "Strategy"), T("Kullanılabilirlik (zaman / enerji)", "Availability (time / energy)"), T("Kayıp üretim GWh/yıl", "Lost energy GWh/yr"),
-         T("Kayıp gelir bin $/yıl", "Lost revenue k$/yr"), T("O&M bin $/yıl", "O&M k$/yr"), T("Toplam bin $/yıl (P10–P90)", "Total k$/yr (P10–P90)")],
+         T("Kayıp gelir bin $/yıl", "Lost revenue k$/yr"), T("Kendi bakım maliyeti bin $/yıl", "Self-perform cost k$/yr"), T("Toplam bin $/yıl (P10–P90)", "Total k$/yr (P10–P90)")],
         [[T(x["ad_tr"], x["ad_en"]), f"{yuzde(100 * x['A_zaman'], 1)} / {yuzde(100 * x['A_enerji'], 1)}", sayi(x["kayip_mwh_yil"] / 1000, 2),
           sayi(x["kayip_gelir_yil"] / 1e3, 0), sayi(x["om_usd_yil"] / 1e3, 0),
           f"{sayi(x['toplam_maliyet_yil'] / 1e3, 0)} ({sayi(x['toplam_maliyet_p10'] / 1e3, 0)}–{sayi(x['toplam_maliyet_p90'] / 1e3, 0)})"]
@@ -230,13 +234,90 @@ def bakim_bolumu(o: dict) -> None:
                      "parça beklerken kaybedilen gelir dengesi. Faz F'de sahalar arası havuzlama ile yeniden değerlendirilecek.",
                      "Base-stock (S−1, S) policy, simulation-based optimisation (common random numbers): holding cost (15%/yr) vs revenue lost "
                      "while waiting for parts. To be re-evaluated with cross-site pooling in Phase F."))  # fmt: skip
-    gk = b.get("gider_kalemleri", {})
-    if gk:
-        ad = {"sabit_ekip": ("Teknisyen ekipleri", "Technician crews"), "duzeltici_malzeme": ("Düzeltici malzeme", "Corrective materials"),
-              "vinc": ("Vinç", "Crane"), "onleyici_malzeme": ("Önleyici bakım malzemesi", "Preventive materials"), "cms": ("Durum izleme (CMS)", "Condition monitoring"),
-              "stok_tutma": ("Stok tutma", "Spare holding"), "diger_sabit": ("Diğer sabit giderler", "Other fixed costs")}  # fmt: skip
-        st.caption(T("O&M kalemleri (bin $/yıl, genel gider dahil): ", "O&M items (k$/yr, incl. overhead): ")
-                   + " · ".join(f"{T(*ad.get(k, (k, k)))} {sayi(v / 1e3, 0)}" for k, v in gk.items()))  # fmt: skip
+    st.caption(T("Strateji karşılaştırması bakımı kendimiz yapsaydık geçerli maliyetlerle (ekip, malzeme, vinç, CMS) + kayıp gelir; sahip kalemleri "
+                 "stratejiler arasında aynı. Projenin O&M seviyesi işletme modelinden (FSA) gelir; simülasyon dağılım, strateji, takvim ve stok kararları için.",
+                 "Strategies are compared at self-perform costs (crews, materials, crane, CMS) + lost revenue; owner items are identical across strategies. "
+                 "The project's O&M level comes from the operating model (FSA); the simulation informs distribution, strategy, schedule and spares."))  # fmt: skip
+    dayaniklilik_bolumu()
+    if isl.get("kalemler_usd_kw_yil"):
+        ad = {"fsa": ("FSA fiyatı", "FSA price"), "kendi_turbin_bakimi": ("Kendi türbin bakımı", "Self turbine O&M"),
+              "organizasyon_sabit": ("Organizasyon", "Organisation"), "bop_bakimi": ("BOP bakımı", "BOP O&M"), "yol_ve_saha": ("Yol ve saha", "Roads and site"),
+              "scada_haberlesme": ("SCADA/haberleşme", "SCADA/comms"), "varlik_yonetimi": ("Varlık yönetimi", "Asset management"),
+              "saha_personeli": ("Saha personeli", "Site staff"), "diger_beklenmeyen": ("Beklenmeyen", "Contingency")}  # fmt: skip
+        st.caption(T("O&M kalemleri ($/kW-yıl; sigorta, arazi kirası, TEİAŞ ve söküm finansal modelde ayrı): ",
+                     "O&M items ($/kW-yr; insurance, land lease, TSO fees and decommissioning are separate): ")
+                   + " · ".join(f"{T(*ad.get(k, (k, k)))} {sayi(v, 1)}" for k, v in isl["kalemler_usd_kw_yil"].items()))  # fmt: skip
 
 
-__all__ = ["bakim_bolumu", "para", "yerlesim_bolumu"]
+def dayaniklilik_bolumu() -> None:
+    """Ö3: TAHMİN bakım parametrelerinin strateji sıralamasına etkisi (önceden hesaplanmış, Ezine 14 türbin)."""
+    import json
+
+    from src import veri_katmani
+
+    p = veri_katmani.yol("atlas/v3_bakim_duyarlilik.json", zorunlu=False)
+    if p is None:
+        return
+    d = json.loads(p.read_text())
+    tema = aktif_tema()
+    r = TEMALAR[tema]["renk"]
+    say = d["en_iyi_sayim"]
+    n = d["senaryo_sayisi"]
+    st.html(
+        f'<div class="esik-kas ara">{html.escape(T("Strateji sıralamasının dayanıklılığı", "Robustness of the strategy ranking"))}</div>'
+    )
+    ad = {
+        "durum": T("durum bazlı", "condition-based"),
+        "takvim": T("takvim bazlı", "time-based"),
+        "duzeltici": T("düzeltici", "corrective"),
+    }
+    st.markdown(
+        T(
+            "Tahmini bakım parametreleri alt/üst değerlerine çekildiğinde en iyi strateji: ",
+            "Best strategy when uncertain maintenance parameters are set to their low/high values: ",
+        )
+        + ", ".join(f"{ad.get(k, k)} {v}/{n}" for k, v in sorted(say.items(), key=lambda x: -x[1]))
+        + "."
+    )
+    tor = d["tornado"]
+    f = go.Figure()
+    for olcu, renk in (("delta_durum", RES),):
+        y = [t["etiket"] for t in tor]
+        alt = np.array([t[f"{olcu}_alt"] for t in tor]) / 1e3
+        ust = np.array([t[f"{olcu}_ust"] for t in tor]) / 1e3
+        t0 = d[f"temel_{olcu}"] / 1e3
+        f.add_trace(go.Bar(y=y, x=alt - t0, base=t0, orientation="h", name=T("alt değer", "low value"), marker_color=SOLUK))
+        f.add_trace(go.Bar(y=y, x=ust - t0, base=t0, orientation="h", name=T("üst değer", "high value"), marker_color=renk))
+        f.add_vline(x=0, line_color=r["kotu"], line_dash="dot", line_width=1)
+    f.update_layout(barmode="overlay")
+    ciz(sekil(f, T("Duyarlılık: durum bazlı bakımın takvim bazlıya üstünlüğü", "Sensitivity: condition-based advantage over time-based"),
+              "", T("bin $/yıl (sıfırın solunda takvim bazlı daha iyi)", "k$/yr (left of zero: time-based is better)"), yukseklik=420,
+              alt=T("Ezine, 14 türbin, 60 ömür, ortak rastgele sayılar · noktalı çizgi: sıralama değişir", "Ezine, 14 turbines, 60 lifetimes, common random numbers · dotted line: ranking flips")))  # fmt: skip
+    if d.get("esikler"):
+        st.caption(
+            T("Sıralamayı değiştiren eşikler: ", "Thresholds that flip the ranking: ")
+            + "; ".join(f"{e['etiket']} {sayi(e['esik'], 2)} ({T('temel', 'base')} {sayi(e['temel'], 2)})" for e in d["esikler"])
+        )
+
+
+def kayip_bolumu(o: dict) -> None:
+    """Ö2: açık kayıp tablosu (IEC 61400-15 kategorileri)."""
+    k = o.get("kayip")
+    if not k:
+        return
+    from src.uretim.kayip import KATEGORI_AD
+
+    st.html(f'<div class="esik-kas ara">{html.escape(T("Kayıp tablosu", "Loss table"))}</div>')
+    B.karsilastirma_tablosu(
+        [T("Kategori", "Category"), T("Bu saha", "This site"), T("Atlas referansı", "Atlas reference"), T("Kaynak", "Source")],
+        [[T(*KATEGORI_AD[x["kategori"]]), yuzde(100 * x["saha"], 1), yuzde(100 * x["atlas_referansi"], 1), x["kaynak"]] for x in k["satirlar"]]
+        + [[T("Toplam (çarpımsal)", "Total (multiplicative)"), yuzde(100 * k["toplam_saha"], 1), yuzde(100 * k["toplam_atlas_referansi"], 1), T(f"v2 toplu %{sayi(100 * k['lumped_v2'], 0)}", f"v2 lumped {sayi(100 * k['lumped_v2'], 0)}%")]],
+        mobilde_gizle=(2, 3),
+    )  # fmt: skip
+    st.caption(T("Sistem kaynaklı kesinti burada yok (finansal modelde ayrı); iz kaybı yıllık ortalama (saatlik olarak uygulanır). "
+                 "Atlas katsayıları santrallerin gerçek kayıplarını içerdiği için sahaya özgü olmayan kategoriler göreli kuralda sadeleşir.",
+                 "System curtailment is not included here (separate in the financial model); wake loss is the annual mean (applied hourly). "
+                 "Non-site-specific categories cancel in the relative rule because atlas coefficients embed actual plant losses."))  # fmt: skip
+
+
+__all__ = ["bakim_bolumu", "kayip_bolumu", "para", "yerlesim_bolumu"]

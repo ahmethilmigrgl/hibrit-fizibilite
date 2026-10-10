@@ -1,0 +1,6 @@
+﻿parametre,etiket,olcu,temel,esik,yon
+duzeltici_olcek_carpani,Önleyici bakımın etkisi: bakımsız yaşlanma (Weibull ölçek çarpanı),delta_takvim,0.800,0.932,artarsa
+cms_tespit_carpani,Durum izlemenin yakalama olasılığı (çarpan),delta_durum,1.000,0.744,azalırsa
+pf_araligi_carpani,P-F aralığı (çarpan; 30–120 gün),delta_durum,1.000,0.650,azalırsa
+cms_maliyeti,CMS maliyeti [$/türbin-yıl],delta_durum,1200.000,2332.140,artarsa
+degisim_orani_carpani,Büyük bileşen değişim oranları (çarpan),delta_durum,1.000,0.726,azalırsa

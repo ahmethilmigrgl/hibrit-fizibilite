@@ -67,6 +67,7 @@ class KullaniciVarsayimlari:
         "yeni"  # yeni: kullanılabilirlik ve O&M ayrık olay simülasyonundan; sabit: v1 OPEX + kalibrasyondaki kullanılabilirlik
     )
     bakim_stratejisi: str | None = None  # None → config v3.bakim.strateji (duzeltici / takvim / durum)
+    isletme_modeli: str | None = None  # None → config v3.isletme.model (fsa: tam kapsamlı servis sözleşmesi / kendi: kendi bakımı)
     ekstra: dict = field(default_factory=dict)  # gelişmiş: config anahtar yolu → değer
 
     def v3_aktif(self) -> bool:
@@ -113,6 +114,8 @@ def dogrula(kv: KullaniciVarsayimlari) -> list[Uyari]:
         )
     if kv.bakim_modeli not in ("yeni", "sabit"):
         raise MotorHatasi("bakim", "Bakım modeli yeni ya da sabit olmalı.", "Maintenance model must be yeni or sabit.")
+    if kv.isletme_modeli is not None and kv.isletme_modeli not in ("fsa", "kendi"):
+        raise MotorHatasi("isletme", "İşletme modeli fsa ya da kendi olmalı.", "Operating model must be fsa or kendi.")
     if kv.bakim_stratejisi is not None and kv.bakim_stratejisi not in ("duzeltici", "takvim", "durum"):
         raise MotorHatasi(
             "strateji", "Bakım stratejisi duzeltici, takvim ya da durum olmalı.", "Maintenance strategy must be duzeltici, takvim or durum."

@@ -1,0 +1,25 @@
+﻿parametre,etiket,seviye,deger,temel_deger,duzeltici_toplam,takvim_toplam,durum_toplam,duzeltici_A,takvim_A,durum_A,delta_durum,delta_takvim,en_iyi,siralama
+duzeltici_kat_carpani,Önleyici bakımın etkisi: bakımsız onarım oranı çarpanı,alt,1.1,1.4,960480.9,911978.8,896128.9,1.0,1.0,1.0,15850.0,48502.1,durum,durum < takvim < duzeltici
+duzeltici_kat_carpani,Önleyici bakımın etkisi: bakımsız onarım oranı çarpanı,ust,1.8,1.4,1058831.6,911978.8,896128.9,1.0,1.0,1.0,15850.0,146852.8,durum,durum < takvim < duzeltici
+duzeltici_olcek_carpani,Önleyici bakımın etkisi: bakımsız yaşlanma (Weibull ölçek çarpanı),alt,0.7,0.8,1180810.0,911978.8,896128.9,1.0,1.0,1.0,15850.0,268831.1,durum,durum < takvim < duzeltici
+duzeltici_olcek_carpani,Önleyici bakımın etkisi: bakımsız yaşlanma (Weibull ölçek çarpanı),ust,0.9,0.8,905939.0,911978.8,896128.9,1.0,1.0,1.0,15850.0,-6039.8,durum,durum < duzeltici < takvim
+weibull_beta_carpani,Weibull şekil parametreleri (çarpan),alt,0.7,1.0,974859.9,917796.2,891785.9,1.0,1.0,1.0,26010.3,57063.6,durum,durum < takvim < duzeltici
+weibull_beta_carpani,Weibull şekil parametreleri (çarpan),ust,1.3,1.0,1045605.2,914141.9,899400.7,1.0,1.0,1.0,14741.2,131463.4,durum,durum < takvim < duzeltici
+cms_tespit_carpani,Durum izlemenin yakalama olasılığı (çarpan),alt,0.5,1.0,1016926.4,911978.8,922702.3,1.0,1.0,1.0,-10723.5,104947.5,takvim,takvim < durum < duzeltici
+cms_tespit_carpani,Durum izlemenin yakalama olasılığı (çarpan),ust,1.2,1.0,1016926.4,911978.8,885560.4,1.0,1.0,1.0,26418.5,104947.5,durum,durum < takvim < duzeltici
+pf_araligi_carpani,P-F aralığı (çarpan; 30–120 gün),alt,0.5,1.0,1016926.4,911978.8,918984.1,1.0,1.0,1.0,-7005.2,104947.5,takvim,takvim < durum < duzeltici
+pf_araligi_carpani,P-F aralığı (çarpan; 30–120 gün),ust,1.5,1.0,1016926.4,911978.8,876549.9,1.0,1.0,1.0,35429.0,104947.5,durum,durum < takvim < duzeltici
+planli_maliyet_carpani,Planlı değişimin maliyet çarpanı,alt,0.5,0.7,1016926.4,911978.8,895772.8,1.0,1.0,1.0,16206.0,104947.5,durum,durum < takvim < duzeltici
+planli_maliyet_carpani,Planlı değişimin maliyet çarpanı,ust,0.9,0.7,1016926.4,911978.8,896484.9,1.0,1.0,1.0,15493.9,104947.5,durum,durum < takvim < duzeltici
+cms_maliyeti,CMS maliyeti [$/türbin-yıl],alt,600.0,1200.0,1016926.4,911978.8,887728.9,1.0,1.0,1.0,24250.0,104947.5,durum,durum < takvim < duzeltici
+cms_maliyeti,CMS maliyeti [$/türbin-yıl],ust,3000.0,1200.0,1016926.4,911978.8,921328.9,1.0,1.0,1.0,-9350.0,104947.5,takvim,takvim < durum < duzeltici
+ekip_saat_ucreti,Teknisyen saat ücreti [$],alt,30.0,45.0,896926.4,791978.8,776128.9,1.0,1.0,1.0,15850.0,104947.5,durum,durum < takvim < duzeltici
+ekip_saat_ucreti,Teknisyen saat ücreti [$],ust,70.0,45.0,1216926.4,1111978.8,1096128.9,1.0,1.0,1.0,15850.0,104947.5,durum,durum < takvim < duzeltici
+vinc_maliyeti_carpani,Vinç maliyeti (çarpan),alt,0.5,1.0,976815.3,887506.6,870340.0,1.0,1.0,1.0,17166.6,89308.7,durum,durum < takvim < duzeltici
+vinc_maliyeti_carpani,Vinç maliyeti (çarpan),ust,1.8,1.0,1077093.1,948687.2,934812.2,1.0,1.0,1.0,13875.0,128405.9,durum,durum < takvim < duzeltici
+degisim_orani_carpani,Büyük bileşen değişim oranları (çarpan),alt,0.5,1.0,811216.1,778667.6,784538.6,1.0,1.0,1.0,-5871.0,32548.5,takvim,takvim < durum < duzeltici
+degisim_orani_carpani,Büyük bileşen değişim oranları (çarpan),ust,2.0,1.0,1388358.8,1204414.6,1143485.6,0.9,1.0,1.0,60929.0,183944.2,durum,durum < takvim < duzeltici
+onleyici_malzeme,Önleyici bakım malzemesi [$/türbin-yıl],alt,3000.0,6000.0,1016926.4,863678.8,847828.9,1.0,1.0,1.0,15850.0,153247.5,durum,durum < takvim < duzeltici
+onleyici_malzeme,Önleyici bakım malzemesi [$/türbin-yıl],ust,12000.0,6000.0,1016926.4,1008578.8,992728.9,1.0,1.0,1.0,15850.0,8347.5,durum,durum < takvim < duzeltici
+tedarik_suresi_carpani,Parça tedarik süreleri (çarpan),alt,0.5,1.0,925553.0,855089.3,836898.0,1.0,1.0,1.0,18191.3,70463.7,durum,durum < takvim < duzeltici
+tedarik_suresi_carpani,Parça tedarik süreleri (çarpan),ust,1.5,1.0,1102600.0,970499.9,955870.9,1.0,1.0,1.0,14629.0,132100.0,durum,durum < takvim < duzeltici

@@ -1,0 +1,178 @@
+{
+ "temel": {
+  "duzeltici": 1016926.3905851564,
+  "takvim": 911978.8426461464,
+  "durum": 896128.8798756928
+ },
+ "temel_delta_durum": 15849.962770453654,
+ "temel_delta_takvim": 104947.54793900996,
+ "senaryo_sayisi": 24,
+ "en_iyi_sayim": {
+  "durum": 20,
+  "takvim": 4
+ },
+ "tornado": [
+  {
+   "parametre": "degisim_orani_carpani",
+   "etiket": "Büyük bileşen değişim oranları (çarpan)",
+   "alt": 0.5,
+   "ust": 2.0,
+   "delta_durum_alt": -5870.976479633013,
+   "delta_durum_ust": 60929.045384314144,
+   "delta_takvim_alt": 32548.509861488244,
+   "delta_takvim_ust": 183944.2423820556
+  },
+  {
+   "parametre": "pf_araligi_carpani",
+   "etiket": "P-F aralığı (çarpan; 30–120 gün)",
+   "alt": 0.5,
+   "ust": 1.5,
+   "delta_durum_alt": -7005.227372310357,
+   "delta_durum_ust": 35428.98230508319,
+   "delta_takvim_alt": 104947.54793900996,
+   "delta_takvim_ust": 104947.54793900996
+  },
+  {
+   "parametre": "cms_tespit_carpani",
+   "etiket": "Durum izlemenin yakalama olasılığı (çarpan)",
+   "alt": 0.5,
+   "ust": 1.2,
+   "delta_durum_alt": -10723.473785397597,
+   "delta_durum_ust": 26418.47229091369,
+   "delta_takvim_alt": 104947.54793900996,
+   "delta_takvim_ust": 104947.54793900996
+  },
+  {
+   "parametre": "cms_maliyeti",
+   "etiket": "CMS maliyeti [$/türbin-yıl]",
+   "alt": 600.0,
+   "ust": 3000.0,
+   "delta_durum_alt": 24249.962770453654,
+   "delta_durum_ust": -9350.037229546346,
+   "delta_takvim_alt": 104947.54793900996,
+   "delta_takvim_ust": 104947.54793900996
+  },
+  {
+   "parametre": "weibull_beta_carpani",
+   "etiket": "Weibull şekil parametreleri (çarpan)",
+   "alt": 0.7,
+   "ust": 1.3,
+   "delta_durum_alt": 26010.276654625428,
+   "delta_durum_ust": 14741.22196829482,
+   "delta_takvim_alt": 57063.64111167856,
+   "delta_takvim_ust": 131463.36184858915
+  },
+  {
+   "parametre": "tedarik_suresi_carpani",
+   "etiket": "Parça tedarik süreleri (çarpan)",
+   "alt": 0.5,
+   "ust": 1.5,
+   "delta_durum_alt": 18191.314002010273,
+   "delta_durum_ust": 14629.018666560645,
+   "delta_takvim_alt": 70463.74361631018,
+   "delta_takvim_ust": 132100.037327733
+  },
+  {
+   "parametre": "vinc_maliyeti_carpani",
+   "etiket": "Vinç maliyeti (çarpan)",
+   "alt": 0.5,
+   "ust": 1.75,
+   "delta_durum_alt": 17166.629437120282,
+   "delta_durum_ust": 13874.962770453538,
+   "delta_takvim_alt": 89308.65905012109,
+   "delta_takvim_ust": 128405.88127234345
+  },
+  {
+   "parametre": "planli_maliyet_carpani",
+   "etiket": "Planlı değişimin maliyet çarpanı",
+   "alt": 0.5,
+   "ust": 0.9,
+   "delta_durum_alt": 16206.002770453575,
+   "delta_durum_ust": 15493.922770453617,
+   "delta_takvim_alt": 104947.54793900996,
+   "delta_takvim_ust": 104947.54793900996
+  },
+  {
+   "parametre": "onleyici_malzeme",
+   "etiket": "Önleyici bakım malzemesi [$/türbin-yıl]",
+   "alt": 3000.0,
+   "ust": 12000.0,
+   "delta_durum_alt": 15849.962770453654,
+   "delta_durum_ust": 15849.962770453654,
+   "delta_takvim_alt": 153247.54793900996,
+   "delta_takvim_ust": 8347.547939009964
+  },
+  {
+   "parametre": "ekip_saat_ucreti",
+   "etiket": "Teknisyen saat ücreti [$]",
+   "alt": 30.0,
+   "ust": 70.0,
+   "delta_durum_alt": 15849.962770453654,
+   "delta_durum_ust": 15849.962770453654,
+   "delta_takvim_alt": 104947.54793900996,
+   "delta_takvim_ust": 104947.54793900996
+  },
+  {
+   "parametre": "duzeltici_olcek_carpani",
+   "etiket": "Önleyici bakımın etkisi: bakımsız yaşlanma (Weibull ölçek çarpanı)",
+   "alt": 0.65,
+   "ust": 0.95,
+   "delta_durum_alt": 15849.962770453654,
+   "delta_durum_ust": 15849.962770453654,
+   "delta_takvim_alt": 268831.1410040194,
+   "delta_takvim_ust": -6039.8196723097935
+  },
+  {
+   "parametre": "duzeltici_kat_carpani",
+   "etiket": "Önleyici bakımın etkisi: bakımsız onarım oranı çarpanı",
+   "alt": 1.1,
+   "ust": 1.8,
+   "delta_durum_alt": 15849.962770453654,
+   "delta_durum_ust": 15849.962770453654,
+   "delta_takvim_alt": 48502.07975478121,
+   "delta_takvim_ust": 146852.78597177775
+  }
+ ],
+ "esikler": [
+  {
+   "parametre": "duzeltici_olcek_carpani",
+   "etiket": "Önleyici bakımın etkisi: bakımsız yaşlanma (Weibull ölçek çarpanı)",
+   "olcu": "delta_takvim",
+   "temel": 0.8,
+   "esik": 0.9317705944884594,
+   "yon": "artarsa"
+  },
+  {
+   "parametre": "cms_tespit_carpani",
+   "etiket": "Durum izlemenin yakalama olasılığı (çarpan)",
+   "olcu": "delta_durum",
+   "temel": 1.0,
+   "esik": 0.7443078678777673,
+   "yon": "azalırsa"
+  },
+  {
+   "parametre": "pf_araligi_carpani",
+   "etiket": "P-F aralığı (çarpan; 30–120 gün)",
+   "olcu": "delta_durum",
+   "temel": 1.0,
+   "esik": 0.6501767218149462,
+   "yon": "azalırsa"
+  },
+  {
+   "parametre": "cms_maliyeti",
+   "etiket": "CMS maliyeti [$/türbin-yıl]",
+   "olcu": "delta_durum",
+   "temel": 1200.0,
+   "esik": 2332.140197889547,
+   "yon": "artarsa"
+  },
+  {
+   "parametre": "degisim_orani_carpani",
+   "etiket": "Büyük bileşen değişim oranları (çarpan)",
+   "olcu": "delta_durum",
+   "temel": 1.0,
+   "esik": 0.726370285927967,
+   "yon": "azalırsa"
+  }
+ ]
+}

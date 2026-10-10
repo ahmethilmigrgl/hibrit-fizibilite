@@ -55,6 +55,8 @@ if {mod!r} == "tam":
         "N": y.get("N"), "ic_iz": y.get("ic_iz"), "dis_iz": y.get("dis_iz"), "konum_kazanci": y.get("konum_kazanci"), "verim": y.get("verim"),
         "yerlesim_yontemi": y.get("yontem_kodu"), "bakim_strateji": bk.get("strateji"),
         "cizelge_kazanc": (bk.get("cizelge") or {{}}).get("kazanc_bahar"),
+        "isletme_model": (o.get("isletme") or {{}}).get("model"), "isletme_usd_mw_yil": (o.get("isletme") or {{}}).get("usd_mw_yil"),
+        "kayip_toplam": (o.get("kayip") or {{}}).get("toplam_saha"),
     }})
 else:
     out.update({{"res_kf": o["res_kf"], "milp_res": o["milp"].get("RES [MW]"), "milp_npv": o["milp"].get("NPV tahmini [M USD]"),

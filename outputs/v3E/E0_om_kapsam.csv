@@ -1,0 +1,14 @@
+﻿kalem,"Lazard 2025 (24,5–40 her şey dahil)",LBNL 2019 $/kW-yıl,DWG 2024 $/kW-yıl,v1 modeli,bakım simülasyonu (DES),v3 FSA $/kW-yıl,v3 kendi bakımı,finansal modelde ayrı kalem
+"Türbin planlı + plansız bakım (büyük bileşen, vinç, parça dahil)",dahil (kırılımsız),14–28 (ort. 20),14–18 (tam bakım sözleşmesi),35 içinde,10.8 (kendi yaparsa),20.0,10.8 + parça primi,hayır
+"Kendi bakım organizasyonu (yönetim, depo, araç, eğitim, 7/24)",dahil,"ölçek etkisi: 40 MW'ta 75, 250 MW'ta 45 (her şey dahil)",—,35 içinde,yok,FSA'ya dahil,0.6 M$/yıl sabit,hayır
+"BOP bakımı (trafo merkezi/şalt, saha içi kablo)",dahil,"5,0 / 7,9",(sonstige içinde),35 içinde,yok,5.0,5.0,hayır
+"Yol ve saha bakımı, O&M tesisleri",dahil,"2,0 (O&M tesisleri)",(sonstige içinde),35 içinde,yok,1.5,1.5,hayır
+SCADA ve haberleşme,dahil,(varlık yönetimi içinde),(Betriebsführung içinde),35 içinde,yok,1.0,1.0,hayır
+Varlık yönetimi ve genel giderler (teknik/ticari işletme),dahil,"2,2–2,6",4.3–5.4,35 içinde,yok,3.5,3.5,hayır
+"Sahibin saha personeli (saha müdürü, İSG)",dahil,—,(Betriebsführung içinde),35 içinde,yok,1.0,1.0,hayır
+Beklenmeyen ve diğer,dahil,"0,4 + diğer",6.5–7.6 (sonstige),35 içinde,yok,2.0,2.0,hayır
+Sigorta,muhtemelen dahil,"2,6",1.1,"+4.0 ayrı (%0,35 CAPEX)",yok,ayrı,ayrı,evet (4.0)
+Arazi kirası,muhtemelen dahil,"4,2–5,0",19–21 (Almanya),+1.5 ayrı,yok,ayrı,ayrı,evet (1.5)
+Emlak vergisi / yerel ödemeler,muhtemelen dahil (ABD),"5,0 (tahmini)",—,yok,yok,Türkiye'de RES için ayrı kalem yok,—,—
+Şebeke (TEİAŞ) bedelleri,—,"0,4 (grid)",—,ayrı,yok,ayrı,ayrı,evet
+Söküm karşılığı,—,—,3.2–4.3,ayrı (ömür sonu),yok,ayrı,ayrı,evet

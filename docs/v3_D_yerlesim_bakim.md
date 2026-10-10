@@ -510,6 +510,8 @@ mevsiminden ayırıyor.
 
 ### 7.6 O&M mutabakatı: model ile v1 sabit varsayımı (35.000 $/MW-yıl)
 
+> **Güncelleme (v3 Ö1, `docs/v3_E_cbs_cok_kriterli_lojistik.md` §0.1):** bu bölümdeki 25,5 bin $/MW-yıl bir kapsam farkı içeriyordu. Mutlak O&M artık işletme modelinden (varsayılan FSA, 34 $/kW-yıl); genel gider çarpanı ve "diğer sabit giderler" kaldırıldı. Aşağıdaki tablo tarihsel kayıttır.
+
 | Kalem (Ezine, 14 × 4,2 MW, durum stratejisi) | bin $/yıl | $/MW-yıl |
 |---|---|---|
 | Teknisyen ekipleri (2 × 2 kişi, 2.000 saat, 45 $/saat) × 1,30 genel gider | 468 | 7.959 |

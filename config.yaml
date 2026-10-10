@@ -415,9 +415,15 @@ v2:
 # =====================================================================
 v3:
   kayip:
-    value: {lumped_v2: 0.12, kalibrasyon_kullanilabilirligi: 0.99, iz_referansi: 0.051, elektrik_diger: 0.03}
+    value:
+      lumped_v2: 0.12
+      kalibrasyon_kullanilabilirligi: 0.99
+      iz_referansi: 0.051
+      elektrik_diger: 0.03
+      tablo: {elektrik: 0.020, turbin_performansi: 0.020, cevre_kirlenme_erozyon: 0.010, cevre_sicaklik_yildirim: 0.005, cevre_buzlanma: 0.002}
     birim: "oran"
     kaynak: "iz_referansi: atlas santrallerinin hesaplanan ortalama iz kaybı (85 santral, kendi OSM yerleşimi + komşular, PyWake Bastankhah; data/atlas/santral_iz_kaybi.csv, src/v3_D1_atlas_iz.py). kalibrasyon_kullanilabilirligi: D2 ayrık olay simülasyonunda yalnız < 48 saatlik duruşlardan kaynaklanan enerji kullanılabilirliği (Ezine, 14 türbin, üç stratejide 0,990–0,992; atlas kalibrasyonu ≥ 48 saatlik duruşları dışarıda bırakır). elektrik_diger TAHMİN (IEC 61400-15 kayıp sınıflaması: elektrik %1,5–3 + performans ~%1) — yalnız bilgi amaçlı"
+    tablo_kaynak: "Lee & Fields (2021) 'An overview of wind-energy-production prediction bias, losses, and uncertainties', Wind Energ. Sci. 6:311–365, Tablo B (IEC 61400-15 kategorileri): elektrik toplam 2,1 (AWS Truepower 2014, Kuzey Amerika kara tipik), 1,2 (Mortensen 2013, KB Avrupa kara) → %2,0; türbin performansı 'generic' 2,4 (AWS 2014; Brower 2012), gözlenen 1,1–2,5 → %2,0 (güç eğrisi sapması, yüksek rüzgâr histerezisi, yaw hatası dahil); çevresel bozunma (kirlenme/erozyon) 1,0 (AWS 2014, 0,6–1,3), 'endüstri standardı 1–2' (Clifton vd. 2016) → %1,0; sıcaklık kapatması ve yıldırım 0,6 (AWS 2014) → %0,5; buzlanma AWS 2014 Kuzey Amerika tipik 1,0 (0–4,5) — TAHMİN %0,2: Türkiye santrallerinin çoğu kıyı/orta rakımlı, kış sıcaklıkları Kuzey Amerika iç kesimlerinden yüksek (yüksek rakımlı doğu sahalarında daha yüksek olabilir; sınırlama)"
     not: "v2'nin toplu %12 kaybı (iz + kullanılabilirlik + elektrik/diğer) v3'te ayrıştırılır. Atlas kalibrasyonu santrallerin GERÇEK iz ve kısa duruş kayıplarını katsayıya gömer; bu yüzden yeni sahada iz ve kullanılabilirlik göreli uygulanır (çift sayım yok): KF(t) = brüt(K·v) · 0,88 · η_iz(t) / (1 − iz_referansi) · A / kalibrasyon_kullanilabilirligi. Eşdeğer 'diğer kayıp' λ = 1 − 0,88 / ((1 − 0,051) · 0,99) = %6,3 (elektrik + atlasın açıklanmayan ortalama sapması). D1 hipotez testi: iz kaybı atlas artığını açıklamadı (eğim t = 0,55; Balıkesir–Biga iz farkı 0,34 puan, p = 0,70); izden arındırılmış katsayılar birini dışarıda bırak RMSE'sini kötüleştirdi (6,87 → 7,03), göreli düzeltme iyileştirdi (6,87 → 6,77; anlamlı değil). Bu yüzden atlas matrisleri güncellenmedi (atlas_iz_arindirma: false)"
   yerlesim:
     value:
@@ -467,8 +473,8 @@ v3:
       vinc_usd: {buyuk: 120000.0, kanat: 100000.0}
       stok: {tutma_orani: 0.15, azami: 3}
       eur_usd: 1.08
-      genel_gider_carpani: 1.30
-      diger_sabit_usd_mw_yil: 12000.0
+      genel_gider_carpani: 1.0
+      diger_sabit_usd_mw_yil: 0.0
       tekrar: 200
       tekrar_motor: 60
       tohum: 2026
@@ -487,7 +493,8 @@ v3:
       yaklaşık onda biri, jeneratörde Carroll kara 0,002 ile WMEP arası), Weibull şekil parametreleri (aşınma tipi > 1), ana yatak süre/maliyeti,
       tedarik süreleri, lojistik süreler, ekip büyüklüğü (her 7 türbine bir 2 kişilik ekip), hava sınırları (İSG/OEM tipik: kule/nasel çalışması ~15 m/s, ana bileşen kaldırma 8–10 m/s), ekip, ücret,
       önleyici bakım etkisi, CMS tespit olasılıkları ve P-F aralığı, vinç maliyeti, stok tutma oranı (sermaye %7 + depolama/sigorta/eskime %8),
-      genel gider çarpanı ve diğer sabit giderler
+      genel gider çarpanı ve diğer sabit giderler. v3 Ö1: genel gider çarpanı (1,30) ve diğer sabit giderler (12.000 $/MW-yıl) kaldırıldı (1,0 / 0);
+      organizasyon ve sahip kalemleri v3.isletme'de kaynaklı olarak ayrıştırıldı. DES gideri artık yalnız türbin bakımının kendi yapılması durumundaki maliyeti
     not: >-
       Ölçek: değişim süreci Weibull(β, η) yenileme süreci; η, ömür boyu beklenen değişim sayısı (yenileme fonksiyonu) M(T) = λ·T olacak şekilde
       sayısal bulunur (aşınmada değişimler geç yıllara yığılır). Strateji: 'duzeltici' (yalnız arızada; küçük/büyük onarım oranları × 1,4, Weibull ölçeği × 0,8), 'takvim' (yılda bir
@@ -495,3 +502,28 @@ v3:
       (sabit ekip + düzeltici malzeme + vinç + önleyici malzeme + CMS + stok tutma) × genel gider çarpanı + diğer sabit giderler (saha yönetimi, BOP bakımı,
       SCADA, güvenlik, yol/arazi bakımı; TEİAŞ, sigorta ve arazi kirası finansal modelde ayrı). v1 OPEX 35.000 $/MW-yıl ile karşılaştırma docs/v3_D §6.
       tekrar: çevrimdışı analiz; tekrar_motor: tam analizde (≤ 30 s ek)
+  isletme:
+    value:
+      model: "fsa"
+      fsa: {fiyat_usd_kw_yil: 20.0, aralik_usd_kw_yil: [14.0, 29.0], kullanilabilirlik_garantisi: 0.97}
+      sahip_kalemleri_usd_kw_yil: {bop_bakimi: 5.0, yol_ve_saha: 1.5, scada_haberlesme: 1.0, varlik_yonetimi: 3.5, saha_personeli: 1.0, diger_beklenmeyen: 2.0}
+      kendi: {organizasyon_sabit_usd_yil: 600000.0, parca_primi: 0.15}
+    birim: "$/kW-yıl (reel 2026 $); oran; $/yıl"
+    kaynak: >-
+      FSA fiyatı: Deutsche WindGuard (2024) 'Kostensituation der Windenergie an Land', Abb. 10: bakım ve onarım (çoğunlukla üreticiyle tam bakım
+      sözleşmesi; büyük bileşenler ve kullanılabilirlik garantisi dahil) 1. on yıl 13, 2. on yıl 17 €/kW-yıl (58 proje, 1,2 GW) ≈ 14–18 $/kW-yıl;
+      Wiser vd. (2019, LBNL) 'Benchmarking wind power operating costs': türbin O&M (planlı + plansız) 14–28 $/kW-yıl (ort. 20, 2017 $); top agrar
+      haberine göre 3 MW türbinde tam bakım sözleşmesi yılda 80.000 €'ya kadar (≈ 29 $/kW). Merkez 20, aralık 14–29 $/kW-yıl. Kullanılabilirlik
+      garantisi %97 (zaman bazlı): LBNL anketinde tam kapsamlı sözleşmelerin '%97'nin üzerinde kullanılabilirlik' sağladığı ve garanti altına
+      düşüşün tazminatla karşılandığı belirtiliyor; DWG: Vollwartungsverträge 'Verfügbarkeitsgarantien' içerir. Sahip kalemleri: LBNL Şekil 5
+      örnek kırılımları — BOP O&M 5,0 ve 7,9; varlık yönetimi 2,2–2,6; O&M tesisleri 2,0; beklenmeyen 0,4 $/kW-yıl; DWG: işletme ve genel
+      yönetim (teknik + ticari işletme, SCADA izleme dahil) 4–5 €/kW-yıl, diğer 6–7 €/kW-yıl. Değerler bu aralıklardan TAHMİN olarak seçildi
+      (BOP 5, yol/saha 1,5, SCADA/haberleşme 1, varlık yönetimi 3,5, sahibin saha personeli 1, beklenmeyen 2). Kendi bakımı: Briggs (2017) %30 ve
+      IHS Markit (2018) %19 türbin O&M tasarrufu (LBNL'de aktarılıyor); organizasyon sabit gideri ve parça primi TAHMİN (bakım müdürü, 2
+      mühendis, depo, araçlar, eğitim, 7/24 izleme ≈ 0,6 M$/yıl; üretici dışı parça tedarikinde %15 prim)
+    not: >-
+      Lazard LCOE+ 2025'in kara RES sabit O&M'i (24,5–40 $/kW-yıl, 300 MW referans) kalem kırılımı vermez; ABD pratiğinde arazi kirası, emlak
+      vergisi ve sigortayı da içeren 'her şey dahil' işletme gideridir (LBNL: her şey dahil 33–59 $/kW-yıl örnekleri). v1 bu bandın üstünden
+      35.000 $/MW-yıl alıp ayrıca sigorta (%0,35 CAPEX ≈ 4.000 $/MW-yıl) ve arazi kirası (1.500) ekliyordu → sigorta ve arazide kısmi çift sayım
+      olasılığı. v3 Ö1: işletme gideri = FSA + sahip kalemleri (34 $/kW-yıl), sigorta/arazi/TEİAŞ/söküm ayrı. Tek sahalı 10–15 türbinlik
+      projede varsayılan FSA (gerekçe docs/v3_E §0.1); kendi bakımının başabaş filo büyüklüğü outputs/v3E/E0_isletme_basabas.csv (Faz F girdisi)

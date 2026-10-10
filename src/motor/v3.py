@@ -67,14 +67,46 @@ def _bakim_cfg(cfg: dict, kv) -> tuple[dict, str]:
     return c, st
 
 
-def bakim_uygula(cfg: dict, kv, A: float, om_usd_mw_yil: float, yil_sd: float, tekrar_sd: float) -> tuple[dict, float]:
-    """Kullanılabilirlik ve O&M'i config'e işler. Döndürür: (yeni config, profile uygulanacak kullanılabilirlik)."""
+def isletme_modeli(cfg: dict, kv) -> str:
+    return kv.isletme_modeli or deger(cfg["v3"]["isletme"])["model"]
+
+
+def bakim_uygula(
+    cfg: dict,
+    kv,
+    MW: float,
+    yil_sd: float,
+    tekrar_sd: float,
+    A_ornek=None,
+    A_tablo: float | None = None,
+    gider: dict | None = None,
+    kendi_tablo_usd_mw: float | None = None,
+) -> tuple[dict, float, dict]:
+    """
+    Kullanılabilirlik ve O&M'i config'e işler (v3 Ö1: mutlak O&M işletme modelinden, DES dağılım ve strateji için).
+    Döndürür: (yeni config, profile uygulanacak ortalama kullanılabilirlik, işletme bilgisi).
+    """
+    from src.bakim import isletme
+
     c = copy.deepcopy(cfg)
     if kv.bakim_modeli == "sabit":  # v2 eşdeğeri: kalibrasyondaki kullanılabilirlik, v1 OPEX
-        return c, deger(cfg["v3"]["kayip"])["kalibrasyon_kullanilabilirligi"]
-    _ata(c, "teknoloji.res.opex_sabit", float(om_usd_mw_yil))
+        A = deger(cfg["v3"]["kayip"])["kalibrasyon_kullanilabilirligi"]
+        return c, A, {"model": "sabit (v1)", "usd_mw_yil": deger(cfg["teknoloji"]["res"]["opex_sabit"]), "kalemler_usd_kw_yil": {}}
+    model = isletme_modeli(cfg, kv)
+    if model == "kendi" and gider is None:  # hızlı tarama: DES tablosundan türbin bakımı + organizasyon + sahip kalemleri
+        a = isletme.ayar(cfg)
+        kal = {
+            "kendi_turbin_bakimi": (kendi_tablo_usd_mw or 0.0) / 1000,
+            "organizasyon_sabit": a["kendi"]["organizasyon_sabit_usd_yil"] / (MW * 1000),
+            **a["sahip_kalemleri_usd_kw_yil"],
+        }
+        o = {"model": "kendi", "usd_mw_yil": 1000 * sum(kal.values()), "kalemler_usd_kw_yil": kal}
+    else:
+        o = isletme.opex(cfg, model, MW, gider)
+    A = isletme.kullanilabilirlik(cfg, model, A_ornek, A_tablo)
+    _ata(c, "teknoloji.res.opex_sabit", float(o["usd_mw_yil"]))
     _ata(c, "monte_carlo.kullanilabilirlik", {"sim_sd": float(tekrar_sd), "yil_sd": float(yil_sd)})
-    return c, float(A)
+    return c, float(A), {**o, "kullanilabilirlik": float(A), "garanti": isletme.ayar(cfg)["fsa"]["kullanilabilirlik_garantisi"]}
 
 
 def res_olcekli(u: UretimProfili, carpan: float) -> UretimProfili:
@@ -87,9 +119,12 @@ def hizli_hazirla(h: Hazirlik, kv) -> tuple[Hazirlik, dict]:
     tg = deger(h.cfg["optimizasyon"]["turbin_gucu"])
     N_ref = max(1, math.ceil(h.saha.baglanti_mw / tg))
     b = bakim_hizli(N_ref, h.cfg)
-    cfg2, A = bakim_uygula(h.cfg, kv, b["A"], b["om_usd_mw_yil"], b["A_yil_sd"], b["A_tekrar_sd"])
+    cfg2, A, isl = bakim_uygula(
+        h.cfg, kv, N_ref * tg, b["A_yil_sd"], b["A_tekrar_sd"], A_tablo=b["A"], kendi_tablo_usd_mw=b["om_usd_mw_yil"]
+    )
     h2 = profil_degistir(h, h.profil["res_kf"].to_numpy() * A, cfg2)
     bilgi = {
+        "isletme": isl,
         "kullanilabilirlik": A,
         "om_usd_mw_yil": deger(cfg2["teknoloji"]["res"]["opex_sabit"]),
         "iz_egrisi": {n: iz_hizli(n) for n in range(0, int(deger(h.cfg["optimizasyon"]["turbin_azami"])) + 1)},
@@ -139,7 +174,7 @@ def tam_once(h: Hazirlik, kv) -> dict:
         dis = Y.degerlendir(bg, s.S)["ozet"]["dis_iz"]
     verim = [1.0] + [float(eg.loc[n, "verim"]) * (1 - dis) for n in range(1, n_sigan + 1)]
     b = bakim_hizli(N_ref, h.cfg)
-    cfg2, A = bakim_uygula(h.cfg, kv, b["A"], b["om_usd_mw_yil"], b["A_yil_sd"], b["A_tekrar_sd"])
+    cfg2, A, _ = bakim_uygula(h.cfg, kv, N_ref * tg, b["A_yil_sd"], b["A_tekrar_sd"], A_tablo=b["A"], kendi_tablo_usd_mw=b["om_usd_mw_yil"])
     _ata(cfg2, "optimizasyon.turbin_azami", n_sigan)
     hA = profil_degistir(h, h.profil["res_kf"].to_numpy() * A, cfg2)
     return {
@@ -190,9 +225,11 @@ def tam_sonra(h: Hazirlik, kv, on: dict, N: int, fiyat_8760: np.ndarray, ilerlem
         bk = bakim_analizi(
             N, bg.turbin.P_mw, pay, kf_y, v_y, fiyat_8760, deger(cfgb["v3"]["bakim"]), int(deger(h.cfg["proje"]["omur"])), R=R
         )
-        cfg2, A = bakim_uygula(h.cfg, kv, bk["A_enerji"], bk["om_usd_mw_yil"], bk["A_yil_sd"], bk["A_tekrar_sd"])
+        cfg2, A, isl = bakim_uygula(
+            h.cfg, kv, N * bg.turbin.P_mw, bk["A_yil_sd"], bk["A_tekrar_sd"], A_ornek=bk["A_enerji_ornek"], gider=bk["gider_kalemleri"]
+        )
     else:
-        cfg2, A = bakim_uygula(h.cfg, kv, 0, 0, 0, 0)
+        cfg2, A, isl = bakim_uygula(h.cfg, kv, N * bg.turbin.P_mw, 0, 0)
     sure["bakim_s"] = time.perf_counter() - t1
     h2 = profil_degistir(h, res_cift * A, cfg2)
     tur = d["turbinler"]
@@ -223,4 +260,7 @@ def tam_sonra(h: Hazirlik, kv, on: dict, N: int, fiyat_8760: np.ndarray, ilerlem
             "A_histogram": {"sayi": hist[0].tolist(), "kenar": hist[1].round(5).tolist()},
             "strateji": st,
         }
-    return {"h": h2, "yerlesim": yer, "bakim": bk, "kullanilabilirlik": A, "sure": sure, "turbinler": tur}
+    from src.uretim import kayip
+
+    kt = kayip.tablo(h.cfg, d["ozet"]["toplam_iz"], A)
+    return {"h": h2, "yerlesim": yer, "bakim": bk, "kullanilabilirlik": A, "isletme": isl, "kayip": kt, "sure": sure, "turbinler": tur}

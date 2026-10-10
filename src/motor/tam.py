@@ -260,6 +260,8 @@ def tam_analiz(h: Hazirlik, kv: KullaniciVarsayimlari, ilerleme=None) -> dict:
         "yerlesim": s3["yerlesim"] if s3 else None,
         "bakim": s3["bakim"] if s3 else None,
         "kullanilabilirlik": s3.get("kullanilabilirlik") if s3 else None,
+        "isletme": s3.get("isletme") if s3 else None,
+        "kayip": s3.get("kayip") if s3 else None,
         "om_usd_mw_yil": deger(h.cfg["teknoloji"]["res"]["opex_sabit"]),
         "v3": bool(s3),
     }
@@ -306,14 +308,18 @@ def tam_analiz(h: Hazirlik, kv: KullaniciVarsayimlari, ilerleme=None) -> dict:
             },
         )
     if s3 and s3["bakim"]:
-        b_ = s3["bakim"]
+        b_, i_ = s3["bakim"], s3["isletme"]
+        mad = {"fsa": ("tam kapsamlı servis sözleşmesi (FSA)", "full-service agreement (FSA)"), "kendi": ("kendi bakımı", "self-perform")}
+        m_ = mad.get(i_["model"], (i_["model"], i_["model"]))
         nedenler.insert(
             2,
             {
-                "tr": f"Bakım ({b_['strateji']}): enerji bazlı kullanılabilirlik %{100 * b_['A_enerji']:.1f}, O&M {b_['om_usd_mw_yil'] / 1e3:.1f} bin $/MW-yıl "
-                f"(v1 sabit varsayım 35,0); önleyici bakım çizelgesi yılda {b_['cizelge']['kazanc_bahar'] / 1e3:.1f} bin $ kayıp geliri azaltıyor",
-                "en": f"Maintenance ({b_['strateji']}): energy-based availability {100 * b_['A_enerji']:.1f}%, O&M {b_['om_usd_mw_yil'] / 1e3:.1f} k$/MW-yr "
-                f"(v1 fixed assumption 35.0); the preventive schedule saves {b_['cizelge']['kazanc_bahar'] / 1e3:.1f} k$/yr of lost revenue",
+                "tr": f"İşletme ve bakım: {m_[0]}, O&M {i_['usd_mw_yil'] / 1e3:.1f} bin $/MW-yıl; enerji bazlı kullanılabilirlik %{100 * i_['kullanilabilirlik']:.1f} "
+                f"(simülasyon %{100 * b_['A_enerji']:.1f}, strateji {b_['strateji']}); önleyici bakım çizelgesi yılda {b_['cizelge']['kazanc_bahar'] / 1e3:.1f} bin $ "
+                "kayıp geliri azaltıyor",
+                "en": f"Operations and maintenance: {m_[1]}, O&M {i_['usd_mw_yil'] / 1e3:.1f} k$/MW-yr; energy-based availability {100 * i_['kullanilabilirlik']:.1f}% "
+                f"(simulation {100 * b_['A_enerji']:.1f}%, strategy {b_['strateji']}); the preventive schedule saves {b_['cizelge']['kazanc_bahar'] / 1e3:.1f} k$/yr "
+                "of lost revenue",
             },
         )
     sure["toplam_analiz_s"] = time.perf_counter() - t0
