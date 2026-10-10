@@ -34,6 +34,14 @@ KARAR_YOLCULUGU = [
     ("Tutarlılık 1", "YEKDEM'de\narbitraj yok", -11.4, "Yatırım önerilmez", "hayir", "docs/07 Güncelleme 1"),
     ("Tutarlılık 2", "YEKDEM opsiyonu,\nsürücü, takvim", 1.49, "Durum tespiti +\nsınırlı teklif", "teklif", "docs/07 Güncelleme 2"),
     ("Nihai", "Fiyat ortalaması\n(58 = beklenen)", None, "Rafa kaldır,\ntetikleyicileri izle", "raf", "outputs/07/baz_vaka.csv"),
+    (
+        "Düzeltme (v3)",
+        "Sigorta + arazi\nçift sayımı yok",
+        "duzeltilmis",
+        "Durum tespiti +\n≤0,9 M$ teklif",
+        "teklif",
+        "outputs/07/v1_cift_sayim/baz_vaka.csv (docs/v1_duzeltme_notu.md)",
+    ),
 ]
 # kare (karusel) sürüm için kısa eksen ve karar etiketleri, aynı sırayla
 KISA = [
@@ -44,6 +52,7 @@ KISA = [
     ("Tutarlılık\nYEKDEM", "Hayır"),
     ("Tutarlılık 2\n3 düzeltme", "DD + teklif"),
     ("Nihai\nfiyat ort.", "Rafa kaldır"),
+    ("Düzeltme\nçift sayım", "DD + teklif"),
 ]
 TUR_RENK = {"hayir": TURUNCU, "evet": YESIL, "kosullu": YESIL, "teklif": MAVI, "raf": GRI}
 
@@ -72,7 +81,10 @@ def kaydet(fig, ad: str):
 
 def karar_yolculugu(boyut=(12, 5.0), ad="karar_yolculugu.png", yazi=1.0, kisa: bool = False):
     nihai = float(baz_vaka().query("`Baz vaka` == True")["Beklenen NPV [M USD]"].iloc[0])
-    v = [(a, n, nihai if e is None else e, k, t) for a, n, e, k, t, _ in KARAR_YOLCULUGU]
+    dz = CIKTILAR / "07" / "v1_cift_sayim" / "baz_vaka.csv"
+    duz = float(pd.read_csv(dz).query("`Baz vaka` == True")["Beklenen NPV [M USD]"].iloc[0]) if dz.exists() else np.nan
+    v = [(a, n, nihai if e is None else (duz if e == "duzeltilmis" else e), k, t) for a, n, e, k, t, _ in KARAR_YOLCULUGU]
+    v = [x_ for x_ in v if np.isfinite(x_[2])]
     if kisa:
         v = [(ks[0], None, e, ks[1], t) for (a, n, e, k, t), ks in zip(v, KISA)]
     x = np.arange(len(v))

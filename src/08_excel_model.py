@@ -47,6 +47,7 @@ YIL0, NYIL = 2026, 39  # zaman çizelgesi: t = 1 → 2026 ... t = 39 → 2064; t
 ALANLAR = ["gelir_res_q", "E_res", "gelir_d_q", "E_d", "yh_a", "rezerv", "E_k", "E_A"]
 YAPILAR = ["Tüccar", "PPA", "YEKDEM nominal", "YEKDEM endeksli"]
 SEVIYE = {"Düşük": 45.0, "Baz": 58.0, "Yüksek": 72.0}
+DUZELTME = ["v1 (çift sayımlı)", "Düzeltilmiş"]
 MAVI, SIYAH = Font(color="1F4E9E"), Font(color="000000")
 BASLIK = Font(bold=True, color="FFFFFF")
 BASLIK_DOLGU = PatternFill("solid", fgColor="1D4F91")
@@ -143,7 +144,9 @@ class PythonModel:
     def yekdem_reel(self, endeksli):
         return np.full(self.N, self.yk_nom * 10) if endeksli else self.yk_nom * 10 / (1 + self.pi) ** (self.yillar - 2026)
 
-    def sonuc(self, yapi, seviye, durum, tesvik, prim=0.0):
+    def sonuc(self, yapi, seviye, durum, tesvik, prim=0.0, duzeltme=False):
+        """duzeltme: v1 düzeltme notu — RES arazi kirası ve RES sigortası ayrıca sayılmaz (docs/v1_duzeltme_notu.md)."""
+        c_ = replace(self.o.c, v=replace(self.v, arazi_res=0.0, sigorta_res_haric=True)) if duzeltme else self.o.c
         L = SEVIYE[seviye]
         N = self.N
         k = np.arange(1, N + 1)
@@ -179,7 +182,7 @@ class PythonModel:
             if yek:
                 g["desarj_sozlesmeli"] = True
             t = self.GY if yek else (replace(self.G, ppa=True) if yapi == "PPA" else self.G)
-            return nakit_akislari(t, self.tb_T, self.o.c, g), phi
+            return nakit_akislari(t, self.tb_T, c_, g), phi
 
         r, phi = kos(durum)
         r90, _ = kos("P90")
@@ -362,7 +365,7 @@ class Kitap:
             ("Borc", "DSCR hedefli heykelsi borç, geri ödeme tablosu, DSCR, LLCR"),
             ("Nakit_akisi", "Proje ve öz kaynak nakit akışları"),
             ("Ozet", "NPV, IRR, LCOE, DSCR, geri ödeme, azami edinim primi"),
-            ("Senaryolar", "48 senaryo: Python ve Excel (LibreOffice ile yeniden hesaplanmış) sonuçları"),
+            ("Senaryolar", "96 senaryo (48 × v1/düzeltilmiş): Python ve Excel (LibreOffice ile yeniden hesaplanmış) sonuçları"),
             ("Kontroller", "Nakit tutarlılığı, borç sıfırlanması, Python mutabakatı, formül hatası sayımı"),
         ]
         for i, (s, a) in enumerate(icerik):
@@ -374,6 +377,17 @@ class Kitap:
             "Not: Monte Carlo sonuçları (beklenen NPV, P(NPV>0)) bu deterministik modelde yoktur; Ozet sayfasında Python "
             "Monte Carlo referansı ayrıca verilir."
         )
+        w["A26"] = "Düzeltme notu (Ekim 2026)"
+        w["A26"].font = Font(bold=True, color="9C2B1F")
+        w["B26"] = (
+            "v1'de RES sigortası ve arazi kirası hem 35.000 $/MW-yıl'lık O&M'in (Lazard, her şey dahil) içinde hem ayrı kalem olarak "
+            'sayılıyordu. Düzeltilmiş senaryo Girdiler sayfasından seçilebilir ("Sigorta + arazi çift sayımı"). Baz vaka Monte '
+            "Carlo: E[NPV] −1,66 → +0,92 M$, karar (b) rafa kaldır → (a) durum tespiti + sınırlı teklif. Ayrıntı: docs/v1_duzeltme_notu.md"
+        )
+        w["B26"].alignment = Alignment(wrap_text=True, vertical="top")
+        w.row_dimensions[26].height = 60
+        for c in ("A26", "B26"):
+            w[c].fill = PatternFill("solid", fgColor="FDECEA")
         w.column_dimensions["A"].width = 30
         w.column_dimensions["B"].width = 110
 
@@ -420,6 +434,18 @@ class Kitap:
             "@",
             ["Var", "Yok"],
         )
+        rw = self.girdi(
+            w,
+            rw,
+            "duzeltme",
+            "Sigorta + arazi çift sayımı (v1 düzeltme notu)",
+            DUZELTME[0],
+            "liste",
+            "v1: RES O&M 35.000 $/MW-yıl (Lazard, her şey dahil) + ayrıca RES arazi ve RES sigortası. Düzeltilmiş: bu iki RES "
+            "kalemi düşülür (docs/v1_duzeltme_notu.md)",
+            "@",
+            DUZELTME,
+        )
         rw = self.girdi(w, rw, "prim", "Edinim primi (bugünkü değer)", 0.0, "USD", "t = 0'da ödenir; azami prim = primsiz NPV", "#,##0")
         rw = self.girdi(
             w,
@@ -449,8 +475,16 @@ class Kitap:
         w.cell(rw, 3, "=" + "+".join(f'({self.ad["yapi"]}="{y}")*{i + 1}' for i, y in enumerate(YAPILAR)))
         self.ad["yapi_i"] = f"Girdiler!$C${rw}"
         rw += 1
+        w.cell(rw, 1, "Çift sayım düzeltmesi açık mı? (1 = düzeltilmiş)")
+        w.cell(rw, 3, f'=IF({self.ad["duzeltme"]}="{DUZELTME[1]}",1,0)')
+        self.ad["duz"] = f"Girdiler!$C${rw}"
+        rw += 1
         w.cell(rw, 1, "Senaryo anahtarı (mutabakat)")
-        w.cell(rw, 3, f'={self.ad["yapi"]}&"|"&{self.ad["seviye"]}&"|"&{self.ad["durum"]}&"|"&{self.ad["tesvik"]}')
+        w.cell(
+            rw,
+            3,
+            f'={self.ad["yapi"]}&"|"&{self.ad["seviye"]}&"|"&{self.ad["durum"]}&"|"&{self.ad["tesvik"]}&IF({self.ad["duz"]}=1,"|{DUZELTME[1]}","")',
+        )
         self.ad["anahtar"] = f"Girdiler!$C${rw}"
         rw += 2
         self.baslik_satiri(w, rw, "Tasarım")
@@ -892,10 +926,14 @@ class Kitap:
         # OPEX
         isl = lambda j: f"IF({self.r(Z, 'k', j)}>0,1,0)"
         self.seri(
-            O, f"{b}_o_sabit", "RES sabit O&M + arazi", "USD", lambda j: f"={isl(j)}*({A['opex_res']}+{A['arazi_res']})*{A['res_mw']}"
+            O,
+            f"{b}_o_sabit",
+            "RES sabit O&M + arazi",
+            "USD",
+            lambda j: f"={isl(j)}*({A['opex_res']}+{A['arazi_res']}*(1-{A['duz']}))*{A['res_mw']}",
         )
         self.seri(O, f"{b}_o_bess", "Batarya O&M", "USD", lambda j: f"={isl(j)}*{A['opex_bess']}*{A['capex_bess_t']}")
-        self.seri(O, f"{b}_o_sig", "Sigorta", "USD", lambda j: f"={isl(j)}*{A['sigorta']}*{A['capex']}")
+        self.seri(O, f"{b}_o_sig", "Sigorta", "USD", lambda j: f"={isl(j)}*{A['sigorta']}*({A['capex']}-{A['duz']}*{A['capex_res_t']})")
         self.seri(
             O,
             f"{b}_o_teias",
@@ -1300,6 +1338,21 @@ class Kitap:
                 3,
                 f"P(NPV>0) %{rr['P(NPV > 0) [%]']:.0f} · CVaR %5 {rr['CVaR %5 [M USD]']:.1f} M$ · azami prim {rr['Azami edinim primi [M USD]']:.2f} M$",
             )
+        dz = CIKTILAR / "07" / "v1_cift_sayim" / "baz_vaka.csv"
+        if dz.exists():  # v1 düzeltme notu: sigorta + arazi çift sayımı düzeltilmiş Monte Carlo
+            rw += 2
+            w.cell(rw, 1, "Düzeltilmiş Monte Carlo (sigorta + arazi çift sayımı yok; outputs/07/v1_cift_sayim/baz_vaka.csv)").font = Font(
+                bold=True, color="9C2B1F"
+            )
+            for _, rr in pd.read_csv(dz).iterrows():
+                rw += 1
+                w.cell(rw, 1, rr["Senaryo"])
+                w.cell(rw, 2, round(float(rr["Beklenen NPV [M USD]"]), 2))
+                w.cell(
+                    rw,
+                    3,
+                    f"P(NPV>0) %{rr['P(NPV > 0) [%]']:.0f} · CVaR %5 {rr['CVaR %5 [M USD]']:.1f} M$ · azami prim {rr['Azami edinim primi [M USD]']:.2f} M$",
+                )
         ay = CIKTILAR / "07" / "fark_ayristirma_sonra.csv"
         if ay.exists():  # deterministik baz → Monte Carlo beklenen değer köprüsü (Bölüm A)
             rw += 2
@@ -1494,9 +1547,11 @@ def main():
     pm = PythonModel()
     mc = pd.read_csv(CIKTILAR / "07" / "baz_vaka.csv")
     satir = []
-    for yapi, seviye, durum, tes in itertools.product(YAPILAR, SEVIYE, ["P50", "P90"], ["Var", "Yok"]):
-        r = pm.sonuc(yapi, seviye, durum, tes == "Var")
-        satir.append({"Anahtar": f"{yapi}|{seviye}|{durum}|{tes}", "yapi": yapi, "seviye": seviye, "durum": durum, "tesvik": tes, **r})
+    for duz, yapi, seviye, durum, tes in itertools.product(DUZELTME, YAPILAR, SEVIYE, ["P50", "P90"], ["Var", "Yok"]):
+        d1 = duz == DUZELTME[1]
+        r = pm.sonuc(yapi, seviye, durum, tes == "Var", duzeltme=d1)
+        anahtar = f"{yapi}|{seviye}|{durum}|{tes}" + (f"|{DUZELTME[1]}" if d1 else "")
+        satir.append({"Anahtar": anahtar, "yapi": yapi, "seviye": seviye, "durum": durum, "tesvik": tes, "duzeltme": duz, **r})
     py = pd.DataFrame(satir)
     print(
         py[["Anahtar", "NPV [M USD]", "Proje IRR [%]", "Öz kaynak IRR [%]", "Asgari DSCR", "LCOE [USD/MWh]", "YEKDEM katılım yılı"]]
@@ -1512,7 +1567,7 @@ def main():
     for _, rr in py.iterrows():
         wbs = openpyxl.load_workbook(DOSYA)
         g = wbs["Girdiler"]
-        g["C6"], g["C7"], g["C8"], g["C9"] = rr["yapi"], rr["seviye"], rr["durum"], rr["tesvik"]
+        g["C6"], g["C7"], g["C8"], g["C9"], g["C10"] = rr["yapi"], rr["seviye"], rr["durum"], rr["tesvik"], rr["duzeltme"]
         gec = tmp / "giris"
         gec.mkdir(exist_ok=True)
         cik = tmp / "cikis"

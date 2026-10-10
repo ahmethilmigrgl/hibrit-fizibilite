@@ -1,0 +1,6 @@
+﻿Senaryo,Baz vaka,COD,Beklenen NPV [M USD],P(NPV > 0) [%],CVaR %5 [M USD],NPV P10 [M USD],NPV P90 [M USD],Azami edinim primi [M USD],"E[NPV], COD 2028 (model takvimi) [M USD]","Borç kapasitesi, muhafazakâr [M USD]","P(DSCR < 1), muhafazakâr borç [%] (COD 2028)","SFK geliri, ilk 10 yıl [M USD/yıl]"
+YEKDEM yıllık opsiyonu (nominal) + tüccar,True,2029-11,0.925,48.690,-25.141,-17.467,20.986,0.925,4.359,31.374,35.580,1.787
+YEKDEM yıllık opsiyonu (endeksli) + tüccar,False,2029-11,2.988,53.540,-19.346,-12.937,21.347,2.988,6.228,33.693,31.190,1.829
+YEKDEM 10 yıl sabit (nominal),False,2029-11,-9.553,16.260,-26.724,-21.158,4.228,0.000,-4.833,35.240,20.360,1.959
+"PPA (%70 P90, 12 yıl)",False,2029-11,-3.413,35.320,-23.158,-17.002,11.813,0.000,-0.351,44.049,37.120,1.777
+Tüccar,False,2029-11,0.471,48.120,-27.495,-18.738,20.997,0.471,3.754,35.641,45.910,1.777

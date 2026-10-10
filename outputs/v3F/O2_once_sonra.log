@@ -1,0 +1,10 @@
+Çanakkale-Ezine {'duvar_s': 45.03, 'res_mw': 25.2, 'e_npv': -1.668, 'p_pozitif': 0.39, 'cvar5': -19.264, 'basabas': 60.562, 'karar': 'rafa_kaldir', 'baglanti_musd': 5.635, 'baglanti_p10_musd': 5.364, 'baglanti_p90_musd': 6.019}
+Sivas-Gürün {'duvar_s': 46.626, 'res_mw': 29.4, 'e_npv': -7.357, 'p_pozitif': 0.257, 'cvar5': -30.366, 'basabas': 67.933, 'karar': 'rafa_kaldir', 'baglanti_musd': 10.758, 'baglanti_p10_musd': 7.725, 'baglanti_p90_musd': 15.06}
+Balıkesir-Susurluk {'duvar_s': 60.486, 'res_mw': 42.0, 'e_npv': -3.578, 'p_pozitif': 0.372, 'cvar5': -29.739, 'basabas': 61.532, 'karar': 'rafa_kaldir', 'baglanti_musd': 7.728, 'baglanti_p10_musd': 5.764, 'baglanti_p90_musd': 10.513}
+                 saha                            kip  res_mw   N  baglanti_musd  e_npv  p_pozitif   cvar5  basabas        karar  duvar_s
+0     Çanakkale-Ezine        öncesi (en yakın trafo)    25.2   6          5.594 -1.632      0.390 -19.126   60.507  rafa_kaldir   46.286
+1         Sivas-Gürün        öncesi (en yakın trafo)    29.4   7         10.298 -6.983      0.252 -27.031   67.427  rafa_kaldir   55.157
+2  Balıkesir-Susurluk        öncesi (en yakın trafo)    42.0  10          7.430 -3.344      0.374 -28.440   61.300  rafa_kaldir   69.782
+3     Çanakkale-Ezine  sonrası (mesafe belirsizliği)    25.2   6          5.635 -1.668      0.390 -19.264   60.562  rafa_kaldir   45.030
+4         Sivas-Gürün  sonrası (mesafe belirsizliği)    29.4   7         10.758 -7.357      0.257 -30.366   67.933  rafa_kaldir   46.626
+5  Balıkesir-Susurluk  sonrası (mesafe belirsizliği)    42.0  10          7.728 -3.578      0.372 -29.739   61.532  rafa_kaldir   60.486

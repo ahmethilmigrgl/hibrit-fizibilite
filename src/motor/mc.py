@@ -67,6 +67,11 @@ def mc_calistir(
     if sigma is not None:  # sahanın güven seviyesinden RES model belirsizliği (v1 üçgeninin yerine)
         m_site = np.exp(np.random.default_rng(tohum + 3).normal(-0.5 * sigma**2, sigma, n))
         gx["m"] = gx["m"] / sur["RES model çarpanı"][:, None] * m_site[:, None]
+    # v3 Ö2: bağlantı mesafesi belirsizliği (TEİAŞ atanan / en yakın trafo oranı) → senaryo başına şebeke CAPEX çarpanı
+    from src.cbs.baglanti import carpan_ornekle
+
+    bg = (cfg.get("_saha", {}).get("altyapi") or {}).get("baglanti") or {}
+    gx["capex_sebeke"] = carpan_ornekle(bg.get("belirsizlik"), n, tohum + 13)
     W = tb_T["T"].shape[0]
     if W < o.u.res.shape[0]:
         gx["w"] = np.random.default_rng(tohum + 4).integers(0, W, gx["w"].shape)

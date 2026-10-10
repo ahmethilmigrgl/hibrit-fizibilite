@@ -219,3 +219,10 @@ katmanları `src/v3_E5_harita_katmanlari.py`, doğrulama `src/v3_E6_*.py` → `o
 bağlı, açılışta yüklenmez), saha kartı bağlantı/lojistik, tam analizde "Lojistik ve bağlantı", yeni sayfa `uygulama/sayfa_cok_kriterli.py`
 (`/cok-kriterli`). WDPA lisansı nedeniyle koruma alanları OSM'den; TEİAŞ lisanslı kapasite yayımlamıyor (ana sınırlama).
 Testler `tests/test_v3_E.py`.
+
+**Faz F ön adım (2026-10-10):** ✅ bkz. `docs/v3_F_portfoy_performans.md` §0 ve `docs/v1_duzeltme_notu.md`. Ö1: v1'de RES sigortası +
+arazi kirası çift sayılmış (35.000 $/MW-yıl "her şey dahil" + ayrı kalemler); düzeltme anahtarı config `v1_duzeltme.cift_sayim`
+(varsayılan false) / `V1_CIFT_SAYIM=1`; düzeltilmiş baz vaka `outputs/07/v1_cift_sayim/` (E[NPV] −1,66 → +0,92 M$, karar (b) → (a));
+Excel'de seçilebilir (96/96 mutabık); v1 belgelerine yalnız "Düzeltme notu" kutusu. v2 motorunda da var, v3 FSA'da yok.
+Ö2: bağlantı mesafesi belirsizliği — atanan/en yakın oran (YEKA RES-2025/26, `data/atlas/baglanti_orani.json`, ln r ~ N(−0,31; 0,94)),
+config `v3.baglanti.belirsizlik`; CAPEX beklenen değerle, MC'de `girdi["capex_sebeke"]` çarpanı.

@@ -337,8 +337,11 @@ def lojistik_bolumu(s) -> None:
         T("mesafeye bağlı maliyetler, en ucuz tedarik planı", "distance-based costs, cheapest supply plan"),
     )
     u = st.columns(4)
-    B.kpi_karti(u[0], T("Bağlantı maliyeti", "Connection cost"), f"{sayi(bg['toplam_usd'] / 1e6, 1)} M$",
-                aciklama=T(f"v1 sabit: {sayi(bg['v1_usd_mw'] * s.saha.get('baglanti_mw', 50) / 1e6, 1)} M$", f"v1 fixed: {sayi(bg['v1_usd_mw'] * s.saha.get('baglanti_mw', 50) / 1e6, 1)} M$"))  # fmt: skip
+    bel = bg.get("belirsizlik")
+    B.kpi_karti(u[0], T("Bağlantı maliyeti (beklenen)" if bel else "Bağlantı maliyeti", "Connection cost (expected)" if bel else "Connection cost"),
+                f"{sayi((bel['beklenen_usd'] if bel else bg['toplam_usd']) / 1e6, 1)} M$",
+                aciklama=(f"P10–P90 {sayi(bel['p10_usd'] / 1e6, 1)}–{sayi(bel['p90_usd'] / 1e6, 1)} M$" if bel else
+                          T(f"v1 sabit: {sayi(bg['v1_usd_mw'] * s.saha.get('baglanti_mw', 50) / 1e6, 1)} M$", f"v1 fixed: {sayi(bg['v1_usd_mw'] * s.saha.get('baglanti_mw', 50) / 1e6, 1)} M$")))  # fmt: skip
     B.kpi_karti(
         u[1],
         T("Bağlantı hattı", "Connection line"),

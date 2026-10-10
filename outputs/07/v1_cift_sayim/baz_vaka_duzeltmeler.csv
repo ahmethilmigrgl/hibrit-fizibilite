@@ -1,0 +1,5 @@
+﻿Adım,Beklenen NPV [M USD],P(NPV > 0) [%],CVaR %5 [M USD],NPV P10 [M USD],NPV P90 [M USD],Azami edinim primi [M USD],Adımın katkısı (E[NPV]) [M USD],Tek başına etkisi (önceki baz vakaya göre) [M USD]
+"Önceki baz vaka (YEKDEM 10 yıl sabit nominal, bağımsız sürücüler, COD 2030)",-12.685,10.640,-29.670,-23.977,0.503,0.000,,
++ (1) YEKDEM yıllık opsiyonu + tüccar,-2.033,41.480,-27.925,-20.167,17.771,0.000,10.652,10.652
++ (2) ortak batarya sürücüsü,0.681,48.150,-25.018,-17.452,20.436,0.681,2.714,2.815
++ (3) inşaata hazır takvim (COD 2029-11),0.925,48.690,-25.141,-17.467,20.986,0.925,0.244,0.289

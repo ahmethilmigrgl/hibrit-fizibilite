@@ -24,6 +24,7 @@ Tüm tutarlar reel USD (2026).
 
 from __future__ import annotations
 
+import os
 from collections.abc import Callable
 from dataclasses import dataclass, field
 
@@ -89,6 +90,7 @@ class Varsayimlar:
     capex_carpani: float = 1.0
     res_uretim_carpani: float = 1.0
     ges_uretim_carpani: float = 1.0
+    sigorta_res_haric: bool = False  # v1 düzeltme notu: RES sigortası RES O&M'inin (Lazard her şey dahil) içinde
 
     @classmethod
     def configten(cls, cfg: dict) -> Varsayimlar:
@@ -111,7 +113,7 @@ class Varsayimlar:
             opex_ges=deger(t["ges"]["opex_sabit"]),
             opex_res=deger(t["res"]["opex_sabit"]),
             arazi_ges=deger(t["ges"]["arazi"]),
-            arazi_res=deger(t["res"]["arazi"]),
+            arazi_res=0.0 if v1_cift_sayim_duzeltmesi(cfg) else deger(t["res"]["arazi"]),
             opex_bess_oran=deger(t["bess"]["opex_oran"]),
             sigorta_oran=deger(t["ortak"]["sigorta"]),
             teias_kapasite=deger(t["sebeke"]["teias_kapasite_bedeli"]),
@@ -126,7 +128,22 @@ class Varsayimlar:
             eszamanlilik_res=deger(cfg["fiyat_senaryolari"]["eszamanlilik_duzeltmesi"])["res"],
             bess_yenileme=deger(t["bess"]["yenileme"]),
             bess_yipranma=deger(t["bess"]["yipranma_maliyeti"]),
+            **_v1_duzeltme(cfg),
         )
+
+
+def v1_cift_sayim_duzeltmesi(cfg: dict) -> bool:
+    """v1 düzeltme notu (docs/v1_duzeltme_notu.md): RES O&M'i (35.000 $/MW-yıl, Lazard her şey dahil) sigorta ve arazi
+    kirasını zaten içeriyorsa bu iki kalem ayrıca sayılmaz. config `v1_duzeltme.cift_sayim` ya da ortam değişkeni
+    V1_CIFT_SAYIM=1 (v1 sayılarını değiştirmeden düzeltilmiş senaryoyu ayrı klasöre üretmek için)."""
+    ortam = os.environ.get("V1_CIFT_SAYIM")
+    if ortam is not None:
+        return ortam == "1"
+    return bool(deger(cfg.get("v1_duzeltme", {"value": {}})).get("cift_sayim", False))
+
+
+def _v1_duzeltme(cfg: dict) -> dict:
+    return {"sigorta_res_haric": True} if v1_cift_sayim_duzeltmesi(cfg) else {}
 
 
 @dataclass
@@ -257,7 +274,7 @@ def proje_degerle(
     opex_ges = (v.opex_ges + v.arazi_ges) * k.ges_mw * aktif_g
     opex_res = (v.opex_res + v.arazi_res) * k.res_mw * aktif_r
     opex_bess = v.opex_bess_oran * capex["bess"] * aktif_b
-    sigorta = v.sigorta_oran * capex_top * np.ones(N)
+    sigorta = v.sigorta_oran * (capex_top - (capex["res"] if v.sigorta_res_haric else 0.0)) * np.ones(N)
     teias = v.teias_kapasite * k.sebeke_mw * np.ones(N) + v.teias_enerji * enerji_sat
     yipranma = v.bess_yipranma * desarj  # kullanıma bağlı batarya yıpranması
     opex = opex_ges + opex_res + opex_bess + sigorta + teias + yipranma
@@ -309,7 +326,9 @@ def proje_degerle(
             continue
         sebeke_payi = pay[tek] / top_mw
         maliyet = (capex[tek] + capex["sebeke"] * sebeke_payi) * (capex_akisi[:nb] / max(capex_top, 1e-9) * df[:nb]).sum()
-        isl_maliyet = opx + sebeke_payi * v.teias_kapasite * k.sebeke_mw + v.sigorta_oran * (capex[tek] + capex["sebeke"] * sebeke_payi)
+        isl_maliyet = opx + sebeke_payi * v.teias_kapasite * k.sebeke_mw + v.sigorta_oran * (
+            capex[tek] * (0.0 if (tek == "res" and v.sigorta_res_haric) else 1.0) + capex["sebeke"] * sebeke_payi
+        )
         isl_maliyet = (
             isl_maliyet + v.teias_enerji * ur + (v.sokum[tek] * pay[tek]) * (np.arange(1, N + 1) == min(N, getattr(v, f"omur_{tek}")))
         )

@@ -24,6 +24,8 @@ REPO_URL = "https://github.com/KULLANICI/hibrit-fizibilite"  # yayından sonra g
 
 # Palet (outputs/ grafikleriyle aynı; renk körlüğü için doğrulanmış kategorik sıra): tasarım belirteçlerinden; koyu temada
 # ortak grafik şablonu bu renkleri koyu tonlara çevirir (uygulama/tasarim/grafik.py)
+from uygulama.ortak import md
+from uygulama.tasarim import bilesenler as B
 from uygulama.tasarim import grafik as _grafik
 from uygulama.tasarim.tokenlar import VERI as _V
 
@@ -114,8 +116,23 @@ st.info(
         "Türkiye-wide tool uses atlas calibration at the same point and may give different results (see Method).",
     )
 )
+B.uyari_kutusu(
+    md(
+        T(
+            "**Düzeltme notu (Ekim 2026).** Bu sayfanın sayıları v1.0.0 olarak bırakıldı. Sonradan v1 işletme giderinde sigorta ve arazi "
+            "kirasının çift sayıldığı bulundu (35.000 $/MW-yıl'lık her şey dahil O&M'e ayrıca eklenmişlerdi). Düzeltilmiş baz vakada "
+            'beklenen NPV −1,66 yerine **+0,92 M$**, kâr olasılığı %49; öneri "rafa kaldır"dan **"durum tespiti + ≤0,9 M$ teklif"e** döner. '
+            f"[Düzeltme notu]({REPO_URL}/blob/main/docs/v1_duzeltme_notu.md)",
+            "**Correction note (October 2026).** This page keeps the v1.0.0 figures. Insurance and land lease were later found to be "
+            "double-counted in v1 operating costs (added on top of an all-in 35,000 $/MW-yr O&M). In the corrected base case expected NPV is "
+            '**+0.92 M$** instead of −1.66, probability of profit 49%; the recommendation turns from "shelve" to **"due diligence + ≤0.9 M$ '
+            f'offer"**. [Correction note]({REPO_URL}/blob/main/docs/v1_duzeltme_notu.md)',
+        )
+    ),
+    "uyari",
+)
 with st.expander(
-    T("Karar yolculuğu: öneri neden beş kez değişti?", "Decision journey: why the recommendation changed five times"), expanded=True
+    T("Karar yolculuğu: öneri neden altı kez değişti?", "Decision journey: why the recommendation changed six times"), expanded=True
 ):
     # Metin alanları tırnaklı (Türkçe ondalık virgül: "58,8 MW"); sayısal sütun açıkça float
     ky = oku("karar_yolculugu.csv", quotechar='"', dtype={"beklenen_npv_musd": float})

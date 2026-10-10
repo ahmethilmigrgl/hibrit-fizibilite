@@ -44,3 +44,4 @@ herkes aynı lisansla paylaşmalı ve "© OpenStreetMap katkıcıları" atfını
 | `teias_yeka_baglanti.csv` | v3 E2: YEKA RES-2025 TEİAŞ bağlantı görüşleri | ETKB duyurusu | Kamu bilgisi; kaynak anılır |
 | `lojistik_referans.json` | v3 E4: mevcut santral hücrelerinin medyan lojistik maliyeti ve teslim süresi (CAPEX referansı) | Kendi modelim | CC BY 4.0 |
 | `v3_cok_kriterli_dogrulama.json` | v3 E3: AHP profilleri, ilk 10'lar, ROC/AUC doğrulaması (`src/v3_E3_cok_kriterli.py`) | Kendi modelim (OSM türbin konumlarıyla etiket) | **ODbL 1.0** |
+| `baglanti_oranlari.csv`, `baglanti_orani.json` | v3 F ön adım Ö2: YEKA RES-2025/2026 santral alanlarında TEİAŞ'ın atadığı hat uzunluğu / modelin en yakın trafo hat uzunluğu oranı ve log-normal parametreleri (`src/v3_O2_baglanti_orani.py`) | ETKB/RG bağlantı görüşleri + OSM trafo merkezleri ile kendi hesabım | **ODbL 1.0** (OSM'den türetilmiş) |

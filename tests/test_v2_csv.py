@@ -30,7 +30,7 @@ def test_karar_yolculugu_tr_en():
         at.run()
         assert not at.exception
         df = at.dataframe[0].value
-        assert df.shape == (7, 4)
+        assert df.shape == (8, 4)  # + v3 düzeltme adımı (docs/v1_duzeltme_notu.md)
         ilk = df.iloc[0].tolist()
         assert ilk[0] == adim and ilk[1] == degisiklik and ilk[3] == oneri
-        assert abs(float(df.iloc[0, 2]) + 1.6) < 1e-9 and abs(float(df.iloc[5, 2]) - 1.5) < 1e-9
+        assert abs(float(df.iloc[0, 2]) + 1.6) < 1e-9 and abs(float(df.iloc[5, 2]) - 1.5) < 1e-9 and abs(float(df.iloc[7, 2]) - 0.9) < 1e-9

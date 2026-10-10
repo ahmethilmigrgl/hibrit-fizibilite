@@ -1,0 +1,11 @@
+﻿gelir_yapisi,senaryo,kip,Beklenen NPV [M USD],P(NPV > 0) [%],CVaR %5 [M USD],NPV P10 [M USD],NPV P90 [M USD],Azami edinim primi [M USD]
+yekdem_opsiyon,YEKDEM yıllık opsiyonu (nominal) + tüccar,v1 (çift sayımlı),-1.659,42.400,-28.015,-20.257,18.532,0.000
+yekdem_opsiyon,YEKDEM yıllık opsiyonu (nominal) + tüccar,düzeltilmiş,0.925,48.690,-25.141,-17.467,20.986,0.925
+yekdem_opsiyon_endeksli,YEKDEM yıllık opsiyonu (endeksli) + tüccar,v1 (çift sayımlı),0.427,45.970,-22.168,-15.638,18.954,0.427
+yekdem_opsiyon_endeksli,YEKDEM yıllık opsiyonu (endeksli) + tüccar,düzeltilmiş,2.988,53.540,-19.346,-12.937,21.347,2.988
+yekdem_nominal_sabit,YEKDEM 10 yıl sabit (nominal),v1 (çift sayımlı),-12.248,12.310,-29.713,-23.992,1.624,0.000
+yekdem_nominal_sabit,YEKDEM 10 yıl sabit (nominal),düzeltilmiş,-9.553,16.260,-26.724,-21.158,4.228,0.000
+ppa,"PPA (%70 P90, 12 yıl)",v1 (çift sayımlı),-6.050,28.010,-26.010,-19.725,9.342,0.000
+ppa,"PPA (%70 P90, 12 yıl)",düzeltilmiş,-3.413,35.320,-23.158,-17.002,11.813,0.000
+tuccar,Tüccar,v1 (çift sayımlı),-2.114,41.980,-30.364,-21.438,18.547,0.000
+tuccar,Tüccar,düzeltilmiş,0.471,48.120,-27.495,-18.738,20.997,0.471

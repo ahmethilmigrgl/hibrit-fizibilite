@@ -1,0 +1,76 @@
+Kesinti: batarya kurtarma 15.8%, değer faktörü 0.89, SFK tabanı 0.048
+Ortak sürücü: emilen öğle fazlası payı 2030 ort. 7.0%, 2035 ort. 11.8%
+Kesinti oranı κ (2028): ortalama 6.3%, P90 11.7%
+  G: nihai tasarım — tüccar: E[NPV] 3.75 | P 55% | CVaR -30.3
+  GP: nihai tasarım — PPA: E[NPV] -0.35 | P 44% | CVaR -25.7
+  GY: nihai tasarım — YEKDEM nominal: E[NPV] -4.83 | P 32% | CVaR -28.0
+  GYe: nihai tasarım — YEKDEM endeksli: E[NPV] 2.13 | P 49% | CVaR -20.9
+  GYo: nihai tasarım — YEKDEM yıllık opsiyon (nominal) + tüccar: E[NPV] 4.36 | P 56% | CVaR -27.3
+  GYoe: nihai tasarım — YEKDEM yıllık opsiyon (endeksli) + tüccar: E[NPV] 6.23 | P 59% | CVaR -22.3
+
+                                                        Seçenek     Gelir yapısı  Beklenen NPV [M USD]  P(NPV > 0) [%]  CVaR %5 [M USD]  Proje IRR P50 [%]  Borç kapasitesi, baz [M USD]  Borç vadesi [yıl]  P(DSCR < 1), baz borç [%]  Borç kapasitesi, muhafazakâr [M USD]  P(DSCR < 1), muhafazakâr borç [%]  Öz kaynak IRR P50, muhafazakâr [%]  Satılan enerji P50 [GWh/yıl]  Batarya deşarj geliri, ilk 10 yıl [M USD/yıl]  SFK geliri, ilk 10 yıl [M USD/yıl]
+                                      G: nihai tasarım — tüccar           tüccar                  3.75           54.74           -30.30               7.35                         55.77                 15                      83.97                                 35.64                              45.91                                8.65                        170.83                                           1.35                                1.78
+                                        GP: nihai tasarım — PPA              ppa                 -0.35           44.41           -25.69               6.66                         58.57                 18                      83.68                                 44.05                              37.12                                7.92                        170.83                                           1.35                                1.78
+                             GY: nihai tasarım — YEKDEM nominal           yekdem                 -4.83           31.73           -27.96               5.95                         43.14                 12                      72.00                                 35.24                              20.36                                6.29                        179.39                                           0.04                                1.96
+                           GYe: nihai tasarım — YEKDEM endeksli         yekdem_e                  2.13           48.99           -20.92               6.94                         50.41                 12                      70.64                                 43.20                              21.13                                7.90                        179.39                                           0.05                                1.96
+  GYo: nihai tasarım — YEKDEM yıllık opsiyon (nominal) + tüccar   yekdem_opsiyon                  4.36           55.54           -27.33               7.39                         49.34                 12                      79.30                                 31.37                              35.58                                8.33                        171.43                                           1.29                                1.79
+GYoe: nihai tasarım — YEKDEM yıllık opsiyon (endeksli) + tüccar yekdem_opsiyon_e                  6.23           59.23           -22.34               7.59                         49.08                 12                      74.79                                 33.69                              31.19                                8.73                        173.12                                           1.05                                1.83
+
+Teşvik etkisi:
+                                              Kalem              Değer
+                        Ödenen KDV (inşaat) [M USD]            14.0964
+KDV'nin net bugünkü maliyeti (aşınma dahil) [M USD]           5.749105
+          KDV aşınmasız olsaydı net maliyet [M USD]           2.133696
+  Batarya gümrük vergisi (alt / orta / üst) [M USD] 0.00 / 0.33 / 0.65
+     Vergi indirimi (elektrik üretimine uygulanmaz)                0.0
+
+CO2:
+                                                      Kalem  Değer
+            Satılan enerji (P50, ilk 10 yıl ort.) [GWh/yıl] 179.39
+Şebeke emisyon faktörü 2024 (RES, birleşik marj) [tCO2/MWh]   0.63
+                 Önlenen CO2, yıllık (sabit faktör) [bin t] 113.82
+              Önlenen CO2, 30 yıl (sabit faktör) [milyon t]   3.41
+    Önlenen CO2, 30 yıl (faktör yılda %2 azalır) [milyon t]   2.48
+             Eşdeğer hane sayısı (2.824 kWh/hane-yıl) [bin]  63.52
+                    Gönüllü karbon kredisi geliri [USD/yıl]   0.00
+           gelir_yapisi                                    senaryo               kip  Beklenen NPV [M USD]  P(NPV > 0) [%]  CVaR %5 [M USD]  NPV P10 [M USD]  NPV P90 [M USD]  Azami edinim primi [M USD]
+         yekdem_opsiyon  YEKDEM yıllık opsiyonu (nominal) + tüccar v1 (çift sayımlı)                -1.659           42.40          -28.015          -20.257           18.532                       0.000
+         yekdem_opsiyon  YEKDEM yıllık opsiyonu (nominal) + tüccar       düzeltilmiş                 0.925           48.69          -25.141          -17.467           20.986                       0.925
+yekdem_opsiyon_endeksli YEKDEM yıllık opsiyonu (endeksli) + tüccar v1 (çift sayımlı)                 0.427           45.97          -22.168          -15.638           18.954                       0.427
+yekdem_opsiyon_endeksli YEKDEM yıllık opsiyonu (endeksli) + tüccar       düzeltilmiş                 2.988           53.54          -19.346          -12.937           21.347                       2.988
+   yekdem_nominal_sabit              YEKDEM 10 yıl sabit (nominal) v1 (çift sayımlı)               -12.248           12.31          -29.713          -23.992            1.624                       0.000
+   yekdem_nominal_sabit              YEKDEM 10 yıl sabit (nominal)       düzeltilmiş                -9.553           16.26          -26.724          -21.158            4.228                       0.000
+                    ppa                      PPA (%70 P90, 12 yıl) v1 (çift sayımlı)                -6.050           28.01          -26.010          -19.725            9.342                       0.000
+                    ppa                      PPA (%70 P90, 12 yıl)       düzeltilmiş                -3.413           35.32          -23.158          -17.002           11.813                       0.000
+                 tuccar                                     Tüccar v1 (çift sayımlı)                -2.114           41.98          -30.364          -21.438           18.547                       0.000
+                 tuccar                                     Tüccar       düzeltilmiş                 0.471           48.12          -27.495          -18.738           20.997                       0.471
+                            kalem  yillik_usd  bd_vergi_oncesi_musd  bd_vergi_sonrasi_musd
+                 RES arazi kirası     88200.0                 0.956                  0.717
+RES sigortası (%0,35 × RES CAPEX)    236670.0                 2.565                  1.924
+                           Toplam    324870.0                 3.521                  2.641
+{
+ "baz_gelir_yapisi": "yekdem_opsiyon",
+ "cod": "2029-11",
+ "once": {
+  "ad": "YEKDEM yıllık opsiyonu (nominal) + tüccar",
+  "Beklenen NPV [M USD]": -1.6585542608617987,
+  "P(NPV > 0) [%]": 42.4,
+  "CVaR %5 [M USD]": -28.015070542353136,
+  "NPV P10 [M USD]": -20.257477824807086,
+  "NPV P90 [M USD]": 18.53182714554972,
+  "Azami edinim primi [M USD]": 0.0
+ },
+ "sonra": {
+  "ad": "YEKDEM yıllık opsiyonu (nominal) + tüccar",
+  "Beklenen NPV [M USD]": 0.9245168503934836,
+  "P(NPV > 0) [%]": 48.69,
+  "CVaR %5 [M USD]": -25.140788676727315,
+  "NPV P10 [M USD]": -17.466901695361127,
+  "NPV P90 [M USD]": 20.98565529386611,
+  "Azami edinim primi [M USD]": 0.9245168503934836
+ },
+ "fark_enpv_musd": 2.583071111255282,
+ "karar_once": "b",
+ "karar_sonra": "a",
+ "karar_kurali": "baz vakada E[NPV] > 0 ve azami prim > 0 ise (a) durum tespiti + teklif, aksi halde (b) rafa kaldır (docs/07 §Güncelleme 3)"
+}

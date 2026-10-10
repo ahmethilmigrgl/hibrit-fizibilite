@@ -65,7 +65,8 @@ def uygula(cfg: dict, a: dict, baglanti_mw: float) -> None:
     from src.saha import _ata
 
     if a.get("baglanti"):
-        _ata(cfg, "teknoloji.sebeke.capex", a["baglanti"]["toplam_usd"] / baglanti_mw)
+        bel = a["baglanti"].get("belirsizlik")  # Ö2: mesafe belirsizliği varsa beklenen değer (Monte Carlo senaryo başına çarpan)
+        _ata(cfg, "teknoloji.sebeke.capex", (bel["beklenen_usd"] if bel else a["baglanti"]["toplam_usd"]) / baglanti_mw)
     lj = a.get("lojistik")
     if lj and lj.get("fark_usd_mw") is not None:
         _ata(cfg, "teknoloji.res.capex", float(deger(cfg["teknoloji"]["res"]["capex"])) + lj["fark_usd_mw"])

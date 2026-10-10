@@ -166,11 +166,11 @@ def nakit_akislari(t: Tasarim, tablo: dict, c: Sabitler, girdi: dict) -> dict:
     dengesizlik = v.dengesizlik["ges"] * gelir_ges + v.dengesizlik["res"] * (gelir_res - esz) * (1 - azaltim)
     satilan = E_ges + E_res + E_d
     capex = capex_kalemleri(t, v)
-    cm = {"res": girdi["capex_res"], "ges": girdi["capex_ges"], "bess": girdi["capex_bess"], "sebeke": np.ones(n)}
+    cm = {"res": girdi["capex_res"], "ges": girdi["capex_ges"], "bess": girdi["capex_bess"], "sebeke": girdi.get("capex_sebeke", np.ones(n))}
     capex_top = sum(capex[kk] * cm[kk] for kk in capex)  # (n,)
     sabit_opex = ((v.opex_ges + v.arazi_ges) * t.ges_mw + (v.opex_res + v.arazi_res) * t.res_mw) * girdi["opex"]
     bess_opex = v.opex_bess_oran * capex["bess"] * girdi["capex_bess"]
-    sigorta = v.sigorta_oran * capex_top
+    sigorta = v.sigorta_oran * (capex_top - (capex["res"] * cm["res"] if v.sigorta_res_haric else 0.0))
     teias = v.teias_kapasite * t.sebeke_mw + v.teias_enerji * satilan
     yipranma = v.bess_yipranma * E_d * girdi["bozunma"][:, None]
     opex = (sabit_opex + bess_opex + sigorta)[:, None] + teias + yipranma

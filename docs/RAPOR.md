@@ -6,6 +6,11 @@ Kod ve veri hattı: proje deposu (`calistir.py`); ayrıntılı formülasyonlar `
 
 ---
 
+> **Düzeltme notu (Ekim 2026).** Bu raporun sayıları v1.0.0 olarak bırakıldı. Sonradan v1 işletme giderinde sigorta ve
+> arazi kirasının çift sayıldığı bulundu: 35.000 $/MW-yıl'lık "her şey dahil" O&M'e ayrıca eklenmişlerdi. Düzeltilmiş baz
+> vakada beklenen NPV −1,66 yerine **+0,92 M$**, kâr olasılığı %49. Karar kuralına göre öneri "rafa kaldır"dan **"durum
+> tespiti + ≤0,9 M$ teklif"e** döner. Ayrıntı: [v1_duzeltme_notu.md](v1_duzeltme_notu.md).
+
 ## Yönetici özeti
 
 **Soru.** Türkiye'de 50 MW'lık bir şebeke bağlantısına güneş (GES), rüzgâr (RES) ve batarya (BESS) kapasitelerinden

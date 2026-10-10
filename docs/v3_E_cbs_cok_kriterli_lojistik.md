@@ -368,8 +368,12 @@ RES CAPEX'i (1,15 M$/MW) teslim edilmiş türbini varsayar. Referans = mevcut sa
 
 - Model 50 MW'lık hücrelerde 128 / 175 / 244 bin $/MW (p10 / medyan / p90) veriyor; YEKA projelerine uygulanan aynı
   formül 53–231 bin $/MW. v1'in 120 bin $/MW'si aralığın alt yarısında.
-- **TEİAŞ'ın atadığı hatlar modelin "en yakın trafo" uzaklığından 2–12 kat uzun** (medyan 36 km; Sivas 210 km).
-  TEİAŞ kapasitesi olan merkezi atar; model kapasiteyi bilmediği için bağlantı maliyetini **düşük tahmin etme eğiliminde**.
+- ~~TEİAŞ'ın atadığı hatlar modelin "en yakın trafo" uzaklığından 2–12 kat uzun; model düşük tahmin etme eğiliminde.~~
+  **Düzeltme (Faz F ön adım Ö2):** bu karşılaştırma 400 kV atamaları 154 kV'luk en yakın trafoyla kıyaslıyordu. Aynı gerilim
+  sınıfıyla ve RES-2026 görüşleri eklenerek (14 santral alanı) atanan / model oranı medyan 0,73, ortalama 1,14,
+  log-σ 0,94: atamalar sistematik olarak uzun değil, çok dağınık (mevcut hatta girdi-çıktı 0,13–0,23; Sivas R25 3,3).
+  Bu dağılım artık tam analizin Monte Carlo'sunda bağlantı maliyeti belirsizliği olarak kullanılıyor
+  (docs/v3_F_portfoy_performans.md §0.2).
   Mevcut santralli hücrelerde en yakın uygun trafo 8,2 km (tüm hücrelerde 14,0 km): mevcut santraller trafoya yakın
   kurulmuş (bkz. §7.4 açığa çıkan tercih).
 
@@ -490,8 +494,8 @@ Tam analiz kısaldı, çünkü dışlamalar aday nokta sayısını azaltıyor (E
 
 ## 8. Sınırlamalar
 
-1. **TEİAŞ bağlantı kapasitesi** lisanslı RES için yayımlanmıyor (ana sınırlama, §7.1). Bağlantı maliyeti alt sınır
-   niteliğinde; kapasite tahsis katkı payı, EİH yenilemeleri ve kamulaştırma dahil değil.
+1. **TEİAŞ bağlantı kapasitesi** lisanslı RES için yayımlanmıyor (ana sınırlama, §7.1). Atanacak trafonun belirsizliği Faz F
+   ön adımında (Ö2) Monte Carlo'ya eklendi; kapasite tahsis katkı payı, EİH yenilemeleri ve kamulaştırma dahil değil.
 2. **OSM eksikleri:** trafo merkezlerinin %45'inde gerilim etiketi yok (bu merkezler hedef olamaz → uzaklık fazla
    tahmin edilebilir); koruma alanları resmî listeden eksik olabilir (WDPA kullanılamadı).
 3. **Göç koridorları yaklaşık:** altı koridor yayınlardan elle sayısallaştırıldı; ÇED kuş izlemesinin yerini tutmaz.

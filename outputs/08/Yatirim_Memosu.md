@@ -5,6 +5,11 @@
 
 ---
 
+> **Düzeltme notu (Ekim 2026).** Bu memonun sayıları v1.0.0 olarak bırakıldı. Sonradan v1 işletme giderinde sigorta ve
+> arazi kirasının çift sayıldığı bulundu: 35.000 $/MW-yıl'lık "her şey dahil" O&M'e ayrıca eklenmişlerdi. Düzeltilmiş baz
+> vakada beklenen NPV −1,66 yerine **+0,92 M$**, kâr olasılığı %49. Karar kuralına göre öneri "rafa kaldır"dan **"durum
+> tespiti + ≤0,9 M$ teklif"e** döner. Ayrıntı: [v1_duzeltme_notu.md](../../docs/v1_duzeltme_notu.md).
+
 ## 1. Talep edilen karar
 
 Komiteden, inşaata hazır bir Ezine RES + batarya projesinin edinimini **rafa kaldırmayı** ve §8'deki **izleme

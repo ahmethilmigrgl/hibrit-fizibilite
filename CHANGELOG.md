@@ -13,7 +13,8 @@ Proje aşamalar halinde geliştirildi. Her aşama bir commit; revizyonlar ve ön
 | Aşama 7 | Gerçekçi takvim, sistem kesintisi, YEKDEM | +2,1 M$ | Koşullu onay (inşaata hazır + YEKDEM) |
 | Tutarlılık 1 (Ö1–Ö2) | YEKDEM/PPA'da batarya arbitrajı kaldırıldı | −11,4 M$ | Yatırım önerilmez |
 | Tutarlılık 2 | YEKDEM yıllık opsiyon, ortak batarya sürücüsü, inşaata hazır takvim | +1,5 M$ | Durum tespiti + ≤1,5 M$ teklif |
-| **Nihai (Aşama 9 A)** | **Fiyat ortalaması: 58 $/MWh medyan değil beklenen değer** | **−1,7 M$** | **Rafa kaldır, tetikleyicileri izle** |
+| Nihai (Aşama 9 A) | Fiyat ortalaması: 58 $/MWh medyan değil beklenen değer | −1,7 M$ | Rafa kaldır, tetikleyicileri izle |
+| **Düzeltme (v3, Ekim 2026)** | **Sigorta + arazi kirası çift sayımı kaldırıldı ([docs/v1_duzeltme_notu.md](docs/v1_duzeltme_notu.md))** | **+0,9 M$** | **Durum tespiti + ≤0,9 M$ teklif** |
 
 ## [3.0.0-E] — 2026-10-10 (dal `v3-ie`, yayınlanmadı)
 

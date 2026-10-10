@@ -1,0 +1,68 @@
+{
+ "baz_gelir_yapisi": "yekdem_opsiyon",
+ "cod": "2029-11",
+ "once": {
+  "ad": "YEKDEM yıllık opsiyonu (nominal) + tüccar",
+  "Beklenen NPV [M USD]": -1.6585542608617987,
+  "P(NPV > 0) [%]": 42.4,
+  "CVaR %5 [M USD]": -28.015070542353136,
+  "NPV P10 [M USD]": -20.257477824807086,
+  "NPV P90 [M USD]": 18.53182714554972,
+  "Azami edinim primi [M USD]": 0.0
+ },
+ "sonra": {
+  "ad": "YEKDEM yıllık opsiyonu (nominal) + tüccar",
+  "Beklenen NPV [M USD]": 0.9245168503934836,
+  "P(NPV > 0) [%]": 48.69,
+  "CVaR %5 [M USD]": -25.140788676727315,
+  "NPV P10 [M USD]": -17.466901695361127,
+  "NPV P90 [M USD]": 20.98565529386611,
+  "Azami edinim primi [M USD]": 0.9245168503934836
+ },
+ "fark_enpv_musd": 2.583071111255282,
+ "karar_once": "b",
+ "karar_sonra": "a",
+ "karar_kurali": "baz vakada E[NPV] > 0 ve azami prim > 0 ise (a) durum tespiti + teklif, aksi halde (b) rafa kaldır (docs/07 §Güncelleme 3)",
+ "kalem_kontrol": [
+  {
+   "kalem": "RES arazi kirası",
+   "yillik_usd": 88200.0,
+   "bd_vergi_oncesi_musd": 0.955958976666273,
+   "bd_vergi_sonrasi_musd": 0.7169692324997048
+  },
+  {
+   "kalem": "RES sigortası (%0,35 × RES CAPEX)",
+   "yillik_usd": 236670.0,
+   "bd_vergi_oncesi_musd": 2.565156587387833,
+   "bd_vergi_sonrasi_musd": 1.9238674405408747
+  },
+  {
+   "kalem": "Toplam",
+   "yillik_usd": 324870.0,
+   "bd_vergi_oncesi_musd": 3.521115564054106,
+   "bd_vergi_sonrasi_musd": 2.6408366730405795
+  }
+ ],
+ "durum_tespiti_once": {
+  "EVPI (tüm belirsizlik) [M USD]": 5.326,
+  "EVPPI — TEİAŞ SFK kabulü (katılamama senaryosu) [M USD]": 0.0,
+  "EVPPI — batarya doyum senaryosu [M USD]": 1.986,
+  "EVPPI — teşvik belgesi (KDV) [M USD]": 0.0,
+  "EVPPI — ornitoloji (göç dönemi durdurma) [M USD]": 0.0,
+  "EVPPI — YEKDEM endeksleme (olasılık atanmadı; iki varyantta karar aynıysa 0) [M USD]": NaN,
+  "EVPPI — COD / takvim teyidi [M USD]": 0.0,
+  "Durum tespiti kalemlerinin EVPPI toplamı (doyum hariç: DD ile çözülemez) [M USD]": 0.0,
+  "Önerilen DD bütçesi tavanı [M USD]": 0.0
+ },
+ "durum_tespiti_sonra": {
+  "EVPI (tüm belirsizlik) [M USD]": 5.523,
+  "EVPPI — TEİAŞ SFK kabulü (katılamama senaryosu) [M USD]": 0.555,
+  "EVPPI — batarya doyum senaryosu [M USD]": 1.68,
+  "EVPPI — teşvik belgesi (KDV) [M USD]": 0.425,
+  "EVPPI — ornitoloji (göç dönemi durdurma) [M USD]": 0.18,
+  "EVPPI — YEKDEM endeksleme (olasılık atanmadı; iki varyantta karar aynıysa 0) [M USD]": 0.0,
+  "EVPPI — COD / takvim teyidi [M USD]": 0.0,
+  "Durum tespiti kalemlerinin EVPPI toplamı (doyum hariç: DD ile çözülemez) [M USD]": 1.16,
+  "Önerilen DD bütçesi tavanı [M USD]": 1.16
+ }
+}

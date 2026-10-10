@@ -271,8 +271,17 @@ def altyapi_karti(sc: dict, kv: dict) -> None:
     bg, lj, al = a["baglanti"], a.get("lojistik"), a.get("alan") or {}
     st.html(f'<div class="esik-kas ara">{T("Altyapı ve lojistik", "Infrastructure and logistics")}</div>')
     c = st.columns(2)
-    B.kpi_karti(c[0], T("Şebeke bağlantısı", "Grid connection"), f"{sayi(bg['toplam_usd'] / 1e6, 1)} M$",
-                aciklama=f"{sayi(bg['usd_mw'] / 1000, 0)} {T('bin $/MW', 'k$/MW')} · {sayi(bg['kv'], 0)} kV")  # fmt: skip
+    bel = bg.get("belirsizlik")
+    if bel:  # Ö2: TEİAŞ'ın atayacağı trafo bilinmediği için beklenen değer ve P10–P90
+        B.kpi_karti(c[0], T("Şebeke bağlantısı (beklenen)", "Grid connection (expected)"), f"{sayi(bel['beklenen_usd'] / 1e6, 1)} M$",
+                    aciklama=f"P10–P90 {sayi(bel['p10_usd'] / 1e6, 1)}–{sayi(bel['p90_usd'] / 1e6, 1)} M$ · {sayi(bg['kv'], 0)} kV",
+                    yardim=T("En yakın trafoya göre hat uzunluğu, TEİAŞ'ın YEKA görüşlerinde atadığı hatlarla ölçülen oranla (log-normal, 14 gözlem) "
+                             "çarpılır: TEİAŞ kapasitesi olan başka bir merkeze ya da mevcut bir hatta girdi-çıktıyla bağlayabilir.",
+                             "The line length to the nearest substation is scaled by the ratio measured on TEİAŞ's YEKA connection opinions "
+                             "(log-normal, 14 observations): TEİAŞ may assign another substation with capacity or a loop-in to an existing line."))  # fmt: skip
+    else:
+        B.kpi_karti(c[0], T("Şebeke bağlantısı", "Grid connection"), f"{sayi(bg['toplam_usd'] / 1e6, 1)} M$",
+                    aciklama=f"{sayi(bg['usd_mw'] / 1000, 0)} {T('bin $/MW', 'k$/MW')} · {sayi(bg['kv'], 0)} kV")  # fmt: skip
     if lj:
         B.kpi_karti(c[1], T("Lojistik (tahmini)", "Logistics (estimate)"), f"{sayi(lj['usd_mw'] / 1000, 0)} {T('bin $/MW', 'k$/MW')}",
                     aciklama=T(f"teslim ~{sayi(lj['teslim_ay'], 1)} ay", f"delivery ~{sayi(lj['teslim_ay'], 1)} months"))  # fmt: skip

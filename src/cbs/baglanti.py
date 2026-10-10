@@ -90,4 +90,50 @@ def maliyet(enlem: float, boylam: float, mw: float, cfg: dict | None = None) -> 
         "toplam_usd": top,
         "usd_mw": top / mw,
         "v1_usd_mw": float(deger(cfg["teknoloji"]["sebeke"]["capex"])),
+        "belirsizlik": belirsizlik(kalem, mw, cfg),
     }
+
+
+def oran_parametreleri() -> dict | None:
+    """Atanan / model hat uzunluğu oranının log-normal parametreleri (src/v3_O2_baglanti_orani.py)."""
+    import json
+
+    from src import veri_katmani
+
+    p = veri_katmani.yol("atlas/baglanti_orani.json", zorunlu=False)
+    return None if p is None else json.loads(p.read_text())
+
+
+def belirsizlik(kalem: dict, mw: float, cfg: dict) -> dict | None:
+    """Bağlantı mesafesi belirsizliği: hat kalemi r ~ LN(μ, σ) ile ölçeklenir (TEİAŞ kapasiteye göre farklı trafo atayabilir).
+    C(r) = sabit kalemler + r · hat maliyeti. Beklenen değer E[r] = exp(μ + σ²/2)."""
+    if not deger(cfg["v3"]["baglanti"]).get("belirsizlik", {}).get("aktif", False):
+        return None
+    o = oran_parametreleri()
+    if o is None:
+        return None
+    mu, s = o["mu_ln"], o["sigma_ln"]
+    hat = kalem["baglanti_hatti"]
+    sabit = float(sum(kalem.values()) - hat)
+    C = lambda r: sabit + hat * r
+    beklenen = C(np.exp(mu + s**2 / 2))
+    return {
+        "mu_ln": mu,
+        "sigma_ln": s,
+        "n_gozlem": o["n"],
+        "sabit_usd": sabit,
+        "hat_usd": hat,
+        "beklenen_usd": float(beklenen),
+        "beklenen_usd_mw": float(beklenen / mw),
+        "p10_usd": float(C(np.exp(mu - 1.2816 * s))),
+        "p50_usd": float(C(np.exp(mu))),
+        "p90_usd": float(C(np.exp(mu + 1.2816 * s))),
+    }
+
+
+def carpan_ornekle(bel: dict | None, n: int, tohum: int) -> np.ndarray:
+    """Senaryo başına bağlantı CAPEX çarpanı C(r_s) / E[C] (ortalaması ≈ 1); belirsizlik yoksa birler."""
+    if not bel:
+        return np.ones(n)
+    r = np.exp(np.random.default_rng(tohum).normal(bel["mu_ln"], bel["sigma_ln"], n))
+    return (bel["sabit_usd"] + bel["hat_usd"] * r) / bel["beklenen_usd"]
