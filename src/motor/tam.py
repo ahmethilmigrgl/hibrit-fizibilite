@@ -116,12 +116,35 @@ def tam_analiz(h: Hazirlik, kv: KullaniciVarsayimlari, ilerleme=None) -> dict:
     ilerleme = ilerleme or (lambda *_: None)
     sure = {}
     t0 = time.perf_counter()
-    uo, yil, graf = uretim_ozeti(h)
     f, seviye = _fiyat(h, kv)
-    o = ortam(h)
+    on = s3 = None
+    if h.v3:  # v3 Faz D: iz verimi eğrisi + tablo kullanılabilirliği/O&M ile MILP
+        from src.motor.v3 import tam_once
+
+        ilerleme(0.1, "Rüzgâr gülü, aday konumlar ve iz verimi eğrisi")
+        on = tam_once(h, kv)
+        sure["v3_iz_egrisi_s"] = on["sure_s"]
+        o = ortam(on["hA"])
+        o.opt["iz_verim"] = on["verim"]
+        h_milp = on["hA"]
+    else:
+        o = ortam(h)
+        h_milp = h
     ilerleme(0.15, "Tam yıl kapasite optimizasyonu (MILP)")
-    t, tas = tasarim_sec(h, o, kv, seviye if isinstance(seviye, str) else float(seviye), f)
-    sure["optimizasyon_s"] = time.perf_counter() - t0
+    t1_ = time.perf_counter()
+    t, tas = tasarim_sec(h_milp, o, kv, seviye if isinstance(seviye, str) else float(seviye), f)
+    sure["optimizasyon_s"] = time.perf_counter() - t1_
+    if h.v3:
+        from src.motor.v3 import tam_sonra
+
+        tg = deger(h.cfg["optimizasyon"]["turbin_gucu"])
+        DF = o.DF
+        p8760 = ((f.fiyatlar * DF[:, None, None]).sum(0) / DF.sum()).mean(0)
+        s3 = tam_sonra(h, kv, on, int(round(t.res_mw / tg)), p8760, ilerleme)
+        sure.update(s3["sure"])
+        h = s3["h"]
+        o = ortam(h)
+    uo, yil, graf = uretim_ozeti(h)
     sigma = MC.res_sigma(h.guven)
     ilerleme(0.3, "İşletme (dispatch) tabloları üretiliyor")
     t1 = time.perf_counter()
@@ -234,6 +257,11 @@ def tam_analiz(h: Hazirlik, kv: KullaniciVarsayimlari, ilerleme=None) -> dict:
         "tablo_izgarasi": seviye_tablo,
         "yekdem_katilim": r["ek"].get("yekdem_opsiyon", {}).get("katilim_yil"),
         "fiyat_seviyesi": float(f.seviye),
+        "yerlesim": s3["yerlesim"] if s3 else None,
+        "bakim": s3["bakim"] if s3 else None,
+        "kullanilabilirlik": s3.get("kullanilabilirlik") if s3 else None,
+        "om_usd_mw_yil": deger(h.cfg["teknoloji"]["res"]["opex_sabit"]),
+        "v3": bool(s3),
     }
     graf.update({"npv_histogram": {"sayi": hist, "kenar": kenar}, "yakinsama": r["yakinsama"]})
     nedenler = [
@@ -255,10 +283,48 @@ def tam_analiz(h: Hazirlik, kv: KullaniciVarsayimlari, ilerleme=None) -> dict:
         },
         {"tr": f"Karar: {k['tr']}", "en": f"Decision: {k['en']}"},
     ]
+    if s3 and s3["yerlesim"] and s3["yerlesim"].get("alan_yetersiz"):
+        y_ = s3["yerlesim"]
+        tetik.insert(
+            0,
+            {
+                "tr": f"Tasarımdaki {y_['N_istenen']} türbin {y_['yaricap_km']:.1f} km yarıçaplı alana asgari aralıkla sığmıyor; en fazla {y_['N']} "
+                "türbin yerleştirildi ve üretim bu yerleşimin verimiyle hesaplandı. Yarıçapı büyütün ya da türbin sayısını azaltın.",
+                "en": f"The design's {y_['N_istenen']} turbines do not fit in the {y_['yaricap_km']:.1f} km radius with minimum spacing; at most {y_['N']} "
+                "were placed and energy uses that layout's efficiency. Enlarge the radius or reduce the turbine count.",
+            },
+        )
+    if s3 and s3["yerlesim"]:
+        y_ = s3["yerlesim"]
+        nedenler.insert(
+            1,
+            {
+                "tr": f"Türbin yerleşimi ({y_['yontem']}): {y_['N']} türbin, iç iz kaybı %{100 * y_['ic_iz']:.1f}, komşu santrallerden "
+                f"%{100 * y_['dis_iz']:.1f}, konum kazancı (GWA) {y_['konum_kazanci']:.3f}",
+                "en": f"Turbine layout ({y_['yontem_kodu']}): {y_['N']} turbines, internal wake loss {100 * y_['ic_iz']:.1f}%, from neighbouring "
+                f"farms {100 * y_['dis_iz']:.1f}%, location gain (GWA) {y_['konum_kazanci']:.3f}",
+            },
+        )
+    if s3 and s3["bakim"]:
+        b_ = s3["bakim"]
+        nedenler.insert(
+            2,
+            {
+                "tr": f"Bakım ({b_['strateji']}): enerji bazlı kullanılabilirlik %{100 * b_['A_enerji']:.1f}, O&M {b_['om_usd_mw_yil'] / 1e3:.1f} bin $/MW-yıl "
+                f"(v1 sabit varsayım 35,0); önleyici bakım çizelgesi yılda {b_['cizelge']['kazanc_bahar'] / 1e3:.1f} bin $ kayıp geliri azaltıyor",
+                "en": f"Maintenance ({b_['strateji']}): energy-based availability {100 * b_['A_enerji']:.1f}%, O&M {b_['om_usd_mw_yil'] / 1e3:.1f} k$/MW-yr "
+                f"(v1 fixed assumption 35.0); the preventive schedule saves {b_['cizelge']['kazanc_bahar'] / 1e3:.1f} k$/yr of lost revenue",
+            },
+        )
     sure["toplam_analiz_s"] = time.perf_counter() - t0
+    ek_tablo = {}
+    if s3 and s3.get("turbinler") is not None:
+        ek_tablo["turbinler"] = s3["turbinler"].reset_index(drop=True)
+    if s3 and s3["bakim"]:
+        ek_tablo["bakim_stratejileri"] = pd.DataFrame(s3["bakim"]["stratejiler"]).set_index("strateji")
     return {
         "ozet": {**ozet, "tetikleyiciler": tetik},
-        "tablolar": {"gelir_yapilari": gelir_tablo, "yillik_uretim": yil, "yakinsama": pd.DataFrame(r["yakinsama"])},
+        "tablolar": {"gelir_yapilari": gelir_tablo, "yillik_uretim": yil, "yakinsama": pd.DataFrame(r["yakinsama"]), **ek_tablo},
         "grafikler": graf,
         "nedenler": nedenler,
         "sure": sure,

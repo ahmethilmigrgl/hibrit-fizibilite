@@ -23,6 +23,12 @@ Kısıtlar     y_t + k_t + c_t = G·g_t + m·N·r_t      (üretim dengesi)
              1·P ≤ E ≤ 6·P                           (batarya süresi 1-6 saat)
              G ≤ G_max (arazi);  opsiyonel: G ≤ oran·m·N (yardımcı kaynak), P ≥ G + m·N (depolamalı tesis)
 
+v3 D1 — iz kaybı (opt["iz_verim"] = [η_0, η_1, …, η_Nmax] verilirse): türbin sayısına bağlı çiftlik verimi
+(konum kazancı × (1 − iç iz) × (1 − komşu izi), açgözlü yerleşimden önceden hesaplanır). N tamsayı olduğundan parçalı
+doğrusal fonksiyon ikili seçim değişkenleriyle KESİN temsil edilir:
+             λ_n ∈ {0,1},  Σ_n λ_n = 1,  N = Σ_n n·λ_n,  N_etkin = Σ_n n·η_n·λ_n
+             üretim dengesinde m·N·r_t yerine m·N_etkin·r_t (maliyetler anma gücüyle: m·N)
+
 Yıllık eşdeğer ve vergi (proje_degerle ile aynı zaman çizelgesi):
     S_isl  = Σ_{k=1..N} DF(nb+k)                 (işletme yıllarının iskonto çarpanları toplamı)
     C_pv   = Σ_y takvim_y · DF(y+1)              (1 USD CAPEX'in bugünkü değeri)
@@ -152,6 +158,18 @@ def kapasite_coz(
     m.d = pyo.Var(m.I, within=pyo.NonNegativeReals)  # deşarj
     m.s = pyo.Var(m.I, within=pyo.NonNegativeReals)  # şarj durumu
 
+    # v3 D1: türbin sayısına bağlı iz verimi (parçalı doğrusal, ikili seçimle kesin)
+    iz_verim = opt.get("iz_verim")
+    if iz_verim is not None:
+        n_ust_iz = min(len(iz_verim) - 1, opt["turbin_azami"])
+        m.NN = pyo.Set(initialize=range(n_ust_iz + 1))
+        m.lam = pyo.Var(m.NN, within=pyo.Binary)
+        m.k_lam_bir = pyo.Constraint(expr=sum(m.lam[n] for n in m.NN) == 1)
+        m.k_lam_N = pyo.Constraint(expr=m.N == sum(n * m.lam[n] for n in m.NN))
+        N_uretim = sum(n * float(iz_verim[n]) * m.lam[n] for n in m.NN)
+    else:
+        N_uretim = m.N
+
     g = {(s, h): float(seg.ges[h]) * eko.f_ges for s, seg in enumerate(segmentler) for h in range(len(seg.fiyat))}
     r = {(s, h): float(seg.res[h]) * eko.f_res for s, seg in enumerate(segmentler) for h in range(len(seg.fiyat))}
     p = {(s, h): float(seg.fiyat[h]) for s, seg in enumerate(segmentler) for h in range(len(seg.fiyat))}
@@ -209,7 +227,7 @@ def kapasite_coz(
     # --- Kısıtlar
     sarj = (lambda m, s, h: m.c[s, h] + m.c2[s, h]) if dl else (lambda m, s, h: m.c[s, h])
     rr = (lambda m, s, h: m.r[s, h]) if yh else (lambda m, s, h: 0)
-    m.k_uretim = pyo.Constraint(m.I, rule=lambda m, s, h: m.y[s, h] + m.k[s, h] + m.c[s, h] == m.G * g[s, h] + m_t * m.N * r[s, h])
+    m.k_uretim = pyo.Constraint(m.I, rule=lambda m, s, h: m.y[s, h] + m.k[s, h] + m.c[s, h] == m.G * g[s, h] + m_t * N_uretim * r[s, h])
     # Yan hizmet rezervi şebeke kısıtına girmez: yukarı yönlü aktivasyon anında santralin doğrudan
     # çıkışı rezerv kadar kısılarak yer açılır (aktivasyon enerjisi küçük; bkz. docs/05).
     if dl:  # santral doğrudan L'yi aşamaz; bataryanın deşarjı ek bağlantı L2 üzerinden de verilebilir
@@ -259,7 +277,8 @@ def kapasite_coz(
     hv = lambda var: np.array([var[i].value for i in idx])
     d_, c_, k_ = hv(m.d), hv(m.c), hv(m.k)
     r_ = hv(m.r) if yh else np.zeros(len(idx))
-    A_ = np.array([val(m.G) * g[i] + m_t * val(m.N) * r[i] for i in idx])
+    N_ur = float(pyo.value(N_uretim))
+    A_ = np.array([val(m.G) * g[i] + m_t * N_ur * r[i] for i in idx])
     # Bataryasız karşı olgu: aynı üretim, kesinti = max(A − L, 0) + ekonomik kesinti (p < τ)
     sat0 = np.where(P_ > eko.teias_e, np.minimum(A_, L), 0.0)
     k0 = A_ - sat0
@@ -268,6 +287,7 @@ def kapasite_coz(
         "Yatırım": int(round(val(m.b))),
         "N": int(round(val(m.N))),
         "RES [MW]": m_t * round(val(m.N)),
+        "İz verimi": N_ur / max(round(val(m.N)), 1) if iz_verim is not None else 1.0,
         "GES [MWac]": val(m.G),
         "BESS [MW]": P_val,
         "BESS [MWh]": E_val,

@@ -1,0 +1,59 @@
+{
+ "Çanakkale-Ezine": {
+  "A_enerji": 0.9743294332830982,
+  "A_enerji_kisa": 0.9915101389272966,
+  "om_usd_mw_yil": 25518.784687925167,
+  "stok": {
+   "kanat_rotor": 0,
+   "disli_kutusu": 0,
+   "jenerator": 0,
+   "ana_yatak": 0
+  },
+  "cizelge_kazanc_bahar": 5656.059814807452,
+  "cizelge_kazanc_esit": 21305.818007946877,
+  "sure": {
+   "cizelge_s": 0.1249008746817708,
+   "stok_s": 0.3163776667788625,
+   "des_s": 37.54953525029123,
+   "toplam_s": 38.03488187491894
+  }
+ },
+ "Sivas-Gürün": {
+  "A_enerji": 0.9731607022102474,
+  "A_enerji_kisa": 0.9915131224968329,
+  "om_usd_mw_yil": 25515.921044387753,
+  "stok": {
+   "kanat_rotor": 0,
+   "disli_kutusu": 0,
+   "jenerator": 0,
+   "ana_yatak": 0
+  },
+  "cizelge_kazanc_bahar": 7321.067791865433,
+  "cizelge_kazanc_esit": 19138.29254363691,
+  "sure": {
+   "cizelge_s": 0.13138295896351337,
+   "stok_s": 0.33453649980947375,
+   "des_s": 40.815633583348244,
+   "toplam_s": 41.29875387484208
+  }
+ },
+ "Balıkesir-Susurluk": {
+  "A_enerji": 0.9737664178233761,
+  "A_enerji_kisa": 0.9915371777638243,
+  "om_usd_mw_yil": 25517.50138452381,
+  "stok": {
+   "kanat_rotor": 0,
+   "disli_kutusu": 0,
+   "jenerator": 0,
+   "ana_yatak": 0
+  },
+  "cizelge_kazanc_bahar": 5275.21038035928,
+  "cizelge_kazanc_esit": 22617.470888039697,
+  "sure": {
+   "cizelge_s": 0.1506255827844143,
+   "stok_s": 0.34373408276587725,
+   "des_s": 41.04300937522203,
+   "toplam_s": 41.55542049976066
+  }
+ }
+}

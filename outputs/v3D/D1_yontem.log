@@ -1,0 +1,95 @@
+Çanakkale-Ezine: 208 aday, en fazla 28 türbin, yön era5_hucre, komşu 9
+  N=12 milp     t0   24.0s  E=165645  iç iz %3.65  olurlu=True
+  N=12 ga       t0    0.9s  E=165685  iç iz %3.52  olurlu=True
+  N=12 ga       t1    1.0s  E=165685  iç iz %3.52  olurlu=True
+  N=12 ga       t2    0.9s  E=165685  iç iz %3.52  olurlu=True
+  N=12 ga       t3    0.9s  E=165685  iç iz %3.52  olurlu=True
+  N=12 ga       t4    1.0s  E=165685  iç iz %3.52  olurlu=True
+  N=12 sa       t0    1.5s  E=165685  iç iz %3.52  olurlu=True
+  N=12 sa       t1    1.6s  E=165685  iç iz %3.52  olurlu=True
+  N=12 sa       t2    1.6s  E=165858  iç iz %4.13  olurlu=True
+  N=12 sa       t3    1.5s  E=165722  iç iz %3.78  olurlu=True
+  N=12 sa       t4    1.6s  E=165685  iç iz %3.52  olurlu=True
+  N=12 izgara   t0    0.0s  E=152584  iç iz %6.10  olurlu=True
+  N=12 gwa      t0    0.0s  E=162099  iç iz %7.49  olurlu=False
+  N=12 acgozlu  t0    0.0s  E=165396  iç iz %3.42  olurlu=True
+  N=20 milp     t0   60.0s  E=255073  iç iz %6.28  olurlu=True
+  N=20 ga       t0    1.6s  E=253815  iç iz %6.65  olurlu=True
+  N=20 ga       t1    1.6s  E=254086  iç iz %6.46  olurlu=True
+  N=20 ga       t2    1.6s  E=254086  iç iz %6.46  olurlu=True
+  N=20 ga       t3    1.6s  E=254086  iç iz %6.46  olurlu=True
+  N=20 ga       t4    1.6s  E=254086  iç iz %6.46  olurlu=True
+  N=20 sa       t0    2.7s  E=255170  iç iz %6.14  olurlu=True
+  N=20 sa       t1    2.7s  E=255181  iç iz %6.30  olurlu=True
+  N=20 sa       t2    2.7s  E=254117  iç iz %6.54  olurlu=True
+  N=20 sa       t3    2.7s  E=254521  iç iz %6.05  olurlu=True
+  N=20 sa       t4    2.7s  E=253956  iç iz %6.06  olurlu=True
+  N=20 izgara   t0    0.0s  E=234100  iç iz %8.40  olurlu=True
+  N=20 gwa      t0    0.0s  E=253655  iç iz %9.27  olurlu=False
+  N=20 acgozlu  t0    0.0s  E=252671  iç iz %6.66  olurlu=True
+Sivas-Gürün: 208 aday, en fazla 25 türbin, yön era5_hucre, komşu 1
+  N=12 milp     t0   60.0s  E=172571  iç iz %3.09  olurlu=True
+  N=12 ga       t0    0.9s  E=171844  iç iz %3.13  olurlu=True
+  N=12 ga       t1    0.9s  E=171844  iç iz %3.13  olurlu=True
+  N=12 ga       t2    0.9s  E=171844  iç iz %3.13  olurlu=True
+  N=12 ga       t3    0.9s  E=171844  iç iz %3.13  olurlu=True
+  N=12 ga       t4    0.8s  E=171844  iç iz %3.13  olurlu=True
+  N=12 sa       t0    1.4s  E=172571  iç iz %3.09  olurlu=True
+  N=12 sa       t1    1.4s  E=172571  iç iz %3.09  olurlu=True
+  N=12 sa       t2    1.4s  E=172571  iç iz %3.09  olurlu=True
+  N=12 sa       t3    1.4s  E=172571  iç iz %3.09  olurlu=True
+  N=12 sa       t4    1.4s  E=172571  iç iz %3.09  olurlu=True
+  N=12 izgara   t0    0.0s  E=166585  iç iz %4.46  olurlu=True
+  N=12 gwa      t0    0.0s  E=171436  iç iz %4.30  olurlu=False
+  N=12 acgozlu  t0    0.0s  E=171485  iç iz %3.32  olurlu=True
+  N=20 milp     t0   60.0s  E=267703  iç iz %6.65  olurlu=True
+  N=20 ga       t0    1.3s  E=268672  iç iz %6.02  olurlu=True
+  N=20 ga       t1    1.3s  E=268311  iç iz %6.31  olurlu=True
+  N=20 ga       t2    1.3s  E=268264  iç iz %6.43  olurlu=True
+  N=20 ga       t3    1.3s  E=267525  iç iz %6.27  olurlu=True
+  N=20 ga       t4    1.3s  E=267115  iç iz %6.18  olurlu=True
+  N=20 sa       t0    2.2s  E=268476  iç iz %6.17  olurlu=True
+  N=20 sa       t1    2.2s  E=268261  iç iz %6.03  olurlu=True
+  N=20 sa       t2    2.2s  E=268378  iç iz %6.11  olurlu=True
+  N=20 sa       t3    2.2s  E=268378  iç iz %6.11  olurlu=True
+  N=20 sa       t4    2.2s  E=268601  iç iz %6.05  olurlu=True
+  N=20 izgara   t0    0.0s  E=260750  iç iz %7.43  olurlu=True
+  N=20 gwa      t0    0.0s  E=267732  iç iz %8.38  olurlu=False
+  N=20 acgozlu  t0    0.0s  E=265172  iç iz %6.42  olurlu=True
+Balıkesir-Susurluk: 208 aday, en fazla 28 türbin, yön era5_hucre, komşu 3
+  N=12 milp     t0   38.6s  E=172361  iç iz %2.47  olurlu=True
+  N=12 ga       t0    0.8s  E=171879  iç iz %2.63  olurlu=True
+  N=12 ga       t1    0.8s  E=171879  iç iz %2.63  olurlu=True
+  N=12 ga       t2    0.8s  E=171879  iç iz %2.63  olurlu=True
+  N=12 ga       t3    0.8s  E=171879  iç iz %2.63  olurlu=True
+  N=12 ga       t4    0.8s  E=171879  iç iz %2.63  olurlu=True
+  N=12 sa       t0    1.3s  E=172279  iç iz %2.60  olurlu=True
+  N=12 sa       t1    1.3s  E=172175  iç iz %2.63  olurlu=True
+  N=12 sa       t2    1.3s  E=172279  iç iz %2.60  olurlu=True
+  N=12 sa       t3    1.3s  E=172015  iç iz %2.40  olurlu=True
+  N=12 sa       t4    1.3s  E=171879  iç iz %2.63  olurlu=True
+  N=12 izgara   t0    0.0s  E=158140  iç iz %4.64  olurlu=True
+  N=12 gwa      t0    0.0s  E=170445  iç iz %4.71  olurlu=False
+  N=12 acgozlu  t0    0.0s  E=171879  iç iz %2.63  olurlu=True
+  N=20 milp     t0   60.0s  E=270695  iç iz %5.08  olurlu=True
+  N=20 ga       t0    1.3s  E=269387  iç iz %5.58  olurlu=True
+  N=20 ga       t1    1.3s  E=269387  iç iz %5.58  olurlu=True
+  N=20 ga       t2    1.3s  E=269387  iç iz %5.58  olurlu=True
+  N=20 ga       t3    1.3s  E=269387  iç iz %5.58  olurlu=True
+  N=20 ga       t4    1.3s  E=269387  iç iz %5.58  olurlu=True
+  N=20 sa       t0    2.2s  E=269387  iç iz %5.58  olurlu=True
+  N=20 sa       t1    2.2s  E=269844  iç iz %5.32  olurlu=True
+  N=20 sa       t2    2.2s  E=270548  iç iz %5.76  olurlu=True
+  N=20 sa       t3    2.2s  E=270548  iç iz %5.76  olurlu=True
+  N=20 sa       t4    2.2s  E=270220  iç iz %5.28  olurlu=True
+  N=20 izgara   t0    0.0s  E=229918  iç iz %8.44  olurlu=True
+  N=20 gwa      t0    0.0s  E=269304  iç iz %7.07  olurlu=False
+  N=20 acgozlu  t0    0.0s  E=269387  iç iz %5.58  olurlu=True
+         fark_ort  fark_en_kotu  sure_ort  sure_azami  tohumlar_arasi_cv_%
+yontem                                                                    
+acgozlu    -0.659        -1.303     0.000       0.000                  NaN
+ga         -0.333        -0.579     1.146       1.604                0.048
+gwa        -0.916        -2.267     0.001       0.001                  NaN
+izgara     -7.666       -15.064     0.001       0.001                  NaN
+milp       -0.088        -0.361    50.443      60.013                  NaN
+sa         -0.126        -0.483     1.897       2.685                0.101

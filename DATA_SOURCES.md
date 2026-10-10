@@ -94,3 +94,17 @@ kişisel kimlik bilgisi (CDS, EPİAŞ) kullanılmaz; bunlar yalnız çevrimdış
 (`data/atlas/piyasa/saatlik.parquet`) saatlik PTF ve ulusal üretim içerir; EPİAŞ'ın "kaynak gösterilerek çoğaltma"
 koşuluna uygun olarak atıf metniyle dağıtılır. Santral bazında ham üretim dağıtılmaz; atlas yalnız türetilmiş katsayılar
 (k, 12 × 24 matris, ay × saat ortalama KF) içerir.
+
+## v3 (dal `v3-ie`) — Faz D: türbin yerleşimi, bakım ve güvenilirlik
+
+Koşullar Ekim 2026'da kendi sayfalarından doğrulandı; herkese açık, ticari olmayan uygulamada kullanımı engelleyen koşul yok.
+
+| Kaynak | v3'te kullanım | Lisans / koşul | Atıf |
+|---|---|---|---|
+| **ERA5 saatlik tek seviye, gridli** (`reanalysis-era5-single-levels`; u100, v100; Türkiye kutusu 0,25°, 2014–2023; CDS, çevrimdışı `src/v3_D0_era5_yon_grid.py`) | 100 m rüzgâr **yönü** → hücre başına 10°'lik sektör (uint8), `data/grid/era5_yon_tr/v1/` (git'e girmez); rüzgâr gülü ve saatlik iz verimi | CC-BY (C3S lisansı) | v1 Copernicus atfı + "değiştirildi: 100 m rüzgâr yönü 10°'lik sektörlere indirgendi" |
+| **OpenStreetMap türbin düğümleri** (Türkiye, 4.122 düğüm; v2 Faz C0 indirmesi) | Komşu santral türbinleri (konum, birim güç, rotor, göbek) → `data/atlas/osm_turbinler.csv` | **ODbL 1.0** (türetilmiş veritabanı) | "© OpenStreetMap katkıcıları, ODbL" |
+| **DTU PyWake 2.6** ([LICENSE](https://gitlab.windenergy.dtu.dk/TOPFARM/PyWake/-/blob/master/LICENSE)) | İz modeli referansı (Bastankhah Gauss, Jensen/NOJ), genel türbin CT eğrisi | MIT, © DTU Wind and Energy Systems 2018 | "PyWake (DTU Wind Energy), MIT lisansı" |
+| **SimPy 4.1** ([PyPI](https://pypi.org/project/simpy/)) | Bakım ayrık olay simülasyonu | MIT | — |
+| **Carroll, McDonald & McMillan (2016)**, *Failure rate, repair time and unscheduled O&M cost analysis of offshore wind turbines*, Wind Energy 19(6):1107–1119 ([açık erişim](https://strathprints.strath.ac.uk/54141/)) | Alt sistem × sınıf iş süreleri, malzeme maliyetleri, teknisyen sayıları; kara jeneratör/konvertör arıza oranları; sıfırlama oranı | Bilimsel yayın (değerler sayısal olarak alıntılandı) | Kaynak olarak anılır |
+| **WMEP** (ISET/Fraunhofer IWES; Hahn, Durstewitz & Rohrig 2007; Faulstich vd. 2009, EWEC) | Kara RES'leri alt sistem arıza sıklıkları (grafikten yaklaşık) ve toplam 2,4 arıza/türbin/yıl | Bilimsel yayın | Kaynak olarak anılır |
+| **NREL Cost of Wind Energy Review 2024** ([PDF](https://www.nrel.gov/docs/fy25osti/91775.pdf)) | Kara RES işletme gideri karşılaştırması (43 $/kW-yıl, 2023 $) | Kamu yayını | Kaynak olarak anılır |

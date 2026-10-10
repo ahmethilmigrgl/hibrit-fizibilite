@@ -17,3 +17,5 @@ windpowerlib==0.2.2
 matplotlib==3.11.2
 folium==0.20.0
 streamlit-folium==0.27.4
+py_wake==2.6.20
+simpy==4.1.2

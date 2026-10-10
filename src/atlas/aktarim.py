@@ -31,15 +31,57 @@ ATLAS = KOK / "data" / "atlas"
 KULLANILIR = ("temiz", "kullanilabilir")
 
 
-@lru_cache(maxsize=1)
-def atlas() -> tuple[pd.DataFrame, dict]:
+_atlas_ozel: tuple | None = None  # yalnız doğrulama betikleri için geçersiz kılma (df, matrisler)
+_izsiz: bool | None = None  # None → config v3.yerlesim.atlas_iz_arindirma; motor izsiz_mod() ile ayarlar
+
+
+def izsiz_aktif() -> bool:
+    """v3: izden arındırılmış kalibrasyon matrisleri (K') kullanılıyor mu? (iz kaybı ayrıca modelleniyorsa)"""
+    if _izsiz is not None:
+        return _izsiz
+    try:
+        return bool(deger(config_oku()["v3"]["yerlesim"]).get("atlas_iz_arindirma", False))
+    except KeyError:
+        return False
+
+
+class izsiz_mod:
+    """Bağlam yöneticisi: with izsiz_mod(True): ... (profil üretimi sırasında atlas matris türünü seçer)."""
+
+    def __init__(self, deger_: bool):
+        self.deger, self.eski = bool(deger_), None
+
+    def __enter__(self):
+        global _izsiz
+        self.eski, _izsiz = _izsiz, self.deger
+        return self
+
+    def __exit__(self, *a):
+        global _izsiz
+        _izsiz = self.eski
+
+
+@lru_cache(maxsize=2)
+def _atlas_yukle(izsiz: bool) -> tuple[pd.DataFrame, dict]:
     from src import veri_katmani
 
     df = pd.read_csv(veri_katmani.yol("atlas/kalibrasyon_atlasi.csv"))
     df = df[df["sinif"].isin(KULLANILIR)].reset_index(drop=True)
     z = np.load(veri_katmani.yol("atlas/kalibrasyon_matrisleri.npz"))
     mat = {int(k[2:]): z[k].astype(float) for k in z.files if k.startswith("k_")}
+    if izsiz:  # v3 D1: K'_p = s_p · K_p (santralin kendi iz kaybından arındırılmış; src/v3_D1_atlas_iz.py)
+        z2 = np.load(veri_katmani.yol("atlas/kalibrasyon_matrisleri_izsiz.npz"))
+        mat.update({int(k[2:]): z2[k].astype(float) for k in z2.files if k.startswith("k_")})
     return df, mat
+
+
+def atlas() -> tuple[pd.DataFrame, dict]:
+    if _atlas_ozel is not None:
+        return _atlas_ozel
+    return _atlas_yukle(izsiz_aktif())
+
+
+atlas.cache_clear = _atlas_yukle.cache_clear
 
 
 def _km(e1, b1, e2, b2):
@@ -160,13 +202,20 @@ def r_duzelt(R: np.ndarray, n: int, a: dict, haric: int | None = None) -> np.nda
     return R
 
 
-@lru_cache(maxsize=256)
 def ulusal_artik(haric: int | None = None) -> np.ndarray:
     """Atlastaki tüm kullanılabilir santrallerin GWA sonrası artık matrislerinin (R = K / c) hücre bazında medyanı."""
+    return _ulusal_artik(haric, izsiz_aktif(), id(_atlas_ozel) if _atlas_ozel is not None else 0)
+
+
+@lru_cache(maxsize=512)
+def _ulusal_artik(haric: int | None, izsiz: bool, ozel: int) -> np.ndarray:
     df, mat = atlas()
     ci = santral_c()
     d = df if haric is None else df[df["epias_id"] != haric]
     return np.median([mat[int(i)] / ci[int(i)] for i in d["epias_id"]], axis=0)
+
+
+ulusal_artik.cache_clear = _ulusal_artik.cache_clear
 
 
 def aktarim_matrisi(saha, era5_v100: float, cfg: dict) -> tuple[pd.DataFrame, dict]:

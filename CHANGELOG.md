@@ -15,6 +15,40 @@ Proje aşamalar halinde geliştirildi. Her aşama bir commit; revizyonlar ve ön
 | Tutarlılık 2 | YEKDEM yıllık opsiyon, ortak batarya sürücüsü, inşaata hazır takvim | +1,5 M$ | Durum tespiti + ≤1,5 M$ teklif |
 | **Nihai (Aşama 9 A)** | **Fiyat ortalaması: 58 $/MWh medyan değil beklenen değer** | **−1,7 M$** | **Rafa kaldır, tetikleyicileri izle** |
 
+## [3.0.0-D] — 2026-10-10 (dal `v3-ie`, yayınlanmadı)
+
+### v3 Faz D — Türbin yerleşimi optimizasyonu + bakım ve güvenilirlik
+Ayrıntılar `docs/v3_D_yerlesim_bakim.md`, çıktılar `outputs/v3D/`.
+- **Türbin yerleşimi** (`src/yerlesim/`):
+  - ERA5 100 m yönüyle rüzgâr gülü; GWA 250 m hız çarpanları (atlas kalibrasyonuyla tutarlı).
+  - Saha alanı + dışlama katmanı arayüzü (Faz E için).
+  - Elips biçimli asgari aralık; PyWake Bastankhah iz modeli (Jensen duyarlılığı) + PyWake'le 1e-6 içinde aynı hızlı vekil.
+  - Üç yöntem: MILP (Glover doğrusallaştırması), GA ve SA + yerel arama, düzenli ızgara / v2 kuralı.
+  - Web için çok başlangıçlı SA: ~2 s, en iyiye ort. %0,13; MILP 24–60 s.
+- **Komşu iz ve atlas hipotezi:**
+  - 85 kalibre santralde iz kaybı medyan %4,7.
+  - "Balıkesir–Biga artığı kümelenme izinden" hipotezi çürütüldü: fark 0,34 puan, p = 0,70.
+  - İzden arındırılmış katsayılar doğrulamayı kötüleştirdi (RMSE 6,87 → 7,00), atlas güncellenmedi.
+  - Çift sayımı önleyen göreli kural (RMSE 6,77).
+- **Bakım ve güvenilirlik** (`src/bakim/`):
+  - SimPy ayrık olay simülasyonu: ekip, vinç, stok, hava pencereleri.
+  - Üç strateji: durum bazlı %97,4 kullanılabilirlik, toplam maliyette en iyi.
+  - Zaman indeksli önleyici bakım çizelgesi MILP'i: bahar kampanyasına göre kayıp gelir %46–56 düşük.
+  - Baz stok simülasyon tabanlı optimizasyonu: 14 türbinde stok ekonomik değil, 28+ türbinde 1 adet.
+  - O&M 25,5 bin $/MW-yıl (v1 35 bin; mutabakat docs §7.6).
+- **Motor:**
+  - Kapasite MILP'i türbin sayısına bağlı iz verimiyle (ikili seçimle kesin parçalı doğrusal).
+  - Seçilen N için yerleşim + DES → profil, OPEX, Monte Carlo kullanılabilirlik gürültüsü.
+  - Hızlı tarama önceden hesaplanmış tablolarla.
+  - Seçenekler: `yerlesim_bakim`, `yerlesim_yontemi`, `bakim_modeli`, `bakim_stratejisi`. `yerlesim_bakim=False` v2'yi aynen
+    verir. Veri sürümü `v3D-2026-10`.
+- **Önce/sonra** (tam analiz, E[NPV]): Ezine −6,30 → −0,82, Gürün −5,71 → −1,30, Susurluk −5,04 → −0,36 M$.
+  Tasarımlar 10–13 türbine küçüldü; karar değişmedi (rafa kaldır).
+- **Süre:** tam analize v3 eki 10–13 s (2 çekirdek).
+- **Arayüz:** tam analizde "Türbin yerleşimi" (harita, rüzgâr gülü, iz eğrisi, türbin tablosu) ve "İşletme ve bakım"
+  (strateji tablosu, kullanılabilirlik dağılımı, bakım takvimi, mevsimsel hava beklemesi, yedek parça) bölümleri ("Eşik").
+- **Bağımlılıklar:** `py_wake==2.6.20`, `simpy==4.1.2` (ikisi de MIT). Testler `tests/test_v3_D.py` (23).
+
 ## [2.0.0-rc2] — 2026-10-07 (dal `v2-genel`, yayınlanmadı)
 
 ### Arayüz tasarım sistemi birleştirildi (`v2-arayuz` → `v2-genel`)

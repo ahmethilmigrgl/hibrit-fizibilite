@@ -1,0 +1,4 @@
+﻿durum,rmse,medyan_mutlak,p90_mutlak,ort_hata,komsulu_rmse
+"önce (v2: K, toplu %12)",6.872,4.439,11.095,-0.519,6.049
+sonra-1 (izden arındırılmış K' + iz),7.002,4.905,11.298,-0.541,6.059
+"sonra-2 (K + göreli iz: η/(1−W̄), W̄ = %5.1)",6.768,4.111,11.117,-0.527,5.828

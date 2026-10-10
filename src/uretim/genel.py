@@ -105,7 +105,7 @@ def profil_uret(
     saha: Saha, cfg: dict, y1: int = 2014, y2: int = 2023, ruzgar_kaynagi: str = "open_meteo", kalibrasyon: str = "atlas"
 ) -> tuple[pd.DataFrame, dict]:
     """
-    Döndürür (v1 saha_profilleri ile aynı biçim): df (zaman_utc; ges_kf, res_kf, v100_ham, v_gobek_ham, hava_yogunlugu)
+    Döndürür (v1 saha_profilleri ile aynı biçim): df (zaman_utc; ges_kf, res_kf, v100_ham, v_gobek_ham, v_kalibre, hava_yogunlugu)
     ve bilgi (kaynak, kalibrasyon, türbin, ortalama KF'ler).
     cfg: saha_cfg(saha) ile üretilmiş sahaya özgü config.
     """
@@ -120,6 +120,7 @@ def profil_uret(
             res_kf.rename("res_kf"),
             ara["v100"].rename("v100_ham"),
             ara["v_gobek"].rename("v_gobek_ham"),
+            ara["v_kalibre"].rename("v_kalibre"),
             ara["yogunluk"].rename("hava_yogunlugu"),
         ],
         axis=1,

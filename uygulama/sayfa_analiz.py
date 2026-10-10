@@ -641,6 +641,11 @@ def tam_sonuc(s) -> None:
         mobilde_gizle=(2, 5, 6),
         negatif=[(i, 1) for i, v in enumerate(g["e_npv"]) if v < 0],
     )
+    if o.get("v3"):  # v3 Faz D: türbin yerleşimi + işletme ve bakım
+        from uygulama.v3_bolumler import bakim_bolumu, yerlesim_bolumu
+
+        yerlesim_bolumu(o, s.saha)
+        bakim_bolumu(o)
     B.bolum_basligi(
         T("Neyi izlemeli", "What to monitor"), T("kararı değiştirecek tetikleyiciler", "triggers that would change the decision")
     )

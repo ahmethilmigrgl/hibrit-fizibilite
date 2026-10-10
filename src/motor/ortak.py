@@ -40,6 +40,7 @@ class Hazirlik:
     guven: dict
     v: Varsayimlar
     uyarilar: list[Uyari]
+    v3: bool = False  # v3 Faz D: profil izsiz ve kullanılabilirlik hariç "taban" profildir (src/motor/v3.py uygular)
 
 
 def saha_hazirla(saha_girdi: Saha | dict, kv: KullaniciVarsayimlari) -> Saha:
@@ -95,6 +96,7 @@ def _profil_anahtari(saha: Saha, cfg: dict, kv: KullaniciVarsayimlari, y1: int, 
         y1,
         y2,
         deger(cfg["v2"]["motor"])["veri_surumu"],
+        round(float(deger(cr["toplam_kayip"])), 6),
     ]
     return hashlib.sha1(json.dumps(a, default=str).encode()).hexdigest()[:16]
 
@@ -120,6 +122,11 @@ def hazirla(saha_girdi: Saha | dict, kv: KullaniciVarsayimlari, ilerleme=None, p
     uyari: list[Uyari] = []
     saha = saha_hazirla(saha_girdi, kv)
     cfg = cfg_uygula(saha_cfg(saha), kv)
+    v3 = kv.v3_aktif()
+    if v3:  # taban profil: iz ve kullanılabilirlik hariç, atlas kalibrasyonuyla tutarlı göreli kural (config v3.kayip)
+        from src.yerlesim.analiz import taban_kayip
+
+        _ata(cfg, "uretim.ruzgar.toplam_kayip", taban_kayip(cfg))
     y1, y2 = deger(cfg["v2"]["motor"])["profil_yillari"]
     anahtar = _profil_anahtari(saha, cfg, kv, y1, y2)
     yol = PROFIL_ONBELLEK / f"{anahtar}.parquet"
@@ -199,7 +206,15 @@ def hazirla(saha_girdi: Saha | dict, kv: KullaniciVarsayimlari, ilerleme=None, p
                 ),
             )
         )
-    return Hazirlik(saha, cfg, df, profil_df_den(df), bilgi, guven, Varsayimlar.configten(cfg), uyari)
+    return Hazirlik(saha, cfg, df, profil_df_den(df), bilgi, guven, Varsayimlar.configten(cfg), uyari, v3)
+
+
+def profil_degistir(h: Hazirlik, res_kf: np.ndarray | pd.Series, cfg: dict | None = None) -> Hazirlik:
+    """Hazırlığın RES profilini (saatlik, profil indeksiyle aynı uzunlukta) ve isteğe bağlı config'i değiştirir."""
+    df = h.profil.copy()
+    df["res_kf"] = np.asarray(res_kf, float)
+    c = cfg if cfg is not None else h.cfg
+    return replace(h, profil=df, u=profil_df_den(df), cfg=c, v=Varsayimlar.configten(c))
 
 
 def ortam(h: Hazirlik):

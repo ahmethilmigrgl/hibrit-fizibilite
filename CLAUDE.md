@@ -174,3 +174,29 @@ tüm v2 işi `v2-genel` dalında.
    Açık tema = yatırım raporu, koyu tema = kontrol odası. **Renk kodu yalnız `tokenlar.py`'de**; değişince
    `.venv/bin/python src/v2_tasarim_tema.py` (`.streamlit/config.toml` + logolar üretilir, elle düzenlenmez). Harita altlığı
    karosuz (`data/atlas/altlik_tr.geojson`), yazı tipleri yerel (`static/fonts`, OFL). Testler `tests/test_v2_tasarim.py`.
+
+---
+
+## v3 — Endüstri mühendisliği eklentileri (dal: `v3-ie`, `v2-genel`'den)
+**Amaç:** Uygulamaya endüstri mühendisliği perspektifinden (yöneylem araştırması, benzetim, güvenilirlik, tesis yerleşimi,
+çok kriterli karar, lojistik, portföy) özellikler eklemek; her yeni modelin matematiksel formülasyonu docs'ta, mülakatta
+açıklanabilir. v2 (`v2-genel`) değiştirilmez; tüm iş `v3-ie` dalında. Hugging Face/yayın adımı ve push yok. Mevcut testler
+geçmeli, mevcut akışlar bozulmamalı; arayüz eklemeleri "Eşik" tasarım sistemiyle (`uygulama/tasarim/`).
+
+**Fazlar:**
+- **Faz D — Türbin yerleşimi optimizasyonu + bakım ve güvenilirlik.**
+- **Faz E — Coğrafi katmanlar + çok kriterli saha seçimi (AHP/TOPSIS) + lojistik ve tedarik zinciri.** (Faz D'deki
+  `src/yerlesim/alan.py` dışlama katmanı arayüzü yol, yerleşim, koruma alanı, eğim katmanlarıyla doldurulacak.)
+- **Faz F — Çoklu saha portföy optimizasyonu + santral performans izleme.** (Faz D'deki `src/bakim/stok.py` baz stok
+  optimizasyonu sahalar arası havuzlamaya genişletilecek.)
+
+**Faz D durumu (2026-10-10):** ✅ bkz. `docs/v3_D_yerlesim_bakim.md`. Modüller `src/yerlesim/` (turbin, ruzgar_gulu,
+alan + dışlama arayüzü, iz: PyWake referansı + hızlı vekil, yontemler: MILP Glover / GA / SA / ızgara, analiz),
+`src/bakim/` (hava pencereleri, SimPy ayrık olay simülasyonu, çizelge MILP'i, baz stok), `src/motor/v3.py` (motor bağlantısı),
+`src/kaynaklar/era5_yon.py` (ERA5 100 m yön gridi, `src/v3_D0_era5_yon_grid.py`, çevrimdışı CDS). Arayüz `uygulama/v3_bolumler.py`.
+Config `v3.kayip` (göreli kayıp kuralı, taban kayıp ≈ %6,3), `v3.yerlesim`, `v3.bakim`. Motor seçenekleri
+`KullaniciVarsayimlari(yerlesim_bakim, yerlesim_yontemi, bakim_modeli, bakim_stratejisi)`; `yerlesim_bakim=False` ya da
+`kalibrasyon="v1"` v2 davranışını aynen verir. Kapasite MILP'i `opt["iz_verim"]` ile türbin sayısına bağlı iz verimini ikili
+seçimle kesin temsil eder. Atlas: iz kaybı artığı açıklamadı → matrisler güncellenmedi (`atlas_iz_arindirma: false`), göreli
+kural kullanılır. Betikler `src/v3_D*.py` → `outputs/v3D/`; testler `tests/test_v3_D.py`. Veri: `data/atlas/osm_turbinler.csv`,
+`santral_iz_kaybi.csv`, `v3_hizli_tablolar.csv`; yön gridi `data/grid/era5_yon_tr/v1/` (repoda yok). Veri sürümü `v3D-2026-10`.

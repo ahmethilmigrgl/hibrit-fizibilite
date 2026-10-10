@@ -1,0 +1,26 @@
+Çanakkale-Ezine {"A_enerji": 0.9743294332830982, "A_enerji_kisa": 0.9915101389272966, "om_usd_mw_yil": 25518.784687925167, "stok": {"kanat_rotor": 0, "disli_kutusu": 0, "jenerator": 0, "ana_yatak": 0}, "cizelge_kazanc_bahar": 5656.059814807452, "cizelge_kazanc_esit": 21305.818007946877, "sure": {"cizelge_s": 0.1249008746817708, "stok_s": 0.3163776667788625, "des_s": 37.54953525029123, "toplam_s": 38.03488187491894}}
+Sivas-Gürün {"A_enerji": 0.9731607022102474, "A_enerji_kisa": 0.9915131224968329, "om_usd_mw_yil": 25515.921044387753, "stok": {"kanat_rotor": 0, "disli_kutusu": 0, "jenerator": 0, "ana_yatak": 0}, "cizelge_kazanc_bahar": 7321.067791865433, "cizelge_kazanc_esit": 19138.29254363691, "sure": {"cizelge_s": 0.13138295896351337, "stok_s": 0.33453649980947375, "des_s": 40.815633583348244, "toplam_s": 41.29875387484208}}
+Balıkesir-Susurluk {"A_enerji": 0.9737664178233761, "A_enerji_kisa": 0.9915371777638243, "om_usd_mw_yil": 25517.50138452381, "stok": {"kanat_rotor": 0, "disli_kutusu": 0, "jenerator": 0, "ana_yatak": 0}, "cizelge_kazanc_bahar": 5275.21038035928, "cizelge_kazanc_esit": 22617.470888039697, "sure": {"cizelge_s": 0.1506255827844143, "stok_s": 0.34373408276587725, "des_s": 41.04300937522203, "toplam_s": 41.55542049976066}}
+                 saha   strateji  A_zaman  A_enerji  kayip_gelir_yil  om_usd_mw_yil  toplam_maliyet_yil
+0     Çanakkale-Ezine  duzeltici   0.9631    0.9619      401899.0807     24890.8833        1.865483e+06
+1     Çanakkale-Ezine     takvim   0.9700    0.9704      301805.9977     25064.5998        1.775604e+06
+2     Çanakkale-Ezine      durum   0.9739    0.9743      260411.2474     25518.7847        1.760916e+06
+3         Sivas-Gürün  duzeltici   0.9627    0.9613      420181.4394     24890.2139        1.883726e+06
+4         Sivas-Gürün     takvim   0.9697    0.9693      320154.1271     25064.6023        1.793953e+06
+5         Sivas-Gürün      durum   0.9736    0.9732      278093.2580     25515.9210        1.778429e+06
+6  Balıkesir-Susurluk  duzeltici   0.9628    0.9616      422436.2689     24890.8948        1.886021e+06
+7  Balıkesir-Susurluk     takvim   0.9698    0.9699      317989.5803     25064.6023        1.791788e+06
+8  Balıkesir-Susurluk      durum   0.9737    0.9738      275650.3976     25517.5014        1.776079e+06
+                  saha  turbin  kanat_rotor  disli_kutusu  jenerator  ana_yatak
+0      Çanakkale-Ezine      14            0             0          0          0
+1      Çanakkale-Ezine      28            1             1          1          1
+2      Çanakkale-Ezine      56            1             1          1          1
+3      Çanakkale-Ezine     112            1             1          1          1
+4          Sivas-Gürün      14            1             0          0          0
+5          Sivas-Gürün      28            1             1          1          1
+6          Sivas-Gürün      56            1             1          1          1
+7          Sivas-Gürün     112            1             1          1          1
+8   Balıkesir-Susurluk      14            1             0          0          0
+9   Balıkesir-Susurluk      28            1             1          1          1
+10  Balıkesir-Susurluk      56            1             1          1          1
+11  Balıkesir-Susurluk     112            1             1          1          1

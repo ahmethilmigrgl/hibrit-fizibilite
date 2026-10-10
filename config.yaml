@@ -392,7 +392,7 @@ v2:
     not: "İki seviye. Yüksek: 30 km içinde benzer kalibre santral var (n = 37; mutlak KF hatası medyanı 3,8, %90'lık 9,8 puan); düşük: yok (GWA × ulusal medyan artık; n = 53; 5,6 / 11,5). Eski 'orta' seviyesi (15–30 km, n = 9) medyanda yüksekten iyi çıktı (2,1 vs 4,1; bootstrap GA 1,6–7,5): ayrı seviye istatistiksel olarak desteklenmiyor, sıralama koşulu (medyan ve P90'da) yalnız iki seviyeyle sağlanıyor. orta_km = yuksek_km olduğundan 'orta' üretilmez"
   motor:
     value:
-      veri_surumu: "v2R-2026-10"
+      veri_surumu: "v3D-2026-10"
       profil_yillari: [2014, 2023]
       gunes_model_hatasi: 0.04
       kesinti_kurtarma: 0.158
@@ -409,3 +409,89 @@ v2:
     birim: "çeşitli"
     kaynak: "Proje kararı (Faz B). Kesinti kurtarma payı ve değer faktörü: v1 outputs/07/kesinti_batarya_kurtarma.csv (Ezine referans santralleri)"
     not: "Karar kuralı v1'in genişletilmesi: E[NPV] > 0, P(NPV>0) ≥ 0,65 ve CVaR %5 ≥ −0,25 × CAPEX → yatırım yap; yalnız E[NPV] > 0 → durum tespiti + sınırlı teklif (azami prim = E[NPV]); aksi halde rafa kaldır. tam_milp_temsili_gun (R5): tam analizde kapasite MILP'i 96 temsilî günle çözülür (kesin optimum ≤ ~15 s); tam yıl (2 × 8760 saat) MILP'i 2 çekirdekte 240 s sınırında %2 boşlukla kalıyordu ve tasarımlar ±1 türbin / ±1 MW batarya içinde aynıydı. Değerleme 10 hava yılı × 8760 saatlik işletme tablolarıyla. İşletme LP'si highspy ile (IsletmeLPHizli; Pyomo sürümüyle aynı sonuç, ~3,5× hızlı)"
+
+# =====================================================================
+# v3 — Endüstri mühendisliği eklentileri (dal v3-ie). Faz D: türbin yerleşimi + bakım ve güvenilirlik.
+# =====================================================================
+v3:
+  kayip:
+    value: {lumped_v2: 0.12, kalibrasyon_kullanilabilirligi: 0.99, iz_referansi: 0.051, elektrik_diger: 0.03}
+    birim: "oran"
+    kaynak: "iz_referansi: atlas santrallerinin hesaplanan ortalama iz kaybı (85 santral, kendi OSM yerleşimi + komşular, PyWake Bastankhah; data/atlas/santral_iz_kaybi.csv, src/v3_D1_atlas_iz.py). kalibrasyon_kullanilabilirligi: D2 ayrık olay simülasyonunda yalnız < 48 saatlik duruşlardan kaynaklanan enerji kullanılabilirliği (Ezine, 14 türbin, üç stratejide 0,990–0,992; atlas kalibrasyonu ≥ 48 saatlik duruşları dışarıda bırakır). elektrik_diger TAHMİN (IEC 61400-15 kayıp sınıflaması: elektrik %1,5–3 + performans ~%1) — yalnız bilgi amaçlı"
+    not: "v2'nin toplu %12 kaybı (iz + kullanılabilirlik + elektrik/diğer) v3'te ayrıştırılır. Atlas kalibrasyonu santrallerin GERÇEK iz ve kısa duruş kayıplarını katsayıya gömer; bu yüzden yeni sahada iz ve kullanılabilirlik göreli uygulanır (çift sayım yok): KF(t) = brüt(K·v) · 0,88 · η_iz(t) / (1 − iz_referansi) · A / kalibrasyon_kullanilabilirligi. Eşdeğer 'diğer kayıp' λ = 1 − 0,88 / ((1 − 0,051) · 0,99) = %6,3 (elektrik + atlasın açıklanmayan ortalama sapması). D1 hipotez testi: iz kaybı atlas artığını açıklamadı (eğim t = 0,55; Balıkesir–Biga iz farkı 0,34 puan, p = 0,70); izden arındırılmış katsayılar birini dışarıda bırak RMSE'sini kötüleştirdi (6,87 → 7,03), göreli düzeltme iyileştirdi (6,87 → 6,77; anlamlı değil). Bu yüzden atlas matrisleri güncellenmedi (atlas_iz_arindirma: false)"
+  yerlesim:
+    value:
+      aktif: true
+      atlas_iz_arindirma: false
+      iz_modeli: "bastankhah"
+      ti: 0.10
+      jensen_k: 0.075
+      asgari_aralik: {hakim_D: 5.0, dik_D: 3.0}
+      duzenli_izgara: {hakim_D: 7.0, dik_D: 4.0}
+      aday_alt_bolme: 1
+      komsu_yaricap_km: 10.0
+      komsu_azami: 150
+      komsu_tampon_D: 3.0
+      yontem: "sa"
+      ga: {nufus: 40, nesil: 120, mutasyon: 0.3, turnuva: 3, elit: 2}
+      sa: {adim: 3000, t0_oran: 0.1, sogutma: 0.997, yerel_arama: true, baslangic: 3}
+      milp_sure_s: 60
+      tam_sure_butcesi_s: 60
+    birim: "D: rotor çapı katı; km; s"
+    kaynak: "İz modeli: Bastankhah & Porté-Agel (2014) Gauss izi, k* = 0,38·TI + 0,004 (Niayifar & Porté-Agel 2016, Energies 9:741); Jensen/Park k = 0,075 kara (Katić, Højstrup & Jensen 1986, EWEC; WAsP/PyWake kara varsayılanı). TI TAHMİN: kara santrallerinde göbek yüksekliği ortam türbülans yoğunluğu tipik %8–12. Asgari aralık: hâkim yönde 5D, dik yönde 3D (Manwell, McGowan & Rogers 2009 'Wind Energy Explained' 2. bs. §9: 'genelde 5–9D rüzgâr yönünde, 3–5D dik'; Samorani 2013 WFLOP derlemesi). Düzenli ızgara referansı 7D × 4D aynı kaynak aralığının ortası"
+    not: "yontem: web uygulamasında seçilen yerleşim yöntemi (karşılaştırma: outputs/v3D/D1_yontem_karsilastirma.csv, gerekçe docs/v3_D_yerlesim_bakim.md §4.5: çok başlangıçlı SA, en iyiye ort. %0,13, ~2 s; MILP 24–60 s ve 6 durumun 4'ünde süre sınırı). Aday konumlar GWA 250 m hücre merkezleri (aday_alt_bolme = 2 → 125 m). Komşu santral türbinleri (OSM) 10 km içinde en yakın 150 türbin; yeni türbinler komşu türbinlere 3D'den yakın konamaz (dışlama katmanı)"
+  bakim:
+    value:
+      aktif: true
+      alt_sistemler:
+        #   lam_kucuk / lam_buyuk / lam_degisim: arıza oranı [1/türbin/yıl] (küçük onarım < 1 k€ malzeme, büyük onarım 1–10 k€, büyük değişim > 10 k€ — Carroll 2016 sınıfları)
+        #   sure_h: iş süresi [saat] (küçük, büyük, değişim); maliyet_eur: malzeme [€]; beta: değişim süreci Weibull şekil parametresi
+        #   vinc: değişim büyük vinç ister mi; kaldirma_limiti: vinçli kaldırmada göbek hızı üst sınırı [m/s]; tedarik_gun: stok yoksa parça tedarik süresi
+        #   stok: kritik yedek parça kalemi mi (stok politikası optimize edilir); cms_tespit: durum izlemenin değişimi önceden yakalama olasılığı
+        kanat_rotor:     {lam_kucuk: 0.20, lam_buyuk: 0.070, lam_degisim: 0.005, sure_h: [9, 21, 288], maliyet_eur: [170, 1500, 90000], beta: 1.5, vinc: true, kaldirma_limiti: 8.0, tedarik_gun: 120, stok: true, cms_tespit: 0.3}
+        disli_kutusu:    {lam_kucuk: 0.060, lam_buyuk: 0.025, lam_degisim: 0.015, sure_h: [8, 22, 231], maliyet_eur: [125, 2500, 230000], beta: 2.5, vinc: true, kaldirma_limiti: 10.0, tedarik_gun: 120, stok: true, cms_tespit: 0.8}
+        jenerator:       {lam_kucuk: 0.091, lam_buyuk: 0.030, lam_degisim: 0.006, sure_h: [7, 24, 81], maliyet_eur: [160, 3500, 60000], beta: 2.0, vinc: true, kaldirma_limiti: 10.0, tedarik_gun: 90, stok: true, cms_tespit: 0.7}
+        ana_yatak:       {lam_kucuk: 0.020, lam_buyuk: 0.020, lam_degisim: 0.006, sure_h: [8, 22, 160], maliyet_eur: [150, 2500, 80000], beta: 2.5, vinc: true, kaldirma_limiti: 10.0, tedarik_gun: 120, stok: true, cms_tespit: 0.6}
+        guc_elektronigi: {lam_kucuk: 0.069, lam_buyuk: 0.037, lam_degisim: 0.001, sure_h: [7, 14, 57], maliyet_eur: [240, 5300, 13000], beta: 1.0, vinc: false, kaldirma_limiti: 15.0, tedarik_gun: 30, stok: false, cms_tespit: 0.0}
+        elektrik:        {lam_kucuk: 0.380, lam_buyuk: 0.070, lam_degisim: 0.010, sure_h: [4, 19, 24], maliyet_eur: [260, 2300, 13500], beta: 1.0, vinc: false, kaldirma_limiti: 15.0, tedarik_gun: 30, stok: false, cms_tespit: 0.0}
+        kontrol_sensor:  {lam_kucuk: 0.620, lam_buyuk: 0.060, lam_degisim: 0.0, sure_h: [8, 14, 12], maliyet_eur: [200, 2000, 13000], beta: 1.0, vinc: false, kaldirma_limiti: 15.0, tedarik_gun: 14, stok: false, cms_tespit: 0.0}
+        pitch_hidrolik:  {lam_kucuk: 0.170, lam_buyuk: 0.055, lam_degisim: 0.005, sure_h: [9, 19, 25], maliyet_eur: [210, 1900, 14000], beta: 1.0, vinc: false, kaldirma_limiti: 15.0, tedarik_gun: 30, stok: false, cms_tespit: 0.0}
+        yaw:             {lam_kucuk: 0.120, lam_buyuk: 0.050, lam_degisim: 0.010, sure_h: [5, 20, 49], maliyet_eur: [140, 3000, 12500], beta: 1.0, vinc: false, kaldirma_limiti: 15.0, tedarik_gun: 45, stok: false, cms_tespit: 0.0}
+        diger:           {lam_kucuk: 0.180, lam_buyuk: 0.040, lam_degisim: 0.0, sure_h: [5, 21, 36], maliyet_eur: [110, 2400, 10000], beta: 1.0, vinc: false, kaldirma_limiti: 15.0, tedarik_gun: 30, stok: false, cms_tespit: 0.0}
+      sifirlama: {lam: 7.5, sure_h: 4.0}
+      lojistik: {mudahale_h: 4.0, buyuk_parca_h: 48.0, vinc_mobilizasyon_gun: 14, kaldirma_pencere_h: 6, vinc_sayisi: 1}
+      hava: {tirmanma_limiti: 15.0, vardiya: [8, 18]}
+      ekip: {turbin_basina: 7, kisi: 2, saat_ucreti_usd: 45.0, yillik_saat: 2000}
+      onleyici: {is_saati: 30.0, malzeme_usd: 6000.0, duzeltici_kat_carpani: 1.4, duzeltici_olcek_carpani: 0.8, ekip_sayisi_cizelge: 1}
+      durum_izleme: {cms_usd_turbin_yil: 1200.0, pf_gun: [30, 120], planli_maliyet_carpani: 0.7}
+      vinc_usd: {buyuk: 120000.0, kanat: 100000.0}
+      stok: {tutma_orani: 0.15, azami: 3}
+      eur_usd: 1.08
+      genel_gider_carpani: 1.30
+      diger_sabit_usd_mw_yil: 12000.0
+      tekrar: 200
+      tekrar_motor: 60
+      tohum: 2026
+      strateji: "durum"
+    birim: "oran [1/türbin/yıl], saat, €, $, gün, m/s"
+    kaynak: >-
+      Alt sistem arıza ORANLARI (toplam): kara RES'leri için WMEP (ISET/Fraunhofer IWES, 1.500 türbin, 1989–2006; Hahn, Durstewitz & Rohrig 2007,
+      'Reliability of wind turbines', Wind Energy Springer) alt sistem yıllık arıza sıklıkları — grafikten okunan YAKLAŞIK değerler (elektrik ~0,57,
+      kontrol ~0,43, sensör ~0,25, hidrolik ~0,23, yaw ~0,18, göbek ~0,17, fren ~0,13, kanat ~0,11, dişli ~0,10, jeneratör ~0,10, yapı ~0,09, aktarma ~0,05;
+      toplam ≈ 2,4 = Faulstich vd. 2009 'Reliability of offshore turbines – identifying risks by onshore experience' (EWEC) Tablo 2'deki WMEP ortalaması 2,4;
+      kara veritabanları aralığı 0,8–2,4 arıza/türbin/yıl, yıllık duruş 27–237 saat). Jeneratör ve güç elektroniği kara oranları ve sınıf kırılımı:
+      Carroll, McDonald & McMillan 2016 (Wind Energy 19:1107–1119) Şekil 11–12 (kara: jeneratör 0,091/0,030/0,002; konvertör 0,069/0,037/0,001).
+      İş SÜRELERİ, MALZEME MALİYETLERİ: Carroll vd. 2016 Şekil 13–14 (açık deniz, alt sistem × sınıf; iş süresi teknisyenin türbindeki süresi, lojistik
+      ve hava beklemesi hariç). Sıfırlama: Carroll vd. 2016 Tablo 1 (manuel sıfırlama 7,5/yıl, 3 saat). TAHMİN olanlar: büyük değişim oranlarının
+      bölünmesi (dişli 0,015, jeneratör 0,006, ana yatak 0,006, kanat 0,005 — Carroll açık deniz değişim oranlarının (0,154 / 0,095) kara için
+      yaklaşık onda biri, jeneratörde Carroll kara 0,002 ile WMEP arası), Weibull şekil parametreleri (aşınma tipi > 1), ana yatak süre/maliyeti,
+      tedarik süreleri, lojistik süreler, ekip büyüklüğü (her 7 türbine bir 2 kişilik ekip), hava sınırları (İSG/OEM tipik: kule/nasel çalışması ~15 m/s, ana bileşen kaldırma 8–10 m/s), ekip, ücret,
+      önleyici bakım etkisi, CMS tespit olasılıkları ve P-F aralığı, vinç maliyeti, stok tutma oranı (sermaye %7 + depolama/sigorta/eskime %8),
+      genel gider çarpanı ve diğer sabit giderler
+    not: >-
+      Ölçek: değişim süreci Weibull(β, η) yenileme süreci; η, ömür boyu beklenen değişim sayısı (yenileme fonksiyonu) M(T) = λ·T olacak şekilde
+      sayısal bulunur (aşınmada değişimler geç yıllara yığılır). Strateji: 'duzeltici' (yalnız arızada; küçük/büyük onarım oranları × 1,4, Weibull ölçeği × 0,8), 'takvim' (yılda bir
+      önleyici bakım, temel oranlar), 'durum' (takvim + CMS: aktarma organı değişimleri P-F aralığında tespit edilir, planlı yapılır). İşletme gideri =
+      (sabit ekip + düzeltici malzeme + vinç + önleyici malzeme + CMS + stok tutma) × genel gider çarpanı + diğer sabit giderler (saha yönetimi, BOP bakımı,
+      SCADA, güvenlik, yol/arazi bakımı; TEİAŞ, sigorta ve arazi kirası finansal modelde ayrı). v1 OPEX 35.000 $/MW-yıl ile karşılaştırma docs/v3_D §6.
+      tekrar: çevrimdışı analiz; tekrar_motor: tam analizde (≤ 30 s ek)

@@ -59,7 +59,18 @@ class KullaniciVarsayimlari:
     ruzgar_kaynagi: str = "otomatik"  # otomatik (ERA5 grid → Open-Meteo) / grid / open_meteo / cds (çevrimdışı)
     turbin: str | None = None
     gobek: float | None = None
+    # v3 Faz D: türbin yerleşimi (iz kaybı) + bakım ve güvenilirlik. False → v2 davranışı (toplu %12 kayıp, sabit OPEX).
+    # kalibrasyon == "v1" (Ezine regresyonu) iken her zaman kapalı.
+    yerlesim_bakim: bool = True
+    yerlesim_yontemi: str | None = None  # None → config v3.yerlesim.yontem (sa / ga / milp / izgara / acgozlu)
+    bakim_modeli: str = (
+        "yeni"  # yeni: kullanılabilirlik ve O&M ayrık olay simülasyonundan; sabit: v1 OPEX + kalibrasyondaki kullanılabilirlik
+    )
+    bakim_stratejisi: str | None = None  # None → config v3.bakim.strateji (duzeltici / takvim / durum)
     ekstra: dict = field(default_factory=dict)  # gelişmiş: config anahtar yolu → değer
+
+    def v3_aktif(self) -> bool:
+        return bool(self.yerlesim_bakim) and self.kalibrasyon != "v1"
 
     def sozluk(self) -> dict:
         d = asdict(self)
@@ -93,6 +104,18 @@ def dogrula(kv: KullaniciVarsayimlari) -> list[Uyari]:
             "gelir",
             f"Gelir yapıları şunlardan seçilmeli: {', '.join(GELIR_YAPILARI)}.",
             f"Revenue structures must be chosen from: {', '.join(GELIR_YAPILARI)}.",
+        )
+    if kv.yerlesim_yontemi is not None and kv.yerlesim_yontemi not in ("sa", "ga", "milp", "izgara", "acgozlu"):
+        raise MotorHatasi(
+            "yerlesim",
+            "Yerleşim yöntemi sa, ga, milp, izgara ya da acgozlu olmalı.",
+            "Layout method must be sa, ga, milp, izgara or acgozlu.",
+        )
+    if kv.bakim_modeli not in ("yeni", "sabit"):
+        raise MotorHatasi("bakim", "Bakım modeli yeni ya da sabit olmalı.", "Maintenance model must be yeni or sabit.")
+    if kv.bakim_stratejisi is not None and kv.bakim_stratejisi not in ("duzeltici", "takvim", "durum"):
+        raise MotorHatasi(
+            "strateji", "Bakım stratejisi duzeltici, takvim ya da durum olmalı.", "Maintenance strategy must be duzeltici, takvim or durum."
         )
     if kv.azami_res_mw == 0 and kv.azami_ges_mw == 0:
         raise MotorHatasi(

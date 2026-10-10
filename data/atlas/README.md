@@ -21,6 +21,10 @@ kendi lisanslarına tabidir** (MIT'in kapsamında değildir). Ayrıntılı kayna
 | `santral_turbinleri.csv` | Kalibre santral başına OSM türbin adedi, birim güç, üretici, rotor/göbek ve eşlenen windpowerlib türbin vekili | OpenStreetMap türbin düğümleri ve santral ilişkileri (Overpass), EPİAŞ kapasitesi, windpowerlib/OEP | **ODbL 1.0** |
 | `santral_turbin_konumlari.csv` | Kalibre santrallerin türbin konumları (OSM) | OpenStreetMap | **ODbL 1.0** |
 | `on_tarama.parquet` | Türkiye ön tarama haritası: 0,25° kara hücresi başına RES/GES KF, güven, başabaş fiyatları, standart tasarım NPV'leri (uygulama açılış haritası) | ERA5 + PVGIS gridleri, GWA, atlas, piyasa paketi ile kendi modelim | CC BY 4.0 (atıflar: Copernicus/ERA5, PVGIS, GWA, EPİAŞ; komşu santral adları OSM/EPİAŞ) |
+| `osm_turbinler.csv` | v3 D1: Türkiye OSM türbin düğümleri (4.122) — konum, atlas santrali, iz hesabı için birim güç / rotor / göbek (`src/v3_D1_osm_turbinler.py`) | OpenStreetMap; türbin vekilleri windpowerlib/OEP; eksikler sınıf varsayılanı | **ODbL 1.0** |
+| `santral_iz_kaybi.csv` | v3 D1: kalibre santrallerin hesaplanan iç/dış iz kaybı (`src/v3_D1_atlas_iz.py`) | OSM konumları + ERA5 + PyWake ile kendi hesabım | **ODbL 1.0** (OSM konumlarından türetildiği için) |
+| `kalibrasyon_matrisleri_izsiz.npz` | v3 D1: izden arındırılmış hız katsayısı matrisleri (hipotez testi; birini dışarıda bırak doğrulamasında kötüleştirdiği için **kullanılmıyor**, `v3.yerlesim.atlas_iz_arindirma: false`) | Türetilmiş (EPİAŞ, ERA5, OSM) | CC BY 4.0 (EPİAŞ + Copernicus atfı) |
+| `v3_hizli_tablolar.csv` | v3 D1/D2: hızlı tarama için türbin sayısına göre medyan iç iz kaybı, kullanılabilirlik ve O&M (`src/v3_D2_hizli_tablolar.py`) | Kendi modelim (12 örnek saha) | CC BY 4.0 |
 
 **ODbL bildirimi:** ODbL 1.0 ile işaretli dosyalar OpenStreetMap verisinden türetilmiş veritabanlarıdır ve Open Database
 License 1.0 (https://opendatacommons.org/licenses/odbl/1-0/) ile paylaşılır. Bu dosyaları kullanan ya da değiştiren

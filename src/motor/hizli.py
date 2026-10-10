@@ -64,7 +64,8 @@ def uretim_ozeti(h: Hazirlik) -> tuple[dict, pd.DataFrame, dict]:
     return ozet, yil, grafik
 
 
-def standart_tasarimlar(h: Hazirlik, f) -> list[dict]:
+def standart_tasarimlar(h: Hazirlik, f, iz=None) -> list[dict]:
+    """iz: (v3) türbin sayısı → iç iz kaybı oranı; verilirse her tasarımın RES profili (1 − iz(N)) ile ölçeklenir."""
     L = h.saha.baglanti_mw
     tg = deger(h.cfg["optimizasyon"]["turbin_gucu"])
     res_ust = h.saha.azami_res_mw if h.saha.azami_res_mw is not None else deger(h.cfg["optimizasyon"]["turbin_azami"]) * tg
@@ -81,7 +82,12 @@ def standart_tasarimlar(h: Hazirlik, f) -> list[dict]:
         if r + g_ <= 0:
             continue
         k = {"res_mw": r, "ges_mw": g_, "sebeke_mw": L}
-        s = proje_degerle(k, h.v, f, h.u)
+        u = h.u
+        if iz is not None and r > 0:
+            from src.motor.v3 import res_olcekli
+
+            u = res_olcekli(h.u, 1 - iz(round(r / tg)))
+        s = proje_degerle(k, h.v, f, u)
         sonuc.append(
             {
                 "tasarim": ad,
@@ -100,6 +106,7 @@ def standart_tasarimlar(h: Hazirlik, f) -> list[dict]:
                 "ges_yakalanan": s.ozet["GES yakalanan [USD/MWh]"],
                 "ort_ptf": s.ozet["Ort. PTF [USD/MWh]"],
                 "_k": k,
+                "_u": u,
             }
         )
     return sonuc
@@ -199,18 +206,25 @@ def tam_analize_deger(basabas: float | None, fiyat_: float, milp_npv: float, cfg
 def hizli_tarama(h: Hazirlik, kv: KullaniciVarsayimlari, ilerleme=None) -> dict:
     ilerleme = ilerleme or (lambda *_: None)
     sure, t0 = {}, time.perf_counter()
+    v3b, iz = None, None
+    if h.v3:  # v3 Faz D: tablo kullanılabilirliği/O&M + tasarım başına önceden hesaplanmış iz kaybı
+        from src.motor.v3 import hizli_hazirla, iz_hizli
+
+        h, v3b = hizli_hazirla(h, kv)
+        iz = iz_hizli
     uo, yil, graf = uretim_ozeti(h)
     f, seviye = _fiyat(h, kv)
     f_seviye = float(f.seviye)
     sure["uretim_s"] = time.perf_counter() - t0
     ilerleme(0.35, "Standart tasarımlar değerleniyor")
     t1 = time.perf_counter()
-    tas = standart_tasarimlar(h, f)
+    tas = standart_tasarimlar(h, f, iz)
     bas = {}
     for ad, anahtar in (("RES", "res"), ("GES", "ges")):
-        k = next((x["_k"] for x in tas if x["tasarim"] == ad), None)
+        x_ = next((x for x in tas if x["tasarim"] == ad), None)
+        k = x_["_k"] if x_ else None
         try:
-            bas[anahtar] = basabas_fiyat(k, h.cfg, h.u, h.v, kv.kanibalizasyon) if k else None
+            bas[anahtar] = basabas_fiyat(k, h.cfg, x_["_u"], h.v, kv.kanibalizasyon) if k else None
         except ValueError:
             bas[anahtar] = None
     en_iyi_std = max(tas, key=lambda x: x["npv_musd"])
@@ -218,13 +232,15 @@ def hizli_tarama(h: Hazirlik, kv: KullaniciVarsayimlari, ilerleme=None) -> dict:
         bas["en_iyi"] = bas[en_iyi_std["tasarim"].lower()]
     else:
         try:
-            bas["en_iyi"] = basabas_fiyat(en_iyi_std["_k"], h.cfg, h.u, h.v, kv.kanibalizasyon)
+            bas["en_iyi"] = basabas_fiyat(en_iyi_std["_k"], h.cfg, en_iyi_std["_u"], h.v, kv.kanibalizasyon)
         except ValueError:
             bas["en_iyi"] = None
     sure["tasarimlar_s"] = time.perf_counter() - t1
     ilerleme(0.6, "Temsilî günlerle hızlı kapasite optimizasyonu")
     t2 = time.perf_counter()
     o = ortam(h)
+    if iz is not None:
+        o.opt["iz_verim"] = [1.0 - iz(n) for n in range(int(o.opt["turbin_azami"]) + 1)]
     kal = {"dz", "yekg"} | ({"yh"} if kv.sfk_katilimi else set())
     milp = o.milp(kal, seviye if isinstance(seviye, str) else float(seviye), K=24, zaman=120, yh_carpan=sfk_milp_carpani(o))
     tas.append(
@@ -242,7 +258,7 @@ def hizli_tarama(h: Hazirlik, kv: KullaniciVarsayimlari, ilerleme=None) -> dict:
         }
     )
     sure["optimizasyon_s"] = time.perf_counter() - t2
-    tablo = pd.DataFrame([{k: v for k, v in x.items() if k != "_k"} for x in tas])
+    tablo = pd.DataFrame([{k: v for k, v in x.items() if k not in ("_k", "_u")} for x in tas])
     deger_mi = tam_analize_deger(bas.get("en_iyi"), f_seviye, milp.get("NPV tahmini [M USD]", -1.0), h.cfg)
     ozet = {
         **uo,
@@ -257,8 +273,20 @@ def hizli_tarama(h: Hazirlik, kv: KullaniciVarsayimlari, ilerleme=None) -> dict:
         "yakalanma_res": next((float(x["res_yakalanan"] / x["ort_ptf"]) for x in tas if x["tasarim"] == "RES"), None),
         "yakalanma_ges": next((float(x["ges_yakalanan"] / x["ort_ptf"]) for x in tas if x["tasarim"] == "GES"), None),
         "en_iyi_tasarim": tablo.loc[tablo["npv_musd"].idxmax(), "tasarim"] if tablo["npv_musd"].max() > 0 else "Pozitif NPV'li tasarım yok",
-        "milp": {k: milp[k] for k in ("RES [MW]", "GES [MWac]", "BESS [MW]", "BESS [MWh]", "NPV tahmini [M USD]") if k in milp},
+        "milp": {
+            k: milp[k] for k in ("RES [MW]", "GES [MWac]", "BESS [MW]", "BESS [MWh]", "NPV tahmini [M USD]", "İz verimi") if k in milp
+        },
     }
+    if v3b is not None:
+        tg = deger(h.cfg["optimizasyon"]["turbin_gucu"])
+        n_res = round(next((x["res_mw"] for x in tas if x["tasarim"] == "RES"), 0.0) / tg)
+        ozet["v3_hizli"] = {
+            "kullanilabilirlik": v3b["kullanilabilirlik"],
+            "om_usd_mw_yil": v3b["om_usd_mw_yil"],
+            "iz_kaybi_res": iz(n_res) if n_res else 0.0,
+            "N_res": n_res,
+            "kaynak": v3b["kaynak"],
+        }
     return {
         "ozet": ozet,
         "tablolar": {"tasarimlar": tablo, "yillik_uretim": yil},
