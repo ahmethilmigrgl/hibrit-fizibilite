@@ -119,14 +119,16 @@ st.info(
 B.uyari_kutusu(
     md(
         T(
-            "**Düzeltme notu (Ekim 2026).** Bu sayfanın sayıları v1.0.0 olarak bırakıldı. Sonradan v1 işletme giderinde sigorta ve arazi "
-            "kirasının çift sayıldığı bulundu (35.000 $/MW-yıl'lık her şey dahil O&M'e ayrıca eklenmişlerdi). Düzeltilmiş baz vakada "
-            'beklenen NPV −1,66 yerine **+0,92 M$**, kâr olasılığı %49; öneri "rafa kaldır"dan **"durum tespiti + ≤0,9 M$ teklif"e** döner. '
+            "**Düzeltme notu (Ekim 2026).** Bu sayfanın sayıları v1.0.0 olarak bırakıldı. Sonradan v1'in 35.000 $/MW-yıl'lık RES O&M'ine "
+            "(Lazard) ayrıca sigorta ve arazi kirası eklendiği fark edildi; Lazard bu kalemlerin dahil olup olmadığını yazmıyor. **Dahilse** "
+            'beklenen NPV **+0,92 M$** ve öneri "durum tespiti + ≤0,9 M$ teklif"; **değilse** v1\'in −1,66 M$ ve "rafa kaldır" önerisi geçerli. '
+            "Proje sınırda: kararın işaretini O&M sözleşme kapsamı belirliyor. "
             f"[Düzeltme notu]({REPO_URL}/blob/main/docs/v1_duzeltme_notu.md)",
-            "**Correction note (October 2026).** This page keeps the v1.0.0 figures. Insurance and land lease were later found to be "
-            "double-counted in v1 operating costs (added on top of an all-in 35,000 $/MW-yr O&M). In the corrected base case expected NPV is "
-            '**+0.92 M$** instead of −1.66, probability of profit 49%; the recommendation turns from "shelve" to **"due diligence + ≤0.9 M$ '
-            f'offer"**. [Correction note]({REPO_URL}/blob/main/docs/v1_duzeltme_notu.md)',
+            "**Correction note (October 2026).** This page keeps the v1.0.0 figures. It was later noticed that insurance and land lease were "
+            "added on top of v1's 35,000 $/MW-yr wind O&M (Lazard), and Lazard does not state whether these items are included. **If included**, "
+            'expected NPV is **+0.92 M$** and the recommendation becomes "due diligence + ≤0.9 M$ offer"; **if not**, v1\'s −1.66 M$ and "shelve" '
+            "stand. The project is marginal: the scope of the O&M contract decides the sign. "
+            f"[Correction note]({REPO_URL}/blob/main/docs/v1_duzeltme_notu.md)",
         )
     ),
     "uyari",

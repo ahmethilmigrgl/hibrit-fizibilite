@@ -237,3 +237,8 @@ yapay arıza testi). Betikler `src/v3_F1_adaylar.py` (~4 saat), `src/v3_F3_portf
 `src/v3_F6_tarayici.py`; paketler `data/atlas/portfoy/`, `data/atlas/izleme/`; config `v3.portfoy`, `v3.performans`
 (`santral_adlari_goster: false`). Sayfalar `uygulama/sayfa_portfoy.py`, `sayfa_performans.py`. Testler `tests/test_v3_F.py`.
 Sürüm etiketi v3.0.0-rc1 (push yok).
+
+**v3 kapanış (2026-10-11, etiket v3.0.0-rc2):** optimize edicinin laneti `src/portfoy/lanet.py` + `src/v3_G1_optimizer_laneti.py`
+(→ `data/atlas/portfoy/lanet.json`; `PV.yukle(duzeltme=True)` varsayılan, `src/v3_F3_portfoy.py --duzeltmesiz` önce/sonra);
+Lazard kapsamı belirsiz → `docs/v1_duzeltme_notu.md` iki yorum (A/B); ERA5 yön gridi paketli (`era5_yon.paketle_hizli`);
+özet `docs/PROJE_OZETI.md`; betik çıktıları `outputs/v3G/`.

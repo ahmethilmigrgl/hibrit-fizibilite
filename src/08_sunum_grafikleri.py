@@ -36,7 +36,7 @@ KARAR_YOLCULUGU = [
     ("Nihai", "Fiyat ortalaması\n(58 = beklenen)", None, "Rafa kaldır,\ntetikleyicileri izle", "raf", "outputs/07/baz_vaka.csv"),
     (
         "Düzeltme (v3)",
-        "Sigorta + arazi\nçift sayımı yok",
+        "Yorum A: sigorta +\narazi O&M'de",
         "duzeltilmis",
         "Durum tespiti +\n≤0,9 M$ teklif",
         "teklif",
@@ -52,8 +52,9 @@ KISA = [
     ("Tutarlılık\nYEKDEM", "Hayır"),
     ("Tutarlılık 2\n3 düzeltme", "DD + teklif"),
     ("Nihai\nfiyat ort.", "Rafa kaldır"),
-    ("Düzeltme\nçift sayım", "DD + teklif"),
+    ("Düzeltme\nyorum A", "DD + teklif"),
 ]
+KARAR_BANDI = 2.6  # M$; docs/v1_duzeltme_notu.md §4.1 (O&M kapsamı 2,58, YEKDEM endekslemesi 2,09, fiyat 1 $/MWh ≈ 1,35)
 TUR_RENK = {"hayir": TURUNCU, "evet": YESIL, "kosullu": YESIL, "teklif": MAVI, "raf": GRI}
 
 
@@ -91,6 +92,8 @@ def karar_yolculugu(boyut=(12, 5.0), ad="karar_yolculugu.png", yazi=1.0, kisa: b
     y = np.array([e for _, _, e, _, _ in v])
     fig, ax = plt.subplots(figsize=boyut)
     ax.plot(x, y, color=g.IZGARA, lw=2, zorder=1)
+    # karar bandı: tek bir kapsam/sözleşme varsayımının E[NPV]'yi oynattığı genişlik (O&M kapsamı 2,6 M$; YEKDEM endekslemesi 2,1 M$)
+    ax.axhspan(-KARAR_BANDI, KARAR_BANDI, color=g.IZGARA, alpha=0.45, lw=0, zorder=0)
     ax.axhline(0, color=g.MUREKKEP, lw=0.9)
     for xi, (_a, _n, e, k, t) in zip(x, v):
         ax.scatter(xi, e, s=150 * yazi, color=TUR_RENK[t], edgecolor="white", linewidth=2, zorder=3)
@@ -129,7 +132,10 @@ def karar_yolculugu(boyut=(12, 5.0), ad="karar_yolculugu.png", yazi=1.0, kisa: b
         ("raf", "Rafa kaldır, izle"),
     ]:
         ax.scatter([], [], s=80, color=TUR_RENK[t], label=etiket)
-    ax.legend(loc="upper right", fontsize=8.6 * yazi, ncol=4, bbox_to_anchor=(1, 1.08))
+    ax.fill_between(
+        [], [], color=g.IZGARA, alpha=0.45, label=f"Karar bandı ±{tr(KARAR_BANDI, '.1f')} M$ (tek varsayım işareti değiştirebilir)"
+    )
+    ax.legend(loc="upper right", fontsize=8.6 * yazi, ncol=3, bbox_to_anchor=(1, 1.13))
     ax.tick_params(axis="y", labelsize=8.6 * yazi)
     kaydet(fig, ad)
 

@@ -13,7 +13,7 @@
 Bir nokta seçin; saniyeler içinde hızlı tarama ya da dakikalar içinde optimizasyon + Monte Carlo ile tam analiz alın
 (bkz. [Türkiye geneli uygulama](#türkiye-geneli-uygulama-v2)). İlk Ezine çalışması (v1.0.0) aşağıda vaka çalışması olarak duruyor.
 
-**v3 (`v3-ie` dalı, 3.0.0-rc1):** uygulamaya endüstri mühendisliği eklentileri; bkz. [v3 eklentileri](#endüstri-mühendisliği-eklentileri-v3).
+**v3 (`v3-ie` dalı, 3.0.0-rc2):** uygulamaya endüstri mühendisliği eklentileri; bkz. [v3 eklentileri](#endüstri-mühendisliği-eklentileri-v3); proje özeti [docs/PROJE_OZETI.md](docs/PROJE_OZETI.md).
 **Düzeltme notu:** v1'de sigorta ve arazi kirası çift sayılmıştı. Düzeltilince Ezine önerisi "rafa kaldır"dan "durum
 tespiti + ≤0,9 M$ teklif"e dönüyor ([docs/v1_duzeltme_notu.md](docs/v1_duzeltme_notu.md)).
 
@@ -71,7 +71,7 @@ Ortam ve veri paketleri hazırsa ([Nasıl çalıştırılır](#nasıl-çalışt�
 |---|---|---|---|
 | D | Türbin yerleşimi optimizasyonu (MILP / GA / benzetimli tavlama, PyWake iz modeli, ERA5 rüzgâr gülü); bakım ayrık olay simülasyonu (SimPy), önleyici bakım çizelgesi MILP'i, taban stok | İz kaybı açıkça modellendi, optimal santral küçüldü; durum bazlı bakım 24 duyarlılık senaryosunun 20'sinde en iyi | [v3_D](docs/v3_D_yerlesim_bakim.md) |
 | E | OSM/DEM coğrafi katmanlar, mesafeye bağlı şebeke bağlantısı, yerleşimde CBS dışlamaları, ağır nakliye ağı + ulaştırma LP'si, AHP/TOPSIS çok kriterli seçim ve mevcut santrallerle doğrulama | Gerçek altyapıyla başabaş medyanı +4,4 $/MWh; açığa çıkan tercih: şebekeye yakınlık %34, kuş göçü %2 (AUC 0,88) | [v3_E](docs/v3_E_cbs_cok_kriterli_lojistik.md) |
-| F | Çoklu saha portföyü: 40 aday × 2–4 tasarım, 2.000 **ortak senaryo** (aynı fiyat, ERA5 hava yılı, piyasa ve düzenleyici olaylar), iki aşamalı stokastik ortalama–CVaR MILP'i, sinerjiler (işletme ölçeği, yedek parça havuzu, toplu alım, çok sahalı ulaştırma), etkin sınır; akran düzeltmeli SPC ile santral performans izleme (Shewhart/EWMA/CUSUM) | Risk nötr portföy E[NPV] +41 M$ (5 saha); sinerjiler +9,4 M$; portföy varyansının %70'i ortak piyasa riski; 46 $/MWh altında ya da λ ≥ 0,40'ta yatırım yok; izleme 6 ay süren %10'luk düşüşlerin %71'ini santral-yıl başına 0,28 yanlış alarmla yakalıyor | [v3_F](docs/v3_F_portfoy_performans.md) |
+| F | Çoklu saha portföyü: 40 aday × 2–4 tasarım, 2.000 **ortak senaryo** (aynı fiyat, ERA5 hava yılı, piyasa ve düzenleyici olaylar), iki aşamalı stokastik ortalama–CVaR MILP'i, sinerjiler (işletme ölçeği, yedek parça havuzu, toplu alım, çok sahalı ulaştırma), etkin sınır, **optimize edicinin lanetine karşı Bayesçi büzülme**; akran düzeltmeli SPC ile santral performans izleme (Shewhart/EWMA/CUSUM) | Saf seçim beklentide 46 M$ iyimser (optimize edicinin laneti); büzülmüş risk nötr portföy E[NPV] +20 M$ (4 saha, sinerjiler +10,6 M$); portföy varyansının %70'i ortak piyasa riski; 52 $/MWh altında ya da λ ≥ 0,25'te yatırım yok; izleme 6 ay süren %10'luk düşüşlerin %71'ini santral-yıl başına 0,28 yanlış alarmla yakalıyor | [v3_F](docs/v3_F_portfoy_performans.md) |
 
 Yeni sayfalar: çok kriterli saha seçimi, portföy, performans izleme. Santral adları varsayılan olarak gizli, çünkü
 sonuçlar bir modelden türetiliyor.

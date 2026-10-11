@@ -25,9 +25,31 @@ Toplam RES işletme gideri bu yüzden 40,5 $/kW-yıl'a çıkıyordu. Bu değer L
 
 **Düzeltme kapsamı:** yalnız RES'in arazi kirası ve RES CAPEX'i üzerindeki sigorta düşülür. Batarya, şebeke ve GES
 sigortası kalır: batarya O&M'i CAPEX oranı (%2,5) olarak ayrı kaynaktan geliyor ve sigorta içermiyor. TEİAŞ bedelleri
-ve söküm zaten O&M dışında. Bu bir yorum kararıdır: Lazard'ın sigortayı ve araziyi gerçekten içerip içermediği raporda
-yazmaz. "Muhtemelen içerir" değerlendirmesi ABD pratiğine ve LBNL kırılımlarına dayanır. Bu yüzden iki varyant
-§3'te ayrıca verildi.
+ve söküm zaten O&M dışında.
+
+### 1.1 Lazard ne diyor? (Ekim 2026'da kaynağından kontrol edildi)
+
+Lazard LCOE+ Haziran 2025 (LCOE v18.0, 48 sayfa) tam metni tarandı. Karşılaştırma için LCOE v13.0, v14.0 ve v15.0 de
+tarandı. Sonuç:
+
+- Dört raporun hiçbirinde "insurance", "property tax", "land" ya da "royalty" ifadesi **geçmiyor**. Sabit O&M'in neyi
+  kapsadığına dair bir dipnot yok. Varsayım sayfası (s. 35) yalnız "Fixed O&M $/kW-yr 24,50–40,00" ve "Source: Lazard
+  estimates and publicly available information" diyor.
+- Yöntem sayfasındaki örnek kara RES nakit akışında (s. 33) **işletme giderleri yalnız iki satır**: "Total Fuel Cost"
+  ve "Total O&M". Sigorta, arazi kirası ya da emlak vergisi için ayrı satır yok. "Combined Tax Rate %40" gelir vergisi.
+
+**Çıkarım (dolaylı):** Lazard'ın modelinde bu kalemler ya sabit O&M'in içindedir ya da LCOE'ye hiç girmez. Rapor hangisi
+olduğunu söylemez. İçeride olmaları ABD pratiği ve LBNL'nin "her şey dahil" örnekleriyle (33–59 $/kW-yıl) tutarlı, ama
+**kesin bir ifade yok**. Bu yüzden iki yorum ve her birindeki karar açıkça bırakılır:
+
+| Yorum | Ne varsayar | v1 baz vaka E[NPV] | P(NPV>0) | Karar |
+|---|---|---|---|---|
+| **A — her şey dahil** | Lazard'ın 35.000'i sigorta ve araziyi içerir; v1'de çift sayım var | **+0,92 M$** | %49 | (a) durum tespiti + ≤0,9 M$ teklif |
+| **B — yalnız işletme-bakım** | Lazard'ın 35.000'i bu kalemleri içermez (LCOE'si onları hiç saymaz); v1 doğru | **−1,66 M$** | %42 | (b) rafa kaldır, tetikleyicileri izle |
+
+Yalnız sigorta dahil olsaydı yorum A'ya yakın sonuç çıkardı (+0,22 M$, karar (a)); yalnız arazi dahil olsaydı yorum B'ye
+yakın (−0,96 M$, karar (b)). Karar yolculuğundaki son adım bu yüzden "yorum A" olarak etiketlendi; v1'in kendi adımı
+(yorum B) yerinde duruyor.
 
 ## 2. Nasıl bulundu
 
@@ -87,12 +109,31 @@ Düzeltilmiş durumda (a)'nın içeriği:
 - **Bağlayıcı olmayan teklif:** edinim primi ≤ 0,9 M$ (Güncelleme 2'deki ≤ 1,5 M$'ın yerine).
 
 **Değer yine çok ince:** P(NPV>0) %49, CVaR %5 −25 M$. Kararın işareti tek bir kapsam yorumuna (Lazard'ın sigortayı
-içerip içermediği) bağlı. Gerçek bir edinimde ilk iş, O&M sözleşme teklifinin kapsamını (FSA + sahip kalemleri +
+içerip içermediği; §1.1) bağlı ve Lazard bunu yazmıyor. Gerçek bir edinimde ilk iş, O&M sözleşme teklifinin kapsamını (FSA + sahip kalemleri +
 sigorta poliçesi) satıcıdan almak olur. Bu belirsizlik durum tespitinin kendi kalemidir.
 
 Karar yolculuğuna bir adım eklendi: "Düzeltme (v3 Ö1): sigorta + arazi çift sayımı kaldırıldı → +0,9 M$ → durum tespiti
 + ≤0,9 M$ teklif". Grafik `outputs/08/grafikler/karar_yolculugu.png`, tablo `results/karar_yolculugu.csv` ve CHANGELOG.
 Sunum PDF'i ve LinkedIn karuseli yeniden üretilmedi (v1 teslim edilmiş haliyle kalır).
+
+## 4.1 Bu ne anlama geliyor?
+
+- **Ezine sınırda bir proje.** Beklenen değeri, aşamalar boyunca sıfır etrafında birkaç milyon dolarlık bir bantta dolaştı:
+  −1,7 (v1 nihai), +0,4 (endeksli YEKDEM), +0,9 (yorum A), +3,0 (yorum A + endeksli YEKDEM). Bu bandın genişliği tek bir
+  varsayımın etkisi kadar: O&M kapsamı 2,6 M$, YEKDEM endekslemesi 2,1 M$, uzun vadeli fiyatta 1 $/MWh ~1,35 M$. P10–P90
+  aralığı ise −20 ile +20 M$. Yani "beklenen değer pozitif mi negatif mi" sorusu bu modelle kesin cevaplanamaz.
+- **Analizin asıl katkısı bir sayı değil, kararın işaretini belirleyen varsayımları bulmaktır:**
+  1. O&M sözleşmesinin kapsamı (sigorta ve arazi dahil mi?);
+  2. YEKDEM USD koridorunun endeksli olup olmadığı;
+  3. uzun vadeli beklenen fiyat (başabaş ~58–59 $/MWh);
+  4. SFK piyasasının doyma hızı.
+- **Gerçek bir durum tespitinde ilk madde O&M sözleşme kapsamı olur.** Satıcıdan ya da üreticiden FSA teklifi, sigorta
+  poliçesi ve arazi kira sözleşmeleri istenir. Bu üç belge yorum A ile B arasındaki 2,6 M$'lık farkı, dolayısıyla kararın
+  işaretini, birkaç günde çözer. Bu belgeleri istemenin maliyeti, yanlış işaretle karar vermenin maliyetinin yanında
+  önemsizdir.
+
+Karar yolculuğu grafiğinde bu bant gri bir şeritle gösterildi (±2,6 M$: tek bir kapsam ya da sözleşme varsayımının etkisi).
+Şeridin içinde kalan adımlar, kararın varsayıma duyarlı olduğu adımlardır.
 
 ## 5. Excel modeli
 

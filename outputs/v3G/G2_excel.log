@@ -1,0 +1,39 @@
+              Anahtar  NPV [M USD]  Proje IRR [%]  Öz kaynak IRR [%]  Asgari DSCR  LCOE [USD/MWh]  YEKDEM katılım yılı
+ Tüccar|Düşük|P50|Var      -21.788          3.058              2.277        1.171          66.775                    0
+ Tüccar|Düşük|P50|Yok      -28.126          2.353              1.444        1.171          66.775                    0
+ Tüccar|Düşük|P90|Var      -24.742          2.448              1.440        1.300          70.370                    0
+ Tüccar|Düşük|P90|Yok      -31.156          1.767              0.671        1.300          70.370                    0
+   Tüccar|Baz|P50|Var       -2.369          6.601              7.914        1.257          67.522                    0
+   Tüccar|Baz|P50|Yok       -8.254          5.728              6.239        1.257          67.522                    0
+   Tüccar|Baz|P90|Var       -6.182          5.943              6.693        1.300          71.109                    0
+   Tüccar|Baz|P90|Yok      -12.159          5.100              5.199        1.300          71.109                    0
+Tüccar|Yüksek|P50|Var       16.555          9.614             17.281        1.508          68.326                    0
+Tüccar|Yüksek|P50|Yok       11.065          8.602             13.033        1.508          68.326                    0
+Tüccar|Yüksek|P90|Var       12.286          8.972             15.130        1.442          71.905                    0
+Tüccar|Yüksek|P90|Yok        6.733          7.990             11.470        1.442          71.905                    0
+    PPA|Düşük|P50|Var      -19.082          3.500              2.597        1.265          65.979                    0
+    PPA|Düşük|P50|Yok      -25.366          2.756              1.610        1.265          65.979                    0
+    PPA|Düşük|P90|Var      -22.385          2.831              1.507        1.207          69.580                    0
+    PPA|Düşük|P90|Yok      -28.749          2.117              0.630        1.207          69.580                    0
+
+Mutabakat (azami mutlak fark):
+Fark NPV [M USD]          0.0
+Fark Proje IRR [%]        0.0
+Fark Öz kaynak IRR [%]    0.0
+Fark Asgari DSCR          0.0
+Fark LCOE [USD/MWh]       0.0
+Formül hatası (her senaryo): [0.0]
+
+Kontroller (baz senaryo):
+  OK    Nakit tutarlılığı: Σ proje akışı = Σ CAPEX + Σ KDV + Σ CFADS − prim [USD]: 0
+  OK    CFADS = FAVÖK − vergi − augmentation − söküm (Σ fark) [USD]: 0
+  OK    Borç bakiyesi vade sonunda sıfır (vade yılındaki kapanış) [USD]: -8.47503542900085e-08
+  OK    Negatif vergi olan yıl sayısı: 0
+  OK    Python mutabakatı — NPV farkı [M USD]: 0
+  OK    Python mutabakatı — proje IRR farkı [puan]: -3.79785092263774e-12
+  OK    Python mutabakatı — öz kaynak IRR farkı [puan]: 0
+  OK    Python mutabakatı — asgari DSCR farkı: 0
+  OK    Python mutabakatı — LCOE farkı [USD/MWh]: 0
+  OK    Formül hatası sayısı (#REF!, #DIV/0!, #VALUE!, #NAME?, #N/A): 0
+        Tüm senaryolarda mutabakat (Senaryolar sayfası): 96 / 96
+Yeniden hesaplanmış dosyada hata hücresi: 0

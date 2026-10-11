@@ -9,11 +9,44 @@
 **Documents (Turkish):** [Investment memo (PDF)](outputs/08/Yatirim_Memosu.pdf) · [Presentation (PDF)](outputs/08/Sunum.pdf) ·
 [Full report (PDF)](outputs/RAPOR.pdf) · [Excel financial model](outputs/08/Ezine_Hibrit_Finansal_Model.xlsx)
 
+## Overview
+
+**Question.** Should wind, solar and battery capacity be built behind a 50 MW grid connection in Türkiye, at which size,
+where, under which revenue structure, and with what risk? The project grew in three versions:
+
+- **v1: Ezine case study.**
+  - *Method:* ERA5/PVGIS profiles with wind calibrated on nearby wind farms, 12 years of market data, a capacity MILP with
+    hourly battery dispatch, project finance, and a 10,000-scenario Monte Carlo.
+  - *Finding:* wind 58.8 MW + 30 MW/60 MWh battery, but the project is **marginal**. Expected NPV is −1.7 M$ in v1 and sits
+    in a ±2.6 M$ band around zero.
+  - *Correction note:* if Lazard's O&M already includes insurance and land lease (the report does not say), v1
+    double-counted them and the expected NPV is +0.9 M$, which turns the recommendation into "due diligence + ≤0.9 M$ offer".
+  - *Main contribution:* identifying the four assumptions that set the decision's sign: O&M contract scope, YEKDEM
+    indexation, long-run price and ancillary market saturation.
+  - *Validation:* Excel model reconciled with Python in 96/96 scenarios.
+- **v2: Türkiye-wide tool.**
+  - *Method:* a 90-plant calibration atlas, a confidence-rated transfer rule, ERA5/PVGIS grids over 1,464 land cells, and
+    a web app that screens any site in seconds and runs a full analysis in about a minute.
+  - *Finding:* wind estimate error is 3.4 CF points (median) where a calibrated farm is within 30 km and 5.6 points elsewhere.
+  - *Validation:* leave-one-out cross-validation, and the Ezine regression matches v1 within Monte Carlo error.
+- **v3: industrial-engineering modules.**
+
+  | Module | Method | Finding | Validation |
+  |---|---|---|---|
+  | Turbine layout | PyWake wakes, MILP / GA / annealing | Wakes shrink the optimal plant; annealing within 0.13% of MILP in 2 s | Surrogate matches PyWake to 1e-6 |
+  | Maintenance | SimPy discrete-event simulation, PM-scheduling MILP, base stock | Condition-based maintenance best in 20/24 sensitivity cases; a full service agreement is right for one site | Failure counts within ±4% of inputs |
+  | Multi-criteria site selection | AHP / TOPSIS | Revealed developer preferences: grid proximity 34%, bird migration 2% | AUC 0.87 vs 171 existing farms |
+  | Logistics and connection | Heavy-haul network + transportation LP; distance-based connection with uncertainty from YEKA opinions | Break-even +4.4 $/MWh at the median | YEKA opinions |
+  | Portfolio | 40 sites × 147 designs on common scenarios; two-stage mean–CVaR MILP; synergies; Bayesian shrinkage against the optimiser's curse | Selection effect was over half the naive portfolio value (expected disappointment 46 M$); shrunk portfolio 4 sites, 20 M$; no investment below 52 $/MWh or for λ ≥ 0.25 | Brute force, exact CVaR |
+  | Performance monitoring | Peer-adjusted SPC (EWMA / CUSUM) for 90 plants | 71% detection of 6-month 10% drops at 0.28 false alarms per plant-year | Synthetic faults |
+
+Summary: [docs/PROJE_OZETI.md](docs/PROJE_OZETI.md) (Turkish).
+
 **v2 (branch `v2-genel`, release candidate):** a **Türkiye-wide site screening and analysis app**. Pick any point on land and
 get a quick scan in seconds or a full optimisation + Monte Carlo analysis in minutes; see [Türkiye-wide app](#türkiye-wide-app-v2).
 The original Ezine study (v1.0.0) remains as a case study below.
 
-**v3 (branch `v3-ie`, 3.0.0-rc1):** industrial-engineering extensions to the app; see [v3 extensions](#industrial-engineering-extensions-v3).
+**v3 (branch `v3-ie`, 3.0.0-rc2):** industrial-engineering extensions to the app; see [v3 extensions](#industrial-engineering-extensions-v3).
 **Correction note:** v1 double-counted insurance and land lease; corrected, the Ezine recommendation turns from "shelve" to
 "due diligence + ≤0.9 M$ offer" ([docs/v1_duzeltme_notu.md](docs/v1_duzeltme_notu.md)).
 
@@ -69,7 +102,7 @@ Run locally with one command (after the environment and data packages are in pla
 |---|---|---|---|
 | D | Turbine layout optimisation (MILP / GA / simulated annealing, PyWake wakes, ERA5 wind rose); maintenance discrete-event simulation (SimPy), PM scheduling MILP, base-stock spares | Explicit wakes and smaller optimal plants; condition-based maintenance best in 20 of 24 sensitivity cases | [v3_D](docs/v3_D_yerlesim_bakim.md) |
 | E | OSM/DEM GIS layers, distance-based grid connection, CBS exclusions in layout, heavy-haul network + transportation LP, AHP/TOPSIS multi-criteria site selection validated against existing wind farms | Break-even median +4.4 $/MWh with real infrastructure; revealed preferences: grid proximity 34%, bird migration 2% (AUC 0.88) | [v3_E](docs/v3_E_cbs_cok_kriterli_lojistik.md) |
-| F | Multi-site portfolio: 40 candidates × 2–4 designs on 2,000 **common scenarios** (same price, ERA5 weather year, market and regulatory events), two-stage stochastic mean–CVaR MILP, synergies (O&M scale, spare pooling, bulk purchase, multi-site transport), efficient frontier; plant performance monitoring with peer-adjusted SPC (Shewhart/EWMA/CUSUM) | Risk-neutral portfolio E[NPV] +41 M$ (5 sites); synergies +9.4 M$; 70% of portfolio variance is common market risk; no investment below 46 $/MWh or for λ ≥ 0.40; monitoring catches 71% of 10%/6-month drops at 0.28 false alarms per plant-year | [v3_F](docs/v3_F_portfoy_performans.md) |
+| F | Multi-site portfolio: 40 candidates × 2–4 designs on 2,000 **common scenarios** (same price, ERA5 weather year, market and regulatory events), two-stage stochastic mean–CVaR MILP, synergies (O&M scale, spare pooling, bulk purchase, multi-site transport), efficient frontier, **Bayesian shrinkage against the optimiser's curse**; plant performance monitoring with peer-adjusted SPC (Shewhart/EWMA/CUSUM) | Naive selection is optimistic by 46 M$ in expectation; shrunk risk-neutral portfolio E[NPV] +20 M$ (4 sites, synergies +10.6 M$); 70% of portfolio variance is common market risk; no investment below 52 $/MWh or for λ ≥ 0.25; monitoring catches 71% of 10%/6-month drops at 0.28 false alarms per plant-year | [v3_F](docs/v3_F_portfoy_performans.md) |
 
 New app pages: multi-criteria site selection, portfolio, performance monitoring (plant names hidden by default: results are
 model-derived).

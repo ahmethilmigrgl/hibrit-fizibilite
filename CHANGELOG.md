@@ -14,7 +14,28 @@ Proje aşamalar halinde geliştirildi. Her aşama bir commit; revizyonlar ve ön
 | Tutarlılık 1 (Ö1–Ö2) | YEKDEM/PPA'da batarya arbitrajı kaldırıldı | −11,4 M$ | Yatırım önerilmez |
 | Tutarlılık 2 | YEKDEM yıllık opsiyon, ortak batarya sürücüsü, inşaata hazır takvim | +1,5 M$ | Durum tespiti + ≤1,5 M$ teklif |
 | Nihai (Aşama 9 A) | Fiyat ortalaması: 58 $/MWh medyan değil beklenen değer | −1,7 M$ | Rafa kaldır, tetikleyicileri izle |
-| **Düzeltme (v3, Ekim 2026)** | **Sigorta + arazi kirası çift sayımı kaldırıldı ([docs/v1_duzeltme_notu.md](docs/v1_duzeltme_notu.md))** | **+0,9 M$** | **Durum tespiti + ≤0,9 M$ teklif** |
+| **Düzeltme (v3, yorum A)** | **Lazard O&M'i sigorta ve araziyi içeriyorsa çift sayım kaldırılır; Lazard açıkça yazmıyor ([docs/v1_duzeltme_notu.md](docs/v1_duzeltme_notu.md))** | **+0,9 M$** | **Durum tespiti + ≤0,9 M$ teklif (yorum B: rafa kaldır)** |
+
+## [3.0.0-rc2] — 2026-10-11 (dal `v3-ie`, etiket v3.0.0-rc2, yayınlanmadı)
+
+### v3 kapanış
+- **Optimize edicinin laneti** (`src/portfoy/lanet.py`, `src/v3_G1_optimizer_laneti.py`):
+  - Ampirik kanıt: çapraz doğrulamada yüksek tahminler fazla tahmin ediyor (en üst çeyrek +%14, kalibrasyon eğimi 0,36).
+  - Simülasyon (200 tekrar): saf seçimde beklenen hayal kırıklığı portföyde 46,3 M$, en iyi tek sahada 15,7 M$.
+  - Bayesçi büzülme (bölgesel öncül, ampirik Bayes) hayal kırıklığını 6,8 / 3,1 M$'a indiriyor ve gerçekleşen değeri
+    artırıyor.
+  - Gerçek karar: Faz F'nin 41,1 M$'lık portföyü sonsal beklentide 19,3 M$. Büzülmüş seçim 4 saha, 20,4 M$.
+  - Eşikler: fiyat 46 → 52 $/MWh, risk ağırlığı λ 0,40 → 0,25.
+  - Uygulamada düzeltme varsayılan, notla açıklanıyor.
+- **Lazard kapsamı:** LCOE+ 2025 ve v13–v15 tam metninde sigorta, emlak vergisi ya da arazi hiç geçmiyor; örnek nakit
+  akışında işletme gideri yalnız yakıt + O&M. Kesin ifade yok → düzeltme notunda iki yorum ve kararları (A: +0,92 M$,
+  durum tespiti; B: −1,66 M$, rafa kaldır).
+  - "Bu ne anlama geliyor" bölümü eklendi; karar yolculuğu grafiğine ±2,6 M$'lık karar bandı şeridi kondu.
+  - Not kutuları (rapor, memo, Excel, Vaka sayfası) ve Excel (96/96 mutabık) güncellendi.
+- **ERA5 yön gridi:** 1.464 hücre paketlendi (hızlı paketleyici, 14 s; 87.648 saat, NaN yok; ham hücrelerle %100 aynı).
+  - Tüm sahalar grid kullanıyor; Ezine, Gürün ve Susurluk Faz D sonuçları birebir aynı.
+  - Portföy adayları gridle yeniden değerlendi.
+- **Kapanış belgeleri:** `docs/PROJE_OZETI.md`, README "Overview".
 
 ## [3.0.0-rc1] — 2026-10-11 (dal `v3-ie`, etiket v3.0.0-rc1, yayınlanmadı)
 

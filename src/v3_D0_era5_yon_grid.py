@@ -82,8 +82,8 @@ def main() -> None:
     if len(dosyalar) < len(DONEMLER):
         g.warning(f"Paketleme ertelendi: {len(dosyalar)}/{len(DONEMLER)} dönem")
         return
-    n = era5_yon.paketle_yil_dosyalari(dosyalar, era5_grid.kara_hucreleri())
-    g.info(f"BİTTİ. Paketlenen hücre: {n}")
+    r = era5_yon.paketle_hizli(dosyalar, era5_grid.kara_hucreleri())
+    g.info(f"BİTTİ. Paketleme: {r}")
 
 
 if __name__ == "__main__":

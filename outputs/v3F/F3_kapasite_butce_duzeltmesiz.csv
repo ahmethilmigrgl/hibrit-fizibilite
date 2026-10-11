@@ -1,0 +1,8 @@
+﻿bolge_kapasite_mw,e_npv,cvar,n,secim,butce_musd
+50.000,29.119,-67.775,4,A01:MILP; A02:MILP; A10:MILP; A11:MILP,
+100.000,40.714,-66.117,5,A01:MILP; A02:Küçük; A04:Küçük; A05:Küçük; A10:Küçük,
+150.000,41.077,-65.262,5,A01:MILP; A02:Küçük; A04:Küçük; A05:Küçük; A06:Küçük,
+,41.077,-65.262,5,A01:MILP; A02:Küçük; A04:Küçük; A05:Küçük; A06:Küçük,
+,18.227,-39.632,3,A01:Küçük; A05:Küçük; A10:Küçük,150.000
+,41.077,-65.262,5,A01:MILP; A02:Küçük; A04:Küçük; A05:Küçük; A06:Küçük,300.000
+,69.373,-124.415,8,A01:MILP; A02:MILP; A03:MILP; A04:MILP; A05:MILP; A06:MILP; A10:MILP; A11:MILP,600.000

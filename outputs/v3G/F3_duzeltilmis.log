@@ -1,0 +1,41 @@
+sınır -71.7 17.43 -71.16 A01:MILP; A02:MILP; A05:MILP 66 s
+sınır -63.0 12.97 -62.81 A01:MILP; A03:MILP; A05:Küçük 65 s
+sınır -54.3 10.52 -50.16 A01:MILP; A05:MILP 59 s
+sınır -45.6 9.59 -43.49 A01:MILP; A05:Küçük 67 s
+sınır -36.8 4.94 -28.09 A01:MILP 52 s
+sınır -28.1 4.94 -28.09 A01:MILP 40 s
+sınır -19.4 0.73 -15.76 A10:Küçük 33 s
+sınır -10.7 0.0 0.0  42 s
+sınır -2.0 0.0 0.0  16 s
+tek saha {'secim': 'A01:MILP', 'e_npv': 4.941084777141859, 'cvar': -28.091417266455082, 'capex_musd': 85.3253} aynı CVaR portföy {'e_npv': 4.941084777141943, 'cvar': -28.091417266454993, 'capex_musd': 85.3253, 'secim': ['A01:MILP']}
+çeşitlendirme {'n': 4, 'e_npv': 20.413052538143855, 'sigma_portfoy': 58.19461562521884, 'sigma_toplam_tek': 65.07894263351531, 'cesitlendirme_sigma': 6.884327008296474, 'cvar_portfoy': -80.40367264083535, 'cvar_toplam_tek': -105.02297936259035, 'cesitlendirme_cvar': 24.619306721754995, 'var_ortak_piyasa': 2352.4599753588273, 'var_sahaya_ozgu': 471.10835101676076, 'var_hava_korelasyonu': 563.044961391487, 'var_artik': -1.1027623258996755e-10, 'pay_ortak_piyasa': np.float64(0.6946349569513358), 'r2_ortak_medyan': 0.5552382354507885}
+fiyat -24.0 0.0 0 | CVaR≥−30: 0.0 0
+fiyat -22.0 0.0 0 | CVaR≥−30: 0.0 0
+fiyat -20.0 0.0 0 | CVaR≥−30: 0.0 0
+fiyat -18.0 0.0 0 | CVaR≥−30: 0.0 0
+fiyat -16.0 0.0 0 | CVaR≥−30: 0.0 0
+fiyat -14.0 0.0 0 | CVaR≥−30: 0.0 0
+fiyat -12.0 0.0 0 | CVaR≥−30: 0.0 0
+fiyat -10.0 0.0 0 | CVaR≥−30: 0.0 0
+fiyat -8.0 0.0 0 | CVaR≥−30: 0.0 0
+fiyat -6.0 0.0 0 | CVaR≥−30: 0.0 0
+fiyat -4.0 6.06 4 | CVaR≥−30: 0.68 1
+fiyat -2.0 13.24 4 | CVaR≥−30: 2.07 1
+fiyat 0.0 20.41 4 | CVaR≥−30: 4.94 1
+fiyat 2.0 27.59 4 | CVaR≥−30: 7.09 1
+fiyat 4.0 34.77 4 | CVaR≥−30: 9.25 1
+fiyat 6.0 41.95 4 | CVaR≥−30: 15.21 2
+fiyat 8.0 49.12 4 | CVaR≥−30: 23.96 2
+fiyat 10.0 56.3 4 | CVaR≥−30: 31.9 2
+λ 0.1 20.41 4
+λ 0.2 20.41 4
+λ 0.25 0.0 0
+λ 0.3 0.0 0
+λ 0.35 0.0 0
+λ 0.4 0.0 0
+λ 0.45 0.0 0
+λ 0.5 0.0 0
+doğrulama {'lam': 0.0, 'butce': 150.0, 'milp_amac': 9.575172058735236, 'kaba_kuvvet_amac': np.float64(9.575172058735234), 'milp_secim': ['A01:MILP', 'A05:Küçük'], 'kaba_kuvvet_secim': ['A01:MILP', 'A05:Küçük'], 'kombinasyon': 179, 'cvar_kesin': -43.49967622676102, 'cvar_dogrusal': -10000.0}
+doğrulama {'lam': 0.2, 'butce': 150.0, 'milp_amac': -0.0, 'kaba_kuvvet_amac': np.float64(0.0), 'milp_secim': [], 'kaba_kuvvet_secim': [], 'kombinasyon': 179, 'cvar_kesin': 0.0, 'cvar_dogrusal': -0.0}
+doğrulama {'lam': 0.05, 'butce': 250.0, 'milp_amac': 12.110201241839793, 'kaba_kuvvet_amac': np.float64(12.110201241839789), 'milp_secim': ['A01:MILP', 'A02:MILP', 'A05:Küçük'], 'kaba_kuvvet_secim': ['A01:MILP', 'A02:MILP', 'A05:Küçük'], 'kombinasyon': 1800, 'cvar_kesin': -64.78334766886942, 'cvar_dogrusal': -64.78334766886942}
+{"tek_saha": {"secim": "A01:MILP", "e_npv": 4.941084777141859, "cvar": -28.091417266455082, "capex_musd": 85.3253}, "ayni_cvar_portfoy": {"e_npv": 4.941084777141943, "cvar": -28.091417266454993, "capex_musd": 85.3253, "secim": ["A01:MILP"]}, "yatirim_yok_esik_fiyat": 52.0, "sure_dk": 20.38687458833059}

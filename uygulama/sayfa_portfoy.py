@@ -35,13 +35,13 @@ def _json(ad: str) -> dict:
 
 
 @st.cache_resource(show_spinner=False)
-def _veri():
-    return PV.yukle(), PV.ortak()
+def _veri(duzeltme: bool = True):
+    return PV.yukle(duzeltme=duzeltme), PV.ortak()
 
 
 @st.cache_data(show_spinner=False, max_entries=16)
-def _coz(kodlar: tuple[str, ...], butce: float, lam: float, bolge: float | None, sinerji: tuple[bool, ...]) -> dict:
-    v, o = _veri()
+def _coz(kodlar: tuple[str, ...], butce: float, lam: float, bolge: float | None, sinerji: tuple[bool, ...], duzeltme: bool = True) -> dict:
+    v, o = _veri(duzeltme)
     sec = v.tas["kod"].isin(kodlar).to_numpy()
     vv = M.Veri(
         tas=v.tas[sec].reset_index(drop=True), ad=v.ad[v.ad["kod"].isin(kodlar)].reset_index(drop=True), V=v.V[sec], lojistik=v.lojistik
@@ -89,12 +89,28 @@ st.caption(
         "docs/v3_F_portfoy_performans.md.",
     )
 )
+duz = st.toggle(
+    T("Optimize edicinin lanetine karşı düzeltme (önerilen)", "Correction for the optimiser's curse (recommended)"),
+    True,
+    key="pf_duz",
+    help=T(
+        "40 aday arasından en iyi görünenleri seçmek, rüzgâr tahmini olduğundan iyi çıkmış sahaları seçmek demektir; seçilen portföyün "
+        "tahmini değeri sistematik olarak iyimser olur. Düzeltme her adayın KF tahminini, tahmin belirsizliğine (güven seviyesi) göre "
+        "bölgesel ortalamaya doğru büzer (Bayesçi büzülme). Ayrıntı: docs/v3_F_portfoy_performans.md §8.",
+        "Picking the best-looking of 40 candidates means picking sites whose wind estimate came out too high; the selected portfolio's "
+        "estimated value is systematically optimistic. The correction shrinks each candidate's capacity-factor estimate towards the "
+        "regional mean according to its estimation uncertainty (Bayesian shrinkage). Details: docs/v3_F_portfoy_performans.md §8.",
+    ),
+)
 try:
-    v, o = _veri()
+    v, o = _veri(duz)
 except Exception:
     B.bos_durum(T("Portföy verisi yok", "No portfolio data"), T("src/v3_F1_adaylar.py çalıştırılmalı.", "Run src/v3_F1_adaylar.py."))
     st.stop()
-an = _json("analiz.json")
+an = _json("analiz.json" if duz else "analiz_duzeltmesiz.json")
+if duz:
+    st.caption(T("Tahminler optimize edicinin lanetine karşı büzülmüş (varsayılan). Kapatırsanız saf tahminlerle seçilen portföy ortalamada iyimser olur.",
+                 "Estimates are shrunk against the optimiser's curse (default). Switching off gives a portfolio that is optimistic on average."))  # fmt: skip
 tema = aktif_tema()
 vr = TEMALAR[tema]["veri"]
 rk = TEMALAR[tema]["renk"]
@@ -139,7 +155,7 @@ if not kodlar:
     st.info(T("En az bir saha seçin.", "Select at least one site."))
     st.stop()
 with st.spinner(T("Portföy optimize ediliyor (MILP, 1.000 senaryo)…", "Optimising the portfolio (MILP, 1,000 scenarios)…")):
-    r = _coz(tuple(kodlar), float(butce), float(lam), None if bk == 0 else float(bk), (s1, s2 and s1, s3, s4))
+    r = _coz(tuple(kodlar), float(butce), float(lam), None if bk == 0 else float(bk), (s1, s2 and s1, s3, s4), duz)
 sec = pd.DataFrame(r["secim"])
 
 # --- 2. Sonuç
@@ -355,10 +371,17 @@ with c[0]:
             )
         )
         if an.get("yatirim_yok_esik_fiyat") is not None:
-            st.caption(md(T(f"Hiç yatırım yapmamak optimal: risk nötr yatırımcı için uzun vadeli fiyat ≤ {sayi(an['yatirim_yok_esik_fiyat'], 0)} $/MWh; 58 $/MWh'de risk "
-                            f"ağırlığı λ ≥ {sayi(an.get('yatirim_yok_esik_lambda', float('nan')), 2)}. 48 $/MWh'de seçilen 5 sahanın 4'ü tek başına negatif; portföyü sinerjiler pozitif yapıyor.",
-                            f"Investing nothing is optimal: for a risk-neutral investor at a long-run price ≤ {sayi(an['yatirim_yok_esik_fiyat'], 0)} $/MWh; at 58 $/MWh with risk "
-                            f"weight λ ≥ {sayi(an.get('yatirim_yok_esik_lambda', float('nan')), 2)}. At 48 $/MWh 4 of the 5 selected sites are negative alone; synergies make the portfolio positive.")))  # fmt: skip
+            es = an.get("esik_sinerji") or {}
+            ek_tr = ek_en = ""
+            if es and es.get("sinerjili_n", 0) > es.get("sinerjisiz_n", 0):
+                neg = sum(1 for x in es.get("tek_tek_e", []) if x < 0)
+                ek_tr = f" {sayi(es['fiyat'], 0)} $/MWh'de seçilen {es['sinerjili_n']} sahanın {neg}'ü tek başına negatif; portföyü sinerjiler pozitif yapıyor."
+                ek_en = f" At {sayi(es['fiyat'], 0)} $/MWh {neg} of the {es['sinerjili_n']} selected sites are negative alone; synergies make the portfolio positive."
+            lam_e = an.get("yatirim_yok_esik_lambda")
+            st.caption(md(T(f"Hiç yatırım yapmamak optimal: risk nötr yatırımcı için uzun vadeli fiyat ≤ {sayi(an['yatirim_yok_esik_fiyat'], 0)} $/MWh"
+                            + (f"; 58 $/MWh'de risk ağırlığı λ ≥ {sayi(lam_e, 2)}." if lam_e is not None else ".") + ek_tr,
+                            f"Investing nothing is optimal: for a risk-neutral investor at a long-run price ≤ {sayi(an['yatirim_yok_esik_fiyat'], 0)} $/MWh"
+                            + (f"; at 58 $/MWh with risk weight λ ≥ {sayi(lam_e, 2)}." if lam_e is not None else ".") + ek_en)))  # fmt: skip
 with c[1]:
     kr = _json("korelasyon.json")
     if kr.get("bolge"):

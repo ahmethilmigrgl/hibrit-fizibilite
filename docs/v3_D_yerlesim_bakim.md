@@ -654,3 +654,29 @@ için tipik tek haneli aralıkla tutarlı.
 - **Bakım:** SimPy ile kuyruk + hava + vinç + stok simülasyonu. Zaman indeksli MILP çizelgesi bahar kampanyasının kayıp
   gelirini yarıya indiriyor. Baz stok özdeşliğiyle simülasyon tabanlı stok optimizasyonu: tek santralde stok ekonomik
   değil, 28+ türbinde ekonomik (havuzlama).
+
+## ERA5 yön gridi — tamamlanma (v3 kapanış, 2026-10-11)
+
+- **İndirme ve paketleme.** 20 yarım yıllık CDS isteğinin tamamı (u100, v100; Türkiye kutusu 0,25°) indirilmişti, ama
+  paketleme yapılmamıştı. Yeni hızlı paketleyiciyle (`era5_yon.paketle_hizli`; dosya başına tüm alan belleğe okunur)
+  1.464 kara hücresi 14 saniyede paketlendi: `data/grid/era5_yon_tr/v1`, 54 MB.
+- **Bütünlük.**
+  - 87.648 saat (2014-01-01 00 – 2023-12-31 23 UTC).
+  - Adım her yerde 1 saat, NaN yok.
+  - Santral hücrelerinin ayrıca indirilmiş ham ERA5 serileriyle 40 hücrede %100 aynı yön sektörü.
+- **Kapsam.** 1.464 ön tarama temsil noktasının ve 120 atlas santralinin tamamı artık yönü doğrudan bu gridden alıyor
+  (`saatlik_yon` → `era5_yon_grid`).
+- **Grid öncesi durum.** Yön sırayla şu kaynaklardan geliyordu: santral hücresi ham verisi, 0,5° içindeki komşu hücre,
+  hiç yoksa tek biçimli dağılım. 200 rastgele kara hücresinde dağılım: 17 kendi hücresi, 92 komşu, 91 yön yok. Portföyün
+  40 adayında: 14 / 19 / 7.
+- **Faz D sonuçları değişmedi.** Ezine, Gürün ve Susurluk grid öncesinde de kendi santral hücrelerinin (aynı ERA5)
+  verisini kullanıyordu. Tam analiz yeniden koşturuldu ve sonuçlar birebir aynı çıktı (`outputs/v3G/G3_yon_grid_kontrol.csv`):
+
+  | Saha | E[NPV] | Türbin | İç iz | Konum kazancı |
+  |---|---|---|---|---|
+  | Ezine | −1,668 | 6 | %2,51 | 1,063 |
+  | Gürün | −7,357 | 7 | %1,33 | 1,022 |
+  | Susurluk | −3,578 | 10 | %1,95 | 0,990 |
+
+- **Portföy adayları gridle yeniden değerlendi** (62 dk). Tasarım E[NPV] farkı medyan 0, çoğu ±0,05 M$. Büyük farklar
+  (en çok −6,8 M$) önceden yön verisi olmayan, zaten derin negatif zayıf adaylarda. Önceki paket `outputs/v3G/portfoy_yon_oncesi/`.

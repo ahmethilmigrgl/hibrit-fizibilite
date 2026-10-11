@@ -1,0 +1,70 @@
+{
+ "tekrar": 200,
+ "simulasyon": {
+  "saf_portfoy": {
+   "hayal_kirikligi_ort": 46.32558371613981,
+   "hayal_kirikligi_se": 1.49944205137419,
+   "hayal_kirikligi_p10_p90": [
+    22.436639776053426,
+    75.46405141834197
+   ],
+   "tahmin_ort": 76.56201319196471,
+   "gercek_ort": 30.2364294758249
+  },
+  "saf_tek": {
+   "hayal_kirikligi_ort": 15.678014960335213,
+   "hayal_kirikligi_se": 0.8027288225391259,
+   "hayal_kirikligi_p10_p90": [
+    2.7913817599993207,
+    34.08627226191407
+   ],
+   "tahmin_ort": 24.369226124725454,
+   "gercek_ort": 8.691211164390246
+  },
+  "buzulmus_portfoy": {
+   "hayal_kirikligi_ort": 6.8296714719085525,
+   "hayal_kirikligi_se": 0.9777400705934025,
+   "hayal_kirikligi_p10_p90": [
+    -10.08590576329068,
+    26.94252171737832
+   ],
+   "tahmin_ort": 40.60907221707418,
+   "gercek_ort": 33.77940074516563
+  },
+  "buzulmus_tek": {
+   "hayal_kirikligi_ort": 3.093569705248293,
+   "hayal_kirikligi_se": 0.5059325731638077,
+   "hayal_kirikligi_p10_p90": [
+    -5.402357632715995,
+    12.293032317056017
+   ],
+   "tahmin_ort": 13.394596951808126,
+   "gercek_ort": 10.301027246559833
+  }
+ },
+ "gercek_karar": {
+  "saf_portfoy_tahmin": 41.076830743464846,
+  "saf_portfoy_sonsal": 19.304235534854598,
+  "saf_portfoy_secim": [
+   "A01:MILP",
+   "A02:Küçük",
+   "A04:Küçük",
+   "A05:Küçük",
+   "A06:Küçük"
+  ],
+  "buzulmus_portfoy_tahmin": 20.41298070425871,
+  "buzulmus_portfoy_secim": [
+   "A01:MILP",
+   "A02:MILP",
+   "A04:Küçük",
+   "A05:Küçük"
+  ],
+  "saf_tek": "A01:MILP",
+  "saf_tek_tahmin": 9.624682677141857,
+  "saf_tek_sonsal": 4.941077369383062,
+  "buzulmus_tek": "A01:MILP",
+  "buzulmus_tek_tahmin": 4.941077369383062
+ },
+ "loo_kalibrasyon_egimi": 0.3575046350521297,
+ "sure_dk": 9.925115636984508
+}

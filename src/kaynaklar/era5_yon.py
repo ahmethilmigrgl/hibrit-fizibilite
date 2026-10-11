@@ -104,3 +104,36 @@ def paketle_yil_dosyalari(dosyalar: list[Path], hucreler: list[tuple[float, floa
         np.savez_compressed(KLASOR / dosya_adi(e, b), yon=sektor(yon_derece(u, v)), bas=np.array(BAS))
         sayi += 1
     return sayi
+
+
+def paketle_hizli(dosyalar: list[Path], hucreler: list[tuple[float, float]]) -> dict:
+    """
+    paketle_yil_dosyalari'nın hızlı sürümü: her dönem dosyası bir kez belleğe okunur (u, v → yön sektörü uint8, tüm alan),
+    zamanda birleştirilir, sonra hücre başına yazılır. Bütünlük raporu döndürür (saat sayısı, süreklilik, NaN).
+    """
+    import xarray as xr
+
+    KLASOR.mkdir(parents=True, exist_ok=True)
+    parca, zamanlar, nan = [], [], 0
+    lat = lon = None
+    for d in sorted(dosyalar):
+        ds = xr.open_dataset(d)
+        z = "valid_time" if "valid_time" in ds.dims else "time"
+        ds = ds.sortby(z)
+        u, v = ds["u100"].to_numpy(), ds["v100"].to_numpy()
+        nan += int(np.isnan(u).sum() + np.isnan(v).sum())
+        parca.append(sektor(yon_derece(u, v)).astype(np.uint8))
+        zamanlar.append(ds[z].to_numpy())
+        lat, lon = ds["latitude"].to_numpy(), ds["longitude"].to_numpy()
+        ds.close()
+    Y = np.concatenate(parca, axis=0)
+    t = np.concatenate(zamanlar)
+    adim = np.unique(np.diff(t).astype("timedelta64[h]").astype(int))
+    sayi = 0
+    for e, b in hucreler:
+        i, j = int(np.argmin(np.abs(lat - e))), int(np.argmin(np.abs(lon - b)))
+        if abs(lat[i] - e) > 1e-6 or abs(lon[j] - b) > 1e-6:
+            continue
+        np.savez_compressed(KLASOR / dosya_adi(e, b), yon=Y[:, i, j], bas=np.array(BAS))
+        sayi += 1
+    return {"hucre": sayi, "saat": int(len(t)), "ilk": str(t[0])[:13], "son": str(t[-1])[:13], "adim_saat": adim.tolist(), "nan": nan}

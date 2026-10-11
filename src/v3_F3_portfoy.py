@@ -3,7 +3,9 @@ v3 F1/F3 — Portföy analizleri (çevrimdışı): bölgeler arası üretim kore
 tek saha, sinerji ve çeşitlendirme ayrıştırması, fiyat ve bağlantı kapasitesi duyarlılığı, kaba kuvvet ve CVaR doğrulaması.
 Girdi: data/atlas/portfoy (src/v3_F1_adaylar.py). Çıktılar: outputs/v3F/F3_*.csv|json|png, data/atlas/portfoy/analiz.json
 (uygulamanın Portföy sayfası için küçük özet), data/atlas/portfoy/korelasyon.json
-Çalıştırma: .venv/bin/python src/v3_F3_portfoy.py [--korelasyon-atla]
+Varsayılan: Bayesçi büzülmeyle düzeltilmiş tahminler (data/atlas/portfoy/lanet.json); --duzeltmesiz: saf tahminler
+(çıktılar _duzeltmesiz sonekiyle; önce/sonra karşılaştırması).
+Çalıştırma: .venv/bin/python src/v3_F3_portfoy.py [--korelasyon-atla] [--duzeltmesiz]
 """
 
 import json
@@ -87,7 +89,9 @@ def main() -> None:
     CIKTI.mkdir(parents=True, exist_ok=True)
     cfg = config_oku()
     a = deger(cfg["v3"]["portfoy"])
-    v = PV.yukle()
+    duz = "--duzeltmesiz" not in sys.argv
+    sonek = "" if duz else "_duzeltmesiz"
+    v = PV.yukle(duzeltme=duz)
     o = PV.ortak()
     t0 = time.time()
     oz: dict = {}
@@ -139,7 +143,7 @@ def main() -> None:
         )
         print("sınır", round(c, 1), round(r["e_npv"], 2), round(r["cvar"], 2), sinir[-1]["secim"], f"{r['sure_s']:.0f} s", flush=True)
     sinir.append({"cvar_alt": 0.0, "e_npv": 0.0, "cvar": 0.0, "capex_musd": 0.0, "secim": "(yatırım yok)", "n": 0})
-    pd.DataFrame(sinir).to_csv(CIKTI / "F3_etkin_sinir.csv", index=False, encoding="utf-8-sig", float_format="%.3f")
+    pd.DataFrame(sinir).to_csv(CIKTI / f"F3_etkin_sinir{sonek}.csv", index=False, encoding="utf-8-sig", float_format="%.3f")
     # tek sahayla aynı CVaR'da portföy
     r_es = M.coz(v, M.Ayar(**{**ay0.__dict__, "cvar_alt": tek["cvar"], "zaman_s": 120}), cfg, sp)
     oz["tek_saha"] = tek
@@ -185,7 +189,7 @@ def main() -> None:
             "secim": "; ".join(yok["secim"]["kod"] + ":" + yok["secim"]["tasarim"]),
         }
     )
-    pd.DataFrame(ay_).to_csv(CIKTI / "F3_sinerji.csv", index=False, encoding="utf-8-sig", float_format="%.3f")
+    pd.DataFrame(ay_).to_csv(CIKTI / f"F3_sinerji{sonek}.csv", index=False, encoding="utf-8-sig", float_format="%.3f")
     oz["sinerji"] = ay_
     # kesin havuz değeri (doğrusal yaklaşım kontrolü)
     from src.portfoy import sinerji as S
@@ -206,7 +210,7 @@ def main() -> None:
     )
     mi = t.index[t["tasarim"] == "MILP"].to_numpy()
     eg = PA.egri_n(v.V[mi], o, 12)
-    eg.to_csv(CIKTI / "F3_cesitlendirme_egrisi.csv", index=False, float_format="%.4f")
+    eg.to_csv(CIKTI / f"F3_cesitlendirme_egrisi{sonek}.csv", index=False, float_format="%.4f")
     oz["cesitlendirme_egrisi"] = eg.to_dict(orient="records")
     print("çeşitlendirme", oz["cesitlendirme"], flush=True)
     # fiyat duyarlılığı: NPV(Δ) ≈ NPV + eğim·Δ (eğim: ortak regresyonun L10 katsayısı)
@@ -219,12 +223,38 @@ def main() -> None:
         fy.append({"delta": float(dlt), "fiyat": 58.0 + dlt, "e_npv": r_["e_npv"], "cvar": r_["cvar"], "n": len(r_["secim"]), "capex_musd": r_["capex_musd"],
                    "secim": "; ".join(r_["secim"]["kod"] + ":" + r_["secim"]["tasarim"]), "e_npv_cvar30": r2["e_npv"], "n_cvar30": len(r2["secim"])})  # fmt: skip
         print("fiyat", dlt, round(r_["e_npv"], 2), len(r_["secim"]), "| CVaR≥−30:", round(r2["e_npv"], 2), len(r2["secim"]), flush=True)
-    pd.DataFrame(fy).to_csv(CIKTI / "F3_fiyat_duyarlilik.csv", index=False, encoding="utf-8-sig", float_format="%.3f")
+    pd.DataFrame(fy).to_csv(CIKTI / f"F3_fiyat_duyarlilik{sonek}.csv", index=False, encoding="utf-8-sig", float_format="%.3f")
     oz["fiyat"] = fy
     oz["fiyat_egimi_medyan"] = float(np.median(eg_f))
     # yatırım yapmamanın optimal olduğu eşik (risk nötr): tüm tasarımların E + en iyi sinerji < 0 olduğu en büyük Δ (ızgaradan)
     yok_ = [f["fiyat"] for f in fy if f["n"] == 0]
     oz["yatirim_yok_esik_fiyat"] = max(yok_) if yok_ else None
+    # risk ağırlığı eşiği: λ arttıkça portföy; boş portföyün optimal olduğu en küçük λ
+    lt = []
+    for lam in (0.1, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5):
+        r_ = M.coz(v, M.Ayar(**{**ay0.__dict__, "lam": lam, "zaman_s": 120}), cfg, sp)
+        lt.append(
+            {
+                "lam": lam,
+                "e_npv": r_["e_npv"],
+                "cvar": r_["cvar"],
+                "n": len(r_["secim"]),
+                "secim": list(r_["secim"]["kod"] + ":" + r_["secim"]["tasarim"]),
+            }
+        )
+        print("λ", lam, round(r_["e_npv"], 2), len(r_["secim"]), flush=True)
+    oz["lambda"] = lt
+    bos = [x["lam"] for x in lt if x["n"] == 0]
+    oz["yatirim_yok_esik_lambda"] = min(bos) if bos else None
+    # eşikte sinerjilerin rolü (risk nötr, en düşük yatırım yapılan fiyat)
+    yat = [f for f in fy if f["n"] > 0]
+    if yat:
+        dmin = min(f["delta"] for f in yat)
+        vv = M.Veri(tas=t, ad=v.ad, V=v.V + eg_f[:, None] * dmin, lojistik=v.lojistik)
+        r1 = M.coz(vv, ay0, cfg, sp)
+        r2 = M.coz(vv, M.Ayar(**{**ay0.__dict__, "sinerji": dict.fromkeys(("isletme", "havuz", "indirim", "ulastirma"), False)}), cfg, sp)
+        oz["esik_sinerji"] = {"fiyat": 58.0 + dmin, "sinerjili_e": r1["e_npv"], "sinerjili_n": len(r1["secim"]), "sinerjisiz_e": r2["e_npv"], "sinerjisiz_n": len(r2["secim"]),
+                              "tek_tek_e": [float(vv.V[i].mean()) for i in r1["secim"].index]}  # fmt: skip
     # bağlantı kapasitesi duyarlılığı
     kd = []
     for kr in (50.0, 100.0, 150.0, None):
@@ -249,7 +279,7 @@ def main() -> None:
                 "secim": "; ".join(r_["secim"]["kod"] + ":" + r_["secim"]["tasarim"]),
             }
         )
-    pd.DataFrame(kd).to_csv(CIKTI / "F3_kapasite_butce.csv", index=False, encoding="utf-8-sig", float_format="%.3f")
+    pd.DataFrame(kd).to_csv(CIKTI / f"F3_kapasite_butce{sonek}.csv", index=False, encoding="utf-8-sig", float_format="%.3f")
     oz["kapasite_butce"] = kd
     # doğrulama: kaba kuvvet (6 saha) ve CVaR doğrusallaştırması
     kodlar = ["A01", "A02", "A04", "A05", "A06", "A10"]
@@ -274,7 +304,7 @@ def main() -> None:
         print("doğrulama", dog[-1], flush=True)
     oz["dogrulama"] = dog
     oz["sure_dk"] = (time.time() - t0) / 60
-    (CIKTI / "F3_ozet.json").write_text(json.dumps(oz, ensure_ascii=False, indent=1, default=float))
+    (CIKTI / f"F3_ozet{sonek}.json").write_text(json.dumps(oz, ensure_ascii=False, indent=1, default=float))
     app = {
         k: oz[k]
         for k in (
@@ -293,7 +323,7 @@ def main() -> None:
     }
     app["etkin_sinir"] = sinir
     app["havuz_kesin"] = oz.get("havuz_kesin")
-    (ATLAS / "analiz.json").write_text(json.dumps(app, ensure_ascii=False, default=float))
+    (ATLAS / f"analiz{sonek}.json").write_text(json.dumps(app, ensure_ascii=False, default=float))
     print(
         json.dumps(
             {k: oz[k] for k in ("tek_saha", "ayni_cvar_portfoy", "yatirim_yok_esik_fiyat", "sure_dk")}, ensure_ascii=False, default=float

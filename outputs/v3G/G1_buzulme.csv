@@ -1,0 +1,41 @@
+﻿kod,il,ilce,bolge,guven,res_kf,w,kf_duzeltilmis,q
+A01,Tekirdağ,Çerkezköy,Marmara,yüksek,0.4349,0.8272,0.3994,0.9184
+A02,İzmir,Çeşme,Ege,yüksek,0.4424,0.8444,0.3941,0.8907
+A03,Bursa,Karacabey,Marmara,yüksek,0.3922,0.8272,0.3667,0.9349
+A04,Manisa,Soma,Ege,yüksek,0.4557,0.8444,0.4041,0.8866
+A05,Çanakkale,Ezine,Marmara,yüksek,0.4355,0.8272,0.3999,0.9182
+A06,İzmir,Aliağa,Ege,yüksek,0.3923,0.8444,0.3560,0.9075
+A07,Tekirdağ,Malkara,Marmara,yüksek,0.3861,0.8272,0.3619,0.9375
+A08,Edirne,Lalapaşa,Marmara,yüksek,0.3735,0.8272,0.3521,0.9429
+A09,Mersin,Mut,Akdeniz,yüksek,0.4073,0.8798,0.3699,0.9082
+A10,Hatay,Belen,Akdeniz,yüksek,0.4688,0.8798,0.4186,0.8930
+A11,Sivas,Gürün,İç Anadolu,yüksek,0.3737,0.7570,0.3219,0.8616
+A12,Balıkesir,Gönen,Marmara,yüksek,0.3410,0.8272,0.3266,0.9578
+A13,Edirne,Enez,Marmara,düşük,0.3843,0.7574,0.3514,0.9144
+A14,Kayseri,Yahyalı,İç Anadolu,yüksek,0.3930,0.7570,0.3345,0.8511
+A15,Kırklareli,Kırklareli merkez,Marmara,yüksek,0.3533,0.8272,0.3363,0.9520
+A16,Muğla,Bodrum,Ege,düşük,0.3738,0.7796,0.3293,0.8809
+A17,Bursa,Orhangazi,Marmara,yüksek,0.3596,0.8272,0.3413,0.9491
+A18,Eskişehir,Tepebaşı,İç Anadolu,yüksek,0.3358,0.7570,0.2970,0.8842
+A19,Balıkesir,Burhaniye,Marmara,düşük,0.3479,0.7574,0.3259,0.9367
+A20,Uşak,Banaz,Ege,yüksek,0.3437,0.8444,0.3184,0.9264
+A21,Isparta,Isparta merkez,Akdeniz,düşük,0.4067,0.8267,0.3541,0.8706
+A22,İstanbul,Avcılar,Marmara,düşük,0.3412,0.7574,0.3212,0.9411
+A23,Çanakkale,Biga,Marmara,yüksek,0.3230,0.8272,0.3123,0.9668
+A24,Kahramanmaraş,Türkoğlu,Akdeniz,yüksek,0.3600,0.8798,0.3319,0.9218
+A25,Kahramanmaraş,Pazarcık,Akdeniz,düşük,0.3617,0.8267,0.3214,0.8885
+A26,Sivas,Yıldızeli,İç Anadolu,yüksek,0.3490,0.7570,0.3057,0.8760
+A27,Hatay,Yayladağı,Akdeniz,yüksek,0.3720,0.8798,0.3416,0.9181
+A28,Isparta,Yalvaç,Akdeniz,düşük,0.3773,0.8267,0.3328,0.8820
+A29,Kilis,Kilis (merkez),Güneydoğu Anadolu,düşük,0.3329,0.7598,0.2864,0.8602
+A30,Malatya,Hekimhan,Doğu Anadolu,düşük,0.3819,0.8110,0.3323,0.8702
+A31,Yozgat,Saraykent,İç Anadolu,düşük,0.3327,0.6700,0.2824,0.8488
+A32,Çorum,Oğuzlar,Karadeniz,düşük,0.3387,0.7994,0.2929,0.8648
+A33,Manisa,Alaşehir,Ege,düşük,0.3374,0.7796,0.3040,0.9010
+A34,Giresun,Dereli,Karadeniz,düşük,0.3567,0.7994,0.3053,0.8559
+A35,Antalya,Gündoğmuş,Akdeniz,düşük,0.3967,0.8267,0.3469,0.8744
+A36,Sinop,Sinop merkez,Karadeniz,düşük,0.3299,0.7994,0.2868,0.8694
+A37,Kırşehir,Kırşehir merkez,İç Anadolu,düşük,0.3479,0.6700,0.2910,0.8364
+A38,Niğde,Ulukisla,İç Anadolu,düşük,0.3402,0.6700,0.2866,0.8426
+A39,Erzurum,Tortum,Doğu Anadolu,düşük,0.3794,0.8110,0.3305,0.8713
+A40,Kayseri,Pınarbaşı,İç Anadolu,düşük,0.3314,0.6700,0.2817,0.8499

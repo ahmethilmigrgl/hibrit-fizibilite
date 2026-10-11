@@ -1,6 +1,6 @@
 ﻿kalem,kalem_kapaliyken_amac,katki_musd,secim
-isletme,34.163,6.914,A01:MILP; A02:Küçük; A04:Küçük; A05:Küçük; A10:Küçük
-havuz,39.355,1.722,A01:MILP; A02:Küçük; A04:Küçük; A05:Küçük; A06:Küçük
-indirim,38.578,2.499,A01:MILP; A02:Küçük; A04:Küçük; A05:Küçük; A06:Küçük
-ulastirma,41.077,0.000,A01:MILP; A02:Küçük; A04:Küçük; A05:Küçük; A06:Küçük
-hiçbiri,31.716,9.361,A01:MILP; A02:Küçük; A04:Küçük; A05:Küçük; A10:Küçük
+isletme,12.347,8.066,A01:MILP; A04:Küçük; A05:Küçük; A06:MILP; A10:Küçük
+havuz,18.928,1.485,A01:MILP; A02:MILP; A04:Küçük; A05:Küçük
+indirim,17.872,2.541,A01:MILP; A02:MILP; A04:Küçük; A05:Küçük
+ulastirma,20.413,0.000,A01:MILP; A02:MILP; A04:Küçük; A05:Küçük
+hiçbiri,9.854,10.559,A01:MILP; A04:Küçük; A05:Küçük; A06:MILP; A10:Küçük

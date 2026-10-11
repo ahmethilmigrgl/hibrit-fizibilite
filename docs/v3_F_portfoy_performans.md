@@ -256,7 +256,7 @@ belirli bir şirkete bağlar. Uygulama anonim kod + il gösterir. Atlas dosyalar
 - **Sahalar arası NPV korelasyonu** (MILP tasarımları) ise ortalama 0,60 (0,10–0,82): NPV'yi ortak fiyat ve SFK
   senaryosu sürüklüyor.
 
-### 6.2 Etkin sınır ve seçilen portföy (`outputs/v3F/F3_etkin_sinir.csv`)
+### 6.2 Etkin sınır ve seçilen portföy (saf tahminlerle; büzülmüş — varsayılan — sonuçlar §8.1)
 
 Bütçe 300 M$, bölge kapasitesi 150 M$, trafo 100 MW, tüm sinerjiler açık:
 
@@ -392,3 +392,93 @@ sinerjilerinki 0,8 × 9,4 ≈ 7,5 M$.
    olmayan değeri yaklaşık temsil edilir.
 5. **İzleme ERA5 çözünürlüğüyle sınırlı** (aylık σ ~ %10). Kalıcı sapma bir modelin çıktısıdır; neden santral
    verisi olmadan bilinemez. 2026 ayları ERA5 hücre serisi 2025 sonunda bittiği için izlenmedi.
+
+## 8. Optimize edicinin laneti ve Bayesçi büzülme (v3 kapanış)
+
+Kod `src/portfoy/lanet.py`, betik `src/v3_G1_optimizer_laneti.py` → `outputs/v3G/G1_*`, uygulama paketi
+`data/atlas/portfoy/lanet.json`.
+
+**Sorun.** Her adayın rüzgâr tahmini tek tek yansız olsa bile, 40 aday arasından en iyi görünenleri seçmek, tahmini
+olduğundan iyi çıkmış adayları seçmek demektir (Smith & Winkler 2006). Seçilen portföyün tahmini değeri, gerçek
+değerinden sistematik olarak yüksektir; aradaki fark **beklenen hayal kırıklığıdır**.
+
+**Ampirik kanıt** (Faz A birini dışarıda bırak doğrulaması, 90 santral):
+- Hata, tahmin düzeyiyle güçlü ilişkili (Spearman 0,77).
+- En yüksek tahmin çeyreği ortalama %14 (log) fazla tahmin ediyor.
+- ln gözlenen ~ ln tahmin kalibrasyon eğimi 0,36: tahminler gerçeklerden çok daha dağınık.
+
+**Model** (log KF; bölge r; güven seviyesi g):
+$$\ln c_j \sim \mathcal{N}(m_r, \tau_r^2),\qquad \ln \hat c_j = \ln c_j + e_j,\ e_j \sim F_g,\qquad
+\mathbb{E}[\ln c_j \mid \hat c_j] = m_r + w_j(\ln \hat c_j - m_r),\quad w_j = \frac{\tau_r^2}{\tau_r^2 + \sigma_g^2}$$
+
+- Öncül ampirik Bayes: $m_r$ ve $\tau_r^2 = \mathrm{Var}_r(\ln \hat c) - \bar\sigma^2$, bölgenin ön tarama hücrelerinden.
+- $F_g$: birini dışarıda bırak göreli hataları, güven seviyesine göre güncel RMSE'ye (%18,2 / %22,5) ölçeklenir.
+- **NPV düzeltmesi:** $V_{jds} + \kappa_{jd}(q_j - 1)$, $q_j = \hat c_j^{\text{büzülmüş}} / \hat c_j$.
+- $\kappa_{jd}$ = NPV'nin sahanın KF çarpanına duyarlılığı. Sahanın Monte Carlo model çarpanı aynı tohumla yeniden
+  üretilir ve ortak sürücülerle birlikte regresyona sokulur. Açıklanan varyans 0,46'dan 0,79'a çıkar; κ medyan
+  ~1,2 M$/MW, 50 MW bağlantıda kırpılan büyük tasarımlarda daha düşük.
+
+**Büzülme.** w = 0,67–0,88. Adayların KF tahmini %3–16 aşağı çekiliyor (q = 0,84–0,97, medyan 0,89). En çok büzülenler
+düşük güvenli İç Anadolu adayları: Kırşehir %34,8 → %29,1.
+
+**Simülasyon** (200 tekrar). Her tekrarda gerçek KF sonsaldan çekilir; yeni tahmin = gerçek + ampirik hata. Portföy
+(λ = 0, bütçe 300 M$, tüm sinerjiler) ve en iyi tek saha (a) saf tahminle, (b) büzülmüş tahminle seçilir:
+
+| | Tahmin edilen | Gerçek | **Beklenen hayal kırıklığı** (± SH) | P10–P90 |
+|---|---|---|---|---|
+| Saf seçim — portföy | 76,6 M$ | 30,2 M$ | **46,3 ± 1,5 M$** | 22–75 |
+| Saf seçim — en iyi tek saha | 24,4 M$ | 8,7 M$ | **15,7 ± 0,8 M$** | 3–34 |
+| Büzülmüş seçim — portföy | 40,6 M$ | **33,8 M$** | 6,8 ± 1,0 M$ | −10–27 |
+| Büzülmüş seçim — en iyi tek saha | 13,4 M$ | **10,3 M$** | 3,1 ± 0,5 M$ | −5–12 |
+
+- Büzülme beklenen hayal kırıklığını %85 azaltıyor ve **gerçekleşen değeri artırıyor**: portföyde +3,5 M$, tek sahada
+  +1,6 M$. Daha iyi seçim yaptırıyor; tekrarların %54'ünde büzülmüş seçim gerçek değerde daha iyi, %28'inde aynı.
+- Kalan 7 M$'lık hayal kırıklığının nedenleri: κ doğrusallığı, sinerjilerin sahaya göre değişmesi ve ampirik hata
+  dağılımının kuyrukları.
+- Simülasyondaki tahmin edilen değerler (76 M$) gerçek kararınkinden (41 M$) yüksek, çünkü her tekrarda tahmin
+  gerçeğin üstüne yeni bir hata ekler. Bu, "40 aday yeniden değerlenseydi" dünyasıdır.
+
+**Gerçek karar** (Faz F'nin saf seçimi, sonsal beklentiyle):
+
+| | Tahmin (saf) | Sonsal (büzülmüş) |
+|---|---|---|
+| Faz F'nin seçtiği 5 sahalık portföy | 41,1 M$ | **19,3 M$** (−22 M$, %53) |
+| Büzülmüş tahminle seçilen portföy (A01 MILP, A02 MILP, A04 küçük, A05 küçük) | – | **20,4 M$** |
+| En iyi tek saha A01 MILP | 9,6 M$ | **4,9 M$** |
+
+**Duyarlılık.** Çapraz doğrulama kalibrasyon eğimi 0,36, ampirik Bayes ağırlığından (~0,8) çok daha güçlü bir
+büzülme ima ediyor. Ancak işletmedeki santraller iyi gözlenen rüzgârları için seçildiğinden gözlenen KF aralığı dar
+ve bu eğimi aşağı çeker. Varsayılan olarak ihtiyatlı ampirik Bayes kullanılıyor; gerçek düzeltme daha büyük olabilir.
+
+**Uygulama.** Portföy sayfasında "Optimize edicinin lanetine karşı düzeltme (önerilen)" anahtarı varsayılan açık ve
+kısa bir notla açıklanıyor. Etkin sınır, seçilen portföy ve eşikler için önce/sonra karşılaştırması §8.1'de.
+
+### 8.1 Önce / sonra (`outputs/v3F/F3_*_duzeltmesiz.*` ve `F3_*`; ERA5 yön gridiyle yeniden değerlenmiş adaylar)
+
+| | Saf tahmin (önce) | Büzülmüş tahmin (sonra, varsayılan) |
+|---|---|---|
+| Risk nötr portföy | 5 saha (A01 MILP, A02/A04/A05/A06 küçük) | **4 saha** (A01 MILP, A02 MILP, A04 küçük, A05 küçük) |
+| E[NPV] / CVaR %5 / P(NPV>0) | 41,1 / −65,3 M$ / %72 | **20,4 / −80,4 M$ / %60** |
+| Sinerjiler | +9,4 M$ (işletme 6,9) | +10,6 M$ (işletme 8,1) |
+| En iyi tek saha A01 MILP | 9,6 M$, CVaR −23,4 | 4,9 M$, CVaR −28,1 |
+| Aynı CVaR'da optimal portföy | en iyi tek saha | en iyi tek saha (değişmedi) |
+| **Yatırım yok — fiyat eşiği** | ≤ 46 $/MWh | **≤ 52 $/MWh** |
+| **Yatırım yok — risk ağırlığı eşiği (58 $/MWh)** | λ ≥ 0,40 | **λ ≥ 0,25** |
+| Eşikte sinerjinin rolü | 48 $/MWh'de 5 sahanın 4'ü tek başına negatif | 54 $/MWh'de 4 sahanın 2'si tek başına negatif |
+| Varyans: ortak piyasa / hava / sahaya özgü | %70 / %18 / %12 | %69 / %17 / %14 |
+
+**Etkin sınır** (ε-kısıt; CVaR alt sınırı → E[NPV], M$):
+
+| CVaR ≥ | Önce | Sonra |
+|---|---|---|
+| risk nötr | 41,1 (CVaR −65) | 20,4 (CVaR −80) |
+| ≈ −60 | 36,4 (4 saha) | 13,0 (3 saha, CVaR −63) |
+| ≈ −45 | 21,7 (3 saha) | 9,6 (2 saha, CVaR −43) |
+| ≈ −30 | 14,4 (2 saha) | 4,9 (A01, CVaR −28) |
+| ≈ −16 | 7,3 (A01 küçük) | 0,7 (A10 küçük) |
+| > −11 | 0 | 0 |
+
+Sınır sola ve aşağı kayıyor: her kuyruk riski düzeyinde beklenen değer yarıya iniyor. Düzeltme bir sabit kayma
+olduğundan CVaR da kötüleşiyor. Portföy yapısı az değişiyor (A01, A02, A04, A05 her iki durumda çekirdek), ama
+yatırım kararı çok daha kırılgan. Risk nötr bir yatırımcı için bile uzun vadeli fiyat beklentisinin 52 $/MWh'nin
+altına inmesi portföyü boşaltıyor (58'e karşı 6 $/MWh pay). Ilımlı risk kaçınması (λ = 0,25) da yatırımı durduruyor.

@@ -194,3 +194,50 @@ def test_sayfalar_aciliyor():
     for p in ("uygulama/sayfa_performans.py", "uygulama/sayfa_portfoy.py"):
         at = AppTest.from_file(str(KOK / p), default_timeout=180).run()
         assert not at.exception, p
+
+
+# --- v3 kapanış: optimize edicinin laneti
+def test_buzulme_formulu_ve_uygulama():
+    import pandas as pd
+
+    from src.portfoy import lanet as L
+    from src.portfoy.model import Veri
+
+    v = _kucuk_veri()
+    v.ad["guven"] = ["yüksek", "düşük", "yüksek", "düşük"]
+    v.ad["bolge"] = ["Ege", "Ege", "Marmara", "Akdeniz"]
+    onc = pd.DataFrame({"m": np.log([0.30, 0.32, 0.28]), "tau2": [0.04, 0.04, 0.04], "n": 100}, index=["Ege", "Marmara", "Akdeniz"])
+    bz = L.buzulme(v, onc)
+    # bölge ortalamasının üstündeki tahmin aşağı, altındaki yukarı büzülür; belirsiz tahmin daha çok büzülür
+    assert (bz["q"] < 1).all()  # tüm adaylar (0,38) bölge ortalamalarının üstünde
+    assert bz.loc[1, "w"] < bz.loc[0, "w"]  # düşük güven → küçük w
+    assert bz["kf_duzeltilmis"].between(0.28, 0.38).all()
+    vd = L.uygula(v, {"A": 0.9, "B": 1.0, "C": 1.0, "D": 1.0}, np.full(len(v.tas), 10.0))
+    assert vd.V[0].mean() == pytest.approx(v.V[0].mean() - 1.0)  # κ (q − 1) = 10 × (−0,1)
+    assert isinstance(vd, Veri)
+
+
+def test_optimize_edicinin_laneti_saf_secim_iyimser():
+    """Saf seçimde beklenen hayal kırıklığı > 0, büzülmüş seçimde daha küçük (kontrollü sentetik deney)."""
+    rng = np.random.default_rng(5)
+    n, R = 30, 3000
+    gercek = rng.normal(0, 1, (R, n))  # öncül N(0, 1)
+    tahmin = gercek + rng.normal(0, 1, (R, n))  # σ_e = 1 → w = 0,5
+    i = tahmin.argmax(1)
+    saf = (tahmin[np.arange(R), i] - gercek[np.arange(R), i]).mean()
+    buz = 0.5 * tahmin
+    j = buz.argmax(1)
+    duz = (buz[np.arange(R), j] - gercek[np.arange(R), j]).mean()
+    assert saf > 1.0 and abs(duz) < 0.1
+
+
+@pytest.mark.veri
+def test_lanet_parametreleri_veriyle():
+    from src.portfoy import lanet as L
+
+    h = L.ampirik_hatalar()
+    g = L.guven_sigmalari()
+    for s in ("yüksek", "düşük"):
+        assert np.sqrt(np.mean(h[s] ** 2)) == pytest.approx(g[s]["goreli_rmse"], rel=1e-6)
+    onc = L.oncul()
+    assert (onc["tau2"] > 0).all() and len(onc) == 7
