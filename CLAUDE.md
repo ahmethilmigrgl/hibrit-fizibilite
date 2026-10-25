@@ -242,3 +242,21 @@ Sürüm etiketi v3.0.0-rc1 (push yok).
 (→ `data/atlas/portfoy/lanet.json`; `PV.yukle(duzeltme=True)` varsayılan, `src/v3_F3_portfoy.py --duzeltmesiz` önce/sonra);
 Lazard kapsamı belirsiz → `docs/v1_duzeltme_notu.md` iki yorum (A/B); ERA5 yön gridi paketli (`era5_yon.paketle_hizli`);
 özet `docs/PROJE_OZETI.md`; betik çıktıları `outputs/v3G/`.
+
+---
+
+## v4 — Sektör özellikleri (dal: `v4-sektor`, `v3-ie`'den)
+**Amaç:** IPP / proje geliştirme / yatırım pozisyonlarında doğrudan sorulan dört özellik. v3 (`v3-ie`) değiştirilmez;
+push ve yayın yok (yayın bu fazlardan sonra ayrı adım). Kullanıcı kararları (2026-10-25): merit order "orta" derinlik,
+mevcut santral adları gizli (anonim kod + CSV yükleme), sıra H → I → J → K.
+
+**Fazlar:**
+- **Faz H — Bankaya sunulabilir verim (P50/P90) + proje finansmanı.** ✅ (2026-10-25) bkz. `docs/v4_H_finansman.md`. Modüller
+  `src/finansman/` (verim: belirsizlik bütçesi; borc_lp: çok senaryolu borç LP'si + dualler; selale: DSRA/kilit/temerrüt
+  şelalesi + PD hedefli boyutlandırma; motor: tam analize bağlantı). Config `v4.verim`, `v4.finansman`. Anahtar
+  `KullaniciVarsayimlari(finansman=True)` (False = v3 aynen). Monte Carlo `mc_calistir(..., finans=True)`: `m_ges`, `m_disdeger`,
+  gecikmesiz CFADS ve ortalama yollar. Arayüz `uygulama/v4_bolumler.py`. Betik `src/v4_H1_finansman.py` → `outputs/v4H/`.
+  Testler `tests/test_v4_H.py`.
+- **Faz I — Mevcut santrale hibrit/depolama ekleme.**
+- **Faz J — YEKA teklif stratejisi.**
+- **Faz K — Temel model (merit order) fiyat projeksiyonu.**

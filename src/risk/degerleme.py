@@ -10,6 +10,8 @@ Her simülasyon i ve işletme yılı k için girdiler (n × N diziler):
     L      yıllık baz yük fiyat seviyesi [USD/MWh, reel]
     tavan  düzenleyici azami fiyat olayı (bool)
 Simülasyon başına çarpanlar (n): capex_res, capex_ges, capex_bess, opex, bozunma (batarya yıpranması).
+İsteğe bağlı (v4 Faz H): m_ges (n ya da n × N) GES üretim çarpanı (verilmezse 1); m_disdeger = True ise tablo ızgarası
+dışındaki RES çarpanı ızgara sınırında okunup kalan oran RES gelir ve enerjisine orantılı uygulanır (aksi halde kırpılır).
 
 Gelir (yıl k):
     spot_doğrudan = (1 − φ_k) · L · Σ y·q      (tavan yılında q yerine min(q, 0,70))
@@ -121,6 +123,10 @@ def nakit_akislari(t: Tasarim, tablo: dict, c: Sabitler, girdi: dict) -> dict:
     deg_r = (1 - v.degr_res) ** (k - 1)
     # RES degradasyonu tablonun RES çarpanı boyutundan geçer → kesinti degrade üretimle doğru hesaplanır
     m_eff = girdi["m"] * deg_r[None, :]
+    ek_r = None
+    if girdi.get("m_disdeger"):  # v4 Faz H: ızgara dışı RES çarpanı tablo sınırında okunur, kalan oran üretime orantılı uygulanır
+        m_tab = np.clip(m_eff, tablo["m"][0], tablo["m"][-1])
+        ek_r, m_eff = m_eff / m_tab, m_tab
     if "X" in girdi:
         X = girdi["X"]  # dışarıdan verilmiş yıllık işletme büyüklükleri (doğrulama: tam LP çözümü)
     elif girdi.get("ws_ortalama"):
@@ -146,6 +152,12 @@ def nakit_akislari(t: Tasarim, tablo: dict, c: Sabitler, girdi: dict) -> dict:
     q_res = np.where(tav, g("gelir_res_qt"), g("gelir_res_q"))
     q_d = np.where(tav, g("gelir_d_qt"), g("gelir_d_q"))
     E_ges, E_res, E_d = g("E_ges") * deg_g, g("E_res"), g("E_d")
+    if ek_r is not None:
+        q_res, E_res = q_res * ek_r, E_res * ek_r
+    if "m_ges" in girdi:  # v4 Faz H: GES üretim çarpanı (ışınım veri seti + model belirsizliği); kesinti etkileşimi ihmal
+        mg = np.asarray(girdi["m_ges"], float)
+        mg = mg[:, None] if mg.ndim == 1 else mg
+        q_ges, E_ges = q_ges * mg, E_ges * mg
     ppa_fiyat_t = girdi.get("ppa_fiyat", c.ppa_fiyat)  # sabit PPA ya da (n × N) YEKDEM reel fiyat yolu; tavandan etkilenmez
     gelir_ges = (1 - phi) * L * q_ges + phi * ppa_fiyat_t * E_ges
     gelir_res = (1 - phi) * L * q_res + phi * ppa_fiyat_t * E_res

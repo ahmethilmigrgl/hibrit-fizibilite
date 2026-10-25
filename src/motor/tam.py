@@ -161,8 +161,16 @@ def tam_analiz(h: Hazirlik, kv: KullaniciVarsayimlari, ilerleme=None) -> dict:
     lj = ((h.cfg["_saha"].get("altyapi") or {}).get("lojistik")) or {}
     if lj.get("gecikme_ay"):  # v3 E4: türbin tedariki kritik yolda; sahanın teslim süresi referanstan uzunsa COD kayar
         cod_ay = cod_ay + float(lj["gecikme_ay"])
-    r = MC.yakinsayan_mc(o, t, tb_T, tb_Y, yapilar, cod_ay, sigma, kv.sfk_katilimi, ilerleme=ilerleme)
+    r = MC.yakinsayan_mc(o, t, tb_T, tb_Y, yapilar, cod_ay, sigma, kv.sfk_katilimi, ilerleme=ilerleme, finans=kv.finansman)
     sure["monte_carlo_s"] = time.perf_counter() - t2
+    fin = None
+    if kv.finansman:  # v4 Faz H: verim bütçesi + borç LP'si + nakit şelalesi
+        from src.finansman.motor import finansman_analizi
+
+        ilerleme(0.9, "Proje finansmanı (P50/P90, borç boyutlandırma, nakit şelalesi)")
+        t3 = time.perf_counter()
+        fin = finansman_analizi(o, t, tb_T, tb_Y, r, yapilar, yil, sigma)
+        sure["finansman_s"] = time.perf_counter() - t3
     met = r["metrik"]
     en_iyi = max((y for y in met if y in kv.gelir_yapilari), key=lambda y: met[y]["e_npv"])
     capex = r["ek"][en_iyi]["capex_musd"]
@@ -267,6 +275,7 @@ def tam_analiz(h: Hazirlik, kv: KullaniciVarsayimlari, ilerleme=None) -> dict:
         "kayip": s3.get("kayip") if s3 else None,
         "om_usd_mw_yil": deger(h.cfg["teknoloji"]["res"]["opex_sabit"]),
         "v3": bool(s3),
+        "finansman": fin,
     }
     graf.update({"npv_histogram": {"sayi": hist, "kenar": kenar}, "yakinsama": r["yakinsama"]})
     nedenler = [

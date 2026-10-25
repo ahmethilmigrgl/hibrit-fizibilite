@@ -67,9 +67,12 @@ def mc_calistir(
     sigma: float | None,
     sfk: bool,
     tohum_saha: int | None = None,
+    finans: bool = False,
 ) -> dict:
     """tohum: ortak sürücüler (fiyat yolu, hava yılı, SFK/doyum, CAPEX/OPEX, kesinti, YEKDEM koridoru). tohum_saha (Faz F
-    portföyü): sahaya özgü belirsizlikler (RES model hatası, bağlantı mesafesi) için ayrı tohum; verilmezse tohum."""
+    portföyü): sahaya özgü belirsizlikler (RES model hatası, bağlantı mesafesi) için ayrı tohum; verilmezse tohum.
+    finans (v4 Faz H): GES model belirsizliği (m_ges) eklenir; gecikmesiz (kd = 0) yıllık CFADS/vergi/enerji ve kredi veren
+    senaryosu için ortalama girdi yolları döndürülür."""
     ts = tohum if tohum_saha is None else tohum_saha
     cfg, v = o.cfg, o.v
     N = v.omur
@@ -85,6 +88,13 @@ def mc_calistir(
 
     bg = (cfg.get("_saha", {}).get("altyapi") or {}).get("baglanti") or {}
     gx["capex_sebeke"] = carpan_ornekle(bg.get("belirsizlik"), n, ts + 13)
+    if finans:  # v4 Faz H: GES üretim çarpanı — kalıcı (ışınım veri seti + PV modeli) × yıllık kullanılabilirlik
+        vv = deger(cfg["v4"]["verim"])
+        sg = float(np.hypot(vv["gunes_veri_seti"], vv["gunes_model"]))
+        rg = np.random.default_rng(ts + 17)
+        kalici = np.exp(rg.normal(-0.5 * sg**2, sg, n))
+        gx["m_ges"] = kalici[:, None] * (1 + vv["gunes_kullanilabilirlik_yillik"] * rg.standard_normal((n, len(yil_ext))))
+        gx["m_disdeger"] = True
     W = tb_T["T"].shape[0]
     if W < o.u.res.shape[0]:
         gx["w"] = np.random.default_rng(tohum + 4).integers(0, W, gx["w"].shape)
@@ -112,6 +122,7 @@ def mc_calistir(
     esik = deger(cfg["yekdem_opsiyon"])["esik_carpani"]
     npv_kd: dict[str, np.ndarray] = {}
     ek: dict[str, dict] = {}
+    fin: dict[str, dict] = {}
     for y in yapilar:
         dizi = np.zeros((n, KMAX + 1))
         for kd in range(KMAX + 1):
@@ -141,6 +152,8 @@ def mc_calistir(
                     tt = replace(t, ppa=True)
                 r = nakit_akislari(tt, tb_T, o.c, gk)
             dizi[:, kd] = r["npv"] * (1 + v.wacc) ** -kd / 1e6
+            if kd == 0 and finans:
+                fin.setdefault(y, {}).update({a: r[a] for a in ("cfads", "vergi", "capex_top", "satilan")})
             if kd == 0:
                 ek.setdefault(y, {})["irr_p50"] = float(np.nanpercentile(irr_vektor(r["sna"]), 50))
                 ek[y]["capex_musd"] = float(np.mean(r["capex_top"]) / 1e6)
@@ -165,6 +178,26 @@ def mc_calistir(
         # ortak sürücülerin senaryo özetleri (Faz F çeşitlendirme ayrıştırması)
         "ortak": {"L10": gx["L"][:, :10].mean(1), "capex_res": np.asarray(gx["capex_res"]), "w10": gx["w"][:, :10]},
         "saha": {"capex_sebeke": gx["capex_sebeke"]},
+        **(
+            {
+                "finans": {
+                    "yapilar": fin,
+                    # kredi veren senaryosu için gecikmesiz ortalama yollar (N,)
+                    "ortalama": {
+                        "L": gx["L"][:, :N].mean(0),
+                        # kredi veren fiyat yolu: tavanlı kriz yılları hariç ortalama (tavanlı kriz geliri artırmaz)
+                        "L_tavansiz": np.nanmean(np.where(gx["tavan"][:, :N], np.nan, gx["L"][:, :N]), axis=0),
+                        "h": gx["h"][:, :N].mean(0),
+                        "a": gx["a"][:, :N].mean(0),
+                        "kes_m": (kes_m[0][:, :N].mean(0), kes_m[1][:, :N].mean(0)),
+                        "kes_y": (kes_y[0][:, :N].mean(0), kes_y[1][:, :N].mean(0)),
+                        "yk_reel": yk_reel[:, :N].mean(0),
+                    },
+                }
+            }
+            if finans
+            else {}
+        ),
     }
 
 
@@ -182,7 +215,9 @@ def metrik(x: np.ndarray) -> dict:
     }
 
 
-def yakinsayan_mc(o, t, tb_T, tb_Y, yapilar, cod_kaynak: np.ndarray, sigma, sfk, tohum: int = 42, ilerleme=None) -> dict:
+def yakinsayan_mc(
+    o, t, tb_T, tb_Y, yapilar, cod_kaynak: np.ndarray, sigma, sfk, tohum: int = 42, ilerleme=None, finans: bool = False
+) -> dict:
     mot = deger(o.cfg["v2"]["motor"])
     n = mot["mc_baslangic"]
     if os.environ.get("MOTOR_KUCUK") == "1":  # yalnız testler
@@ -190,7 +225,7 @@ def yakinsayan_mc(o, t, tb_T, tb_Y, yapilar, cod_kaynak: np.ndarray, sigma, sfk,
     gecmis = []
     while True:
         cod = np.random.default_rng(tohum + 99).choice(cod_kaynak, n, replace=True)
-        r = mc_calistir(o, t, tb_T, tb_Y, yapilar, cod, n, tohum, sigma, sfk)
+        r = mc_calistir(o, t, tb_T, tb_Y, yapilar, cod, n, tohum, sigma, sfk, finans=finans)
         met = {y: metrik(x) for y, x in r["npv"].items()}
         en_iyi = max(met, key=lambda y: met[y]["e_npv"])
         gecmis.append({"n": n, **{f"E[{y}]": met[y]["e_npv"] for y in met}, "SE_en_iyi": met[en_iyi]["se"]})

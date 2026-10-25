@@ -69,6 +69,9 @@ class KullaniciVarsayimlari:
     bakim_stratejisi: str | None = None  # None → config v3.bakim.strateji (duzeltici / takvim / durum)
     altyapi_maliyetleri: bool = True  # v3 Faz E: mesafeye bağlı bağlantı + lojistik CAPEX (v3 açıkken ve CBS verisi varsa)
     isletme_modeli: str | None = None  # None → config v3.isletme.model (fsa: tam kapsamlı servis sözleşmesi / kendi: kendi bakımı)
+    # v4 Faz H: verim bütçesi (P50/P90), çok senaryolu borç LP'si ve nakit şelalesi; Monte Carlo'ya GES model belirsizliği eklenir.
+    # False → v3 davranışı (NPV dağılımı aynen).
+    finansman: bool = True
     ekstra: dict = field(default_factory=dict)  # gelişmiş: config anahtar yolu → değer
 
     def v3_aktif(self) -> bool:

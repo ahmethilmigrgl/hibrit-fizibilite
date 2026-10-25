@@ -16,6 +16,24 @@ Proje aşamalar halinde geliştirildi. Her aşama bir commit; revizyonlar ve ön
 | Nihai (Aşama 9 A) | Fiyat ortalaması: 58 $/MWh medyan değil beklenen değer | −1,7 M$ | Rafa kaldır, tetikleyicileri izle |
 | **Düzeltme (v3, yorum A)** | **Lazard O&M'i sigorta ve araziyi içeriyorsa çift sayım kaldırılır; Lazard açıkça yazmıyor ([docs/v1_duzeltme_notu.md](docs/v1_duzeltme_notu.md))** | **+0,9 M$** | **Durum tespiti + ≤0,9 M$ teklif (yorum B: rafa kaldır)** |
 
+## [Yayınlanmadı] — v4 (dal `v4-sektor`)
+
+### Faz H — Bankaya sunulabilir verim ve proje finansmanı (2026-10-25)
+- **Belirsizlik bütçesi** (`src/finansman/verim.py`): yıllık / kalıcı bileşenler, hibritte RES–GES korelasyonu, 1 ve 10
+  yıllık P50…P99; Monte Carlo'nun satılan enerji P değerleriyle karşılaştırma. Atlas model hatası iz/kayıp içerdiği için
+  ayrıca eklenmiyor (çift sayım).
+- **Çok senaryolu borç LP'si** (`src/finansman/borc_lp.py`, HiGHS): P50 / P90-1y / P99-1y / aşağı yön senaryolarında DSCR
+  kısıtlarını aynı anda sağlayan en büyük heykelsi borç; gelir türüne göre DSCR (sözleşmeli / batarya / tüccar); dual
+  değerlerle bağlayan kısıt. Tek senaryoda v1 kapalı formuyla birebir aynı.
+- **Nakit şelalesi** (`src/finansman/selale.py`): DSRA, dağıtım kilidi, temerrüt; Monte Carlo'da olasılıklar ve öz kaynak
+  IRR'ı. **Olasılık tabanlı boyutlandırma:** P(temerrüt) ≤ %5 olan en büyük borç (şans kısıtı, ikiye bölme).
+- **Saha ölçümünün borç kapasitesine etkisi:** Ezine 50,4 MW RES'te 22,0 → 33,5 M$ (+%52).
+- Bulgular: DSCR kurallarıyla boyutlanan borçta temerrüt olasılığı %12–43 (fiyat ve SFK riski kredi veren senaryolarına
+  sığmıyor); SFK'ya dayalı batarya bankalanabilir değil; sözleşme (YEKDEM/PPA) borç riskini düşürüyor.
+- Motor: `KullaniciVarsayimlari(finansman=True)`; Monte Carlo'ya GES model belirsizliği (`m_ges`) ve ızgara dışı RES çarpanı
+  (`m_disdeger`). Ezine E[NPV] −1,67 → −1,62 M$. Arayüz: tam analizde "Proje finansmanı" bölümü (`uygulama/v4_bolumler.py`).
+- Belge `docs/v4_H_finansman.md`, betik `src/v4_H1_finansman.py` → `outputs/v4H/`, testler `tests/test_v4_H.py`.
+
 ## [3.0.0-rc2] — 2026-10-11 (dal `v3-ie`, etiket v3.0.0-rc2, yayınlanmadı)
 
 ### v3 kapanış

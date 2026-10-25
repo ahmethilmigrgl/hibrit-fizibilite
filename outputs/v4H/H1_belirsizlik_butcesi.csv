@@ -1,0 +1,11 @@
+tasarim,teknoloji,ad,tur,sigma,iliskili,mwh
+hibrit_milp,res,yillar_arasi,yillik,0.06440533555020439,True,5203.346444288983
+hibrit_milp,res,referans_donem,kalici,0.020366755380605967,True,1645.442621889162
+hibrit_milp,res,iklim_temsiliyeti,kalici,0.02,True,1615.8122304115439
+hibrit_milp,res,model_kalibrasyon,kalici,0.15291572560975608,False,12354.154983124981
+hibrit_milp,res,kullanilabilirlik,yillik,0.015,False,1211.8591728086578
+res_50,res,yillar_arasi,yillik,0.06900512763110257,True,10131.731813096301
+res_50,res,referans_donem,kalici,0.02182133735449034,True,3203.93491713717
+res_50,res,iklim_temsiliyeti,kalici,0.02,True,2936.5156361306813
+res_50,res,model_kalibrasyon,kalici,0.15291572560975608,False,22451.97096316588
+res_50,res,kullanilabilirlik,yillik,0.015,False,2202.386727098011

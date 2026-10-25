@@ -696,6 +696,10 @@ def tam_sonuc(s) -> None:
         kayip_bolumu(o)
         bakim_bolumu(o)
         lojistik_bolumu(s)
+    if o.get("finansman"):  # v4 Faz H: verim bütçesi, borç kapasitesi, nakit şelalesi
+        from uygulama.v4_bolumler import finansman_bolumu
+
+        finansman_bolumu(o)
     B.bolum_basligi(
         T("Neyi izlemeli", "What to monitor"), T("kararı değiştirecek tetikleyiciler", "triggers that would change the decision")
     )

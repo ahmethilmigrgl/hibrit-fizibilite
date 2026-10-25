@@ -1,0 +1,103 @@
+{
+ "lp_kapali_form": {
+  "lp_musd": 52.18956674695434,
+  "kapali_form_musd": 52.18956674695434,
+  "goreli_fark": 0.0
+ },
+ "hibrit_milp": {
+  "tasarim": {
+   "res_mw": 25.200000000000003,
+   "ges_mw": 0.0,
+   "bess_mw": 30.0,
+   "bess_mwh": 60.0
+  },
+  "e_npv": -1.6245887389040425,
+  "rho_iav": 0.8020729034531862,
+  "P50_mwh": 80790.6115205772
+ },
+ "res_50": {
+  "tasarim": {
+   "res_mw": 50.4,
+   "ges_mw": 0.0,
+   "bess_mw": 0.0,
+   "bess_mwh": 0.0
+  },
+  "e_npv": -9.506015754661457,
+  "rho_iav": 0.8173268822556148,
+  "P50_mwh": 146825.78180653407
+ },
+ "olcum_degeri": [
+  {
+   "sigma_olcum": 0.04,
+   "yapi": "tuccar",
+   "borc_atlas_musd": 22.037962447807438,
+   "borc_olcum_musd": 34.293097212370455
+  },
+  {
+   "sigma_olcum": 0.04,
+   "yapi": "yekdem_opsiyon",
+   "borc_atlas_musd": 18.64381460364079,
+   "borc_olcum_musd": 30.328413456625583
+  },
+  {
+   "sigma_olcum": 0.04,
+   "yapi": "ppa",
+   "borc_atlas_musd": 20.479980802186034,
+   "borc_olcum_musd": 33.95226775901214
+  },
+  {
+   "sigma_olcum": 0.06,
+   "yapi": "tuccar",
+   "borc_atlas_musd": 22.037962447807438,
+   "borc_olcum_musd": 33.45345828839723
+  },
+  {
+   "sigma_olcum": 0.06,
+   "yapi": "yekdem_opsiyon",
+   "borc_atlas_musd": 18.64381460364079,
+   "borc_olcum_musd": 29.242202472492085
+  },
+  {
+   "sigma_olcum": 0.06,
+   "yapi": "ppa",
+   "borc_atlas_musd": 20.479980802186034,
+   "borc_olcum_musd": 32.39450620011155
+  },
+  {
+   "sigma_olcum": 0.08,
+   "yapi": "tuccar",
+   "borc_atlas_musd": 22.037962447807438,
+   "borc_olcum_musd": 31.524019050769024
+  },
+  {
+   "sigma_olcum": 0.08,
+   "yapi": "yekdem_opsiyon",
+   "borc_atlas_musd": 18.64381460364079,
+   "borc_olcum_musd": 27.402768180504857
+  },
+  {
+   "sigma_olcum": 0.08,
+   "yapi": "ppa",
+   "borc_atlas_musd": 20.479980802186034,
+   "borc_olcum_musd": 30.35851766976818
+  },
+  {
+   "sigma_olcum": 0.1,
+   "yapi": "tuccar",
+   "borc_atlas_musd": 22.037962447807438,
+   "borc_olcum_musd": 29.34342568282326
+  },
+  {
+   "sigma_olcum": 0.1,
+   "yapi": "yekdem_opsiyon",
+   "borc_atlas_musd": 18.64381460364079,
+   "borc_olcum_musd": 25.192572498790394
+  },
+  {
+   "sigma_olcum": 0.1,
+   "yapi": "ppa",
+   "borc_atlas_musd": 20.479980802186034,
+   "borc_olcum_musd": 28.079151124898985
+  }
+ ]
+}

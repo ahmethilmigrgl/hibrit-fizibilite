@@ -687,3 +687,71 @@ v3:
       ek vergiler kapsam dışı). Kapasite: Gesbey yılda 430 kule (Beyçelik/Gesbey) ≈ 72 türbin seti (6 kesit) — tek saha için bağlayıcı değil;
       Faz F çoklu saha ulaştırma probleminde kullanılacak
     not: "Lojistik maliyeti CAPEX'e sahanın referansa göre farkı olarak eklenir (referans: mevcut santral hücrelerinin medyanı; RES CAPEX 1,15 M$/MW teslim edilmiş türbin varsayar). Teslim süresi farkı COD dağılımına eklenir (türbin tedariki kritik yolda, Aşama 7)"
+
+# =====================================================================
+# v4 — Sektör özellikleri (dal v4-sektor). Faz H: bankaya sunulabilir verim (P50/P90) + proje finansmanı.
+# =====================================================================
+v4:
+  verim:
+    value:
+      iklim_temsiliyeti: 0.02
+      kullanilabilirlik_yillik: 0.015
+      gunes_veri_seti: 0.04
+      gunes_model: 0.02
+      gunes_kullanilabilirlik_yillik: 0.005
+      res_kalibre_model: 0.035
+      olcumlu_model: 0.06
+      p_seviyeleri: [0.50, 0.75, 0.90, 0.95, 0.99]
+      ufuklar: [1, 10]
+    birim: "yıllık enerjiye göre bağıl standart sapma (σ / P50)"
+    kaynak: >-
+      Yöntem: IEC 61400-15 taslağı ve Lackner, Rogers ve Manwell (2007, "Uncertainty analysis in wind resource assessment and wind energy
+      production estimation", AIAA) kategorileri; bileşenler bağımsız, karelerin toplamının karekökü. Yıllar arası değişkenlik (IAV) ve
+      referans dönemin örnekleme belirsizliği (σ_IAV / √n) sahanın kendi 2014–2023 profilinden hesaplanır (koda gömülü değil). RES model
+      belirsizliği atlas güven seviyesinden (res_sigma: 1,4826 × medyan mutlak KF hatası / atlas ortalama KF); kalibre (v1) modda
+      res_kalibre_model (v1 üçgen(0,88; 1,0; 1,08) dağılımının standart sapması ≈ %4,1, yuvarlatılarak %3,5 + kullanılabilirlik ayrı).
+      iklim_temsiliyeti %2 TAHMİN (gelecek 10–20 yılın geçmiş referans döneme benzememe payı; endüstride %1–3 aralığı).
+      kullanilabilirlik_yillik %1,5 = monte_carlo.kullanilabilirlik.yil_sd ile aynı. Güneş: veri seti %4 = v2.motor.gunes_model_hatasi
+      (PVGIS-SARAH ışınım belirsizliği; endüstride %3–5), model (aktarım + PV modeli) %2 TAHMİN, kullanılabilirlik %0,5 TAHMİN.
+      olcumlu_model %6 TAHMİN: en az 1 yıllık saha ölçümü (rüzgâr direği/LiDAR) + uzun dönem düzeltmesi (MCP) sonrası ölçüm, düşey
+      ekstrapolasyon, akış modeli ve kayıp belirsizliklerinin toplamı için endüstride sık görülen %5–8 aralığının ortası
+    not: >-
+      Atlas hatası mevcut santrallerin ölçülen üretimiyle tahmin arasındaki farktır: kaynak, iz, kayıp ve kullanılabilirlik ortalamasını
+      zaten içerir. Bu yüzden ayrıca iz/kayıp belirsizliği EKLENMEZ (çift sayım); yalnız yıllık kullanılabilirlik dalgalanması (atlas
+      çok yıllık ortalamayı karşılaştırır) ve iklim temsiliyeti eklenir. Hibritte RES ve GES yıllık IAV'si arasındaki korelasyon veriden;
+      model hataları teknolojiler arası bağımsız. P_x(T yıl) = P50 · (1 − z_x · σ(T)), σ(T)² = σ_IAV² / T + σ_diğer²
+  finansman:
+    value:
+      durumlar:
+        - {ad: "P50", p: 0.50, ufuk: 1, dscr_tuccar: 1.35, dscr_sozlesmeli: 1.20, dscr_batarya: 1.75}
+        - {ad: "P90-1y", p: 0.90, ufuk: 1, dscr_tuccar: 1.20, dscr_sozlesmeli: 1.10, dscr_batarya: 1.50}
+        - {ad: "P99-1y", p: 0.99, ufuk: 1, dscr_tuccar: 1.00, dscr_sozlesmeli: 1.00, dscr_batarya: 1.20}
+        - {ad: "Asagi", p: 0.50, ufuk: 1, fiyat_carpani: 0.80, yh_carpani: 0.50, dscr_tuccar: 1.00, dscr_sozlesmeli: 1.00, dscr_batarya: 1.00}
+      negatif_amortisman_yasak: true
+      dsra_ay: 6
+      kilit_dscr: 1.10
+      temerrut_dscr: 1.00
+      fiyat_carpani: 1.0
+      ozkaynak_maliyeti_reel: 0.10
+      pd_hedef: 0.05
+    birim: "DSCR (-), ay, oran"
+    kaynak: >-
+      Çok senaryolu boyutlandırma (borç = tüm senaryolardaki DSCR kısıtlarını aynı anda sağlayan en büyük heykelsi borç) proje finansmanı
+      pratiğidir; Avrupa RES kredilerinde sık görülen eşikler P50 için 1,30–1,40, P90 (1 yıllık) için 1,15–1,25, P99 (1 yıllık) için 1,00–1,05
+      (TAHMİN: kamuya açık Türkiye kredi koşulu yok; v1'de tek senaryo P90 + DSCR 1,30 kullanıldı → borc.hedef_dscr). Sözleşmeli gelir
+      (YEKDEM/PPA) eşikleri gelir_yigini.ppa.dscr (1,20) ile tutarlı, bir kademe düşük. Vade: tüccar borc.vade (15), PPA
+      gelir_yigini.ppa.borc_vadesi (18), YEKDEM yekdem.borc_vadesi (12). DSRA 6 aylık borç servisi, kâr dağıtım kilidi DSCR < 1,10 ve
+      temerrüt DSCR < 1,00 (DSRA tükendikten sonra) tipik kredi sözleşmesi şartlarıdır (TAHMİN). Öz kaynak maliyeti reel %10 TAHMİN
+      (WACC %7 reel, %70–75 borçla tutarlı aralık). Batarya gelirleri (arbitraj + SFK) sözleşmesiz ve doyuma açık olduğundan daha yüksek
+      DSCR: Avrupa'da tüccar batarya projelerinin kredilerinde 1,5–2,0 aralığı aktarılır (TAHMİN; P50 1,75, P90 1,50, P99 1,20). "Asagi":
+      kredi verenin aşağı yön senaryosu — P50 enerji, fiyat × 0,80, SFK fiyat yolu × 0,50, tüm gelirlerde DSCR 1,00 (TAHMİN; bağımsız
+      danışmanın taban fiyat eğrisi yerine). Dikkat: tüccar projede asıl risk enerji değil fiyat ve SFK'dir; yalnız P90/P99 enerji
+      senaryoları bu riski görmez (Ezine tam analizinde aşağı yön senaryosu olmadan Monte Carlo temerrüt olasılığı %53). pd_hedef %5:
+      olasılık tabanlı boyutlandırmada vade boyunca kümülatif ödeme temerrüdü olasılığı üst sınırı (TAHMİN; yatırım yapılabilir seviyeye
+      yakın proje finansmanı kredilerinin 10 yıllık kümülatif temerrüt oranları birkaç yüzde mertebesindedir, derecelendirmeye göre değişir)
+    not: >-
+      Kredi veren senaryosunun fiyatı beklenen fiyat yolu × fiyat_carpani (bankalar çoğu zaman bağımsız danışman fiyat eğrisinin taban
+      senaryosunu kullanır; 1,0 = beklenen değer; senaryoya özgü fiyat_carpani ve yh_carpani bunu çarpar). Enerji P değeri hibrit
+      P_x/P50 oranı olarak hem RES hem GES çarpanına uygulanır. Paylar yıllık gelire oranla: sözleşmeli (YEKDEM/PPA), batarya
+      (arbitraj + SFK), kalan tüccar enerji; harmanlanmış DSCR = 1 / (p_s/DSCR_s + p_b/DSCR_b + p_t/DSCR_t) (v1 borc_boyutla kuralının
+      üç gelir türüne genişletilmesi). Monte Carlo şelalesi COD gecikmesini içermez (borç metrikleri COD'a koşullu)
