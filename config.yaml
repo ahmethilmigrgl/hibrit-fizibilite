@@ -358,7 +358,7 @@ v2:
     kaynak: "OSM türbin düğümleri (generator:output:electricity, manufacturer, rotor:diameter, height:hub; © OpenStreetMap katkıcıları, ODbL) + windpowerlib/OEP türbin kütüphanesi. Sınıf varsayılanları TAHMİN: Türkiye filosunda ilgili güç sınıfının yaygın platformları (≤1,2 MW: E-48/E-53; 1,5–2 MW: V90, GE 1.5, MM92; 2,3–2,5 MW: E-82, N90/N100, GE 2.5; 3 MW: V90/V112, E-101; 3,3–3,6 MW: V117/V126, N131; ≥4 MW: E-138, N149, V136)"
     not: "Kalibrasyonda her santral kendi türbin vekiliyle modellenir (Faz C ön adım; önceki sürüm tüm santraller için ortak E-92/2350 @ 80 m kullanıyordu). Seçim: birim güç ±%25 içindeki kütüphane türbinleri (üretici biliniyorsa, özgül gücü hedefin ±%16'sı içindeyse onunkiler) arasında |ln(SP/SP_hedef)| + 0,5·|ln(P/P_birim)| en küçük olan. Kapasite faktörü normalize güç eğrisine bağlı olduğundan belirleyici olan özgül güç ve göbek yüksekliğidir. EPİAŞ kapasitesi / OSM türbin adedi birim_makul dışındaysa (eksik haritalama ya da kapasite artırımı) birim güç, OSM etiketli santrallerin medyanı alınır"
   veri_deposu:
-    value: {repo_id: "KULLANICI/hibrit-fizibilite-veri", revizyon: "v1", tur: "dataset"}
+    value: {repo_id: "hilmi777/hibrit-fizibilite-veri", revizyon: "v1", tur: "dataset"}
     birim: "Hugging Face veri deposu"
     kaynak: "Proje kararı (Ö2)"
     not: "ERA5 Türkiye nokta gridi (era5_tr/v1) ve GWA 250 m karoları (gwa_tr/v1). repo_id yükleme sonrası kullanıcı adıyla güncellenecek. Uygulama önce yerel önbelleğe (data/onbellek/hf), sonra yerel üretim klasörüne (data/grid), en son HF'ye bakar; anahtar gerekmez (herkese açık depo)"

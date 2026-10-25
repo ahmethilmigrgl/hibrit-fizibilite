@@ -9,7 +9,7 @@ tags: [wind, solar, era5, pvgis, global-wind-atlas, openstreetmap, turkey, renew
 # Hibrit Fizibilite — Türkiye veri paketi (v1)
 
 Bu veri deposu, "hibrit-fizibilite" web uygulamasının (Türkiye'de herhangi bir saha için hibrit GES/RES/batarya
-fizibilitesi; kaynak kod: https://github.com/KULLANICI/hibrit-fizibilite) çalışma anında indirdiği grid verilerini içerir.
+fizibilitesi; kaynak kod: https://github.com/ahmethilmigrgl/hibrit-fizibilite) çalışma anında indirdiği grid verilerini içerir.
 Uygulama yalnız seçilen sahanın hücre dosyalarını indirir. Düzen, uygulamanın `data/` klasörüyle birebir aynıdır.
 
 ## İçerik ve lisanslar

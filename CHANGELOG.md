@@ -16,7 +16,7 @@ Proje aşamalar halinde geliştirildi. Her aşama bir commit; revizyonlar ve ön
 | Nihai (Aşama 9 A) | Fiyat ortalaması: 58 $/MWh medyan değil beklenen değer | −1,7 M$ | Rafa kaldır, tetikleyicileri izle |
 | **Düzeltme (v3, yorum A)** | **Lazard O&M'i sigorta ve araziyi içeriyorsa çift sayım kaldırılır; Lazard açıkça yazmıyor ([docs/v1_duzeltme_notu.md](docs/v1_duzeltme_notu.md))** | **+0,9 M$** | **Durum tespiti + ≤0,9 M$ teklif (yorum B: rafa kaldır)** |
 
-## [Yayınlanmadı] — v4 (dal `v4-sektor`)
+## [4.0.0] — 2026-10-26 (etiket v4.0.0)
 
 ### Faz K — Merit order fiyat projeksiyonu (2026-10-25)
 - **Saatlik arz yığını modeli** (`src/merit/`): talep, rüzgâr, güneş (lisanssız dahil), akarsu, nükleer → barajlı hidro (aylık su

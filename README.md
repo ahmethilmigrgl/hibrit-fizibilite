@@ -1,10 +1,10 @@
 # Hybrid Wind + Solar + Battery Feasibility Model (Türkiye)
 
-[![CI](https://github.com/KULLANICI/hibrit-fizibilite/actions/workflows/ci.yml/badge.svg)](https://github.com/KULLANICI/hibrit-fizibilite/actions/workflows/ci.yml)
+[![CI](https://github.com/ahmethilmigrgl/hibrit-fizibilite/actions/workflows/ci.yml/badge.svg)](https://github.com/ahmethilmigrgl/hibrit-fizibilite/actions/workflows/ci.yml)
 ![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)
 [![License: MIT (code)](https://img.shields.io/badge/license-MIT%20(code)-green.svg)](LICENSE)
 
-[Türkçe](README.tr.md) · **Live app:** [huggingface.co/spaces/HFKULLANICI/hibrit-fizibilite](https://huggingface.co/spaces/HFKULLANICI/hibrit-fizibilite)
+[Türkçe](README.tr.md) · **Live app:** [huggingface.co/spaces/hilmi777/hibrit-fizibilite](https://huggingface.co/spaces/hilmi777/hibrit-fizibilite)
 
 **Documents (Turkish):** [Investment memo (PDF)](outputs/08/Yatirim_Memosu.pdf) · [Presentation (PDF)](outputs/08/Sunum.pdf) ·
 [Full report (PDF)](outputs/RAPOR.pdf) · [Excel financial model](outputs/08/Ezine_Hibrit_Finansal_Model.xlsx)

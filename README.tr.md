@@ -1,10 +1,10 @@
 # Hibrit RES + GES + Batarya Fizibilite Modeli (Türkiye)
 
-[![CI](https://github.com/KULLANICI/hibrit-fizibilite/actions/workflows/ci.yml/badge.svg)](https://github.com/KULLANICI/hibrit-fizibilite/actions/workflows/ci.yml)
+[![CI](https://github.com/ahmethilmigrgl/hibrit-fizibilite/actions/workflows/ci.yml/badge.svg)](https://github.com/ahmethilmigrgl/hibrit-fizibilite/actions/workflows/ci.yml)
 ![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)
 [![Lisans: MIT (kod)](https://img.shields.io/badge/license-MIT%20(code)-green.svg)](LICENSE)
 
-[English](README.md) · **Canlı uygulama:** [huggingface.co/spaces/HFKULLANICI/hibrit-fizibilite](https://huggingface.co/spaces/HFKULLANICI/hibrit-fizibilite)
+[English](README.md) · **Canlı uygulama:** [huggingface.co/spaces/hilmi777/hibrit-fizibilite](https://huggingface.co/spaces/hilmi777/hibrit-fizibilite)
 
 **Belgeler:** [Yatırım memosu (PDF)](outputs/08/Yatirim_Memosu.pdf) · [Sunum (PDF)](outputs/08/Sunum.pdf) ·
 [Rapor (PDF)](outputs/RAPOR.pdf) · [Rapor (Markdown)](docs/RAPOR.md) · [Excel finansal model](outputs/08/Ezine_Hibrit_Finansal_Model.xlsx)

@@ -20,7 +20,7 @@ from src.ayarlar import config_oku
 from src.risk.gezgin import gezgin_degerle, gezgin_yukle
 
 R = KOK / "results"
-REPO_URL = "https://github.com/KULLANICI/hibrit-fizibilite"  # yayından sonra güncellenecek
+REPO_URL = "https://github.com/ahmethilmigrgl/hibrit-fizibilite"  # yayından sonra güncellenecek
 
 # Palet (outputs/ grafikleriyle aynı; renk körlüğü için doğrulanmış kategorik sıra): tasarım belirteçlerinden; koyu temada
 # ortak grafik şablonu bu renkleri koyu tonlara çevirir (uygulama/tasarim/grafik.py)
