@@ -9,6 +9,7 @@ kalibrasyon (RES hız katsayısı, 12 × 24 ay × TSİ saati matrisi olarak uygu
     "atlas" — Türkiye kalibrasyon atlasından aktarım kuralı (A4): yakın/benzer santral(ler)in matrisi, yoksa GWA
     "gwa"   — yalnız GWA ortalama düzeltmesi: sabit c = GWA 100 m / ERA5 100 m ortalaması (gün içi şekil düzeltilmez)
     "yok"   — ham ERA5
+    "santral:<epias_id>" — v4 Faz I: mevcut santralin kendi matrisi (atlas; santralin kendi türbin vekili ve göbeğiyle)
 GES: PVGIS-SARAH3 saatlik ışınım (anahtarsız API) + pvlib (v1 ile aynı model).
 """
 
@@ -98,6 +99,16 @@ def k_matrisi(saha: Saha, hava: pd.DataFrame, kalibrasyon: str, cfg: dict) -> tu
         from src.atlas.aktarim import aktarim_matrisi
 
         return aktarim_matrisi(saha, v100, cfg)
+    if kalibrasyon.startswith("santral:"):  # v4 Faz I: mevcut santralin kendi kalibrasyon matrisi (kendi türbin vekiliyle)
+        from src.atlas.aktarim import atlas
+
+        sid = int(kalibrasyon.split(":", 1)[1])
+        _, mat = atlas()
+        if sid not in mat:
+            raise ValueError(f"Atlasta kalibrasyon matrisi yok: {sid}")
+        return pd.DataFrame(mat[sid], index=range(1, 13), columns=range(24)), {
+            "mod": "santral", "epias_id": sid, "era5_100m": v100, "aciklama": "santralin kendi ay × saat kalibrasyonu",
+        }  # fmt: skip
     raise ValueError(f"Bilinmeyen kalibrasyon: {kalibrasyon}")
 
 

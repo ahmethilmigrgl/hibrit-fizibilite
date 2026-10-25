@@ -257,6 +257,11 @@ mevcut santral adları gizli (anonim kod + CSV yükleme), sıra H → I → J �
   `KullaniciVarsayimlari(finansman=True)` (False = v3 aynen). Monte Carlo `mc_calistir(..., finans=True)`: `m_ges`, `m_disdeger`,
   gecikmesiz CFADS ve ortalama yollar. Arayüz `uygulama/v4_bolumler.py`. Betik `src/v4_H1_finansman.py` → `outputs/v4H/`.
   Testler `tests/test_v4_H.py`.
-- **Faz I — Mevcut santrale hibrit/depolama ekleme.**
+- **Faz I — Mevcut santrale hibrit/depolama ekleme.** ✅ (2026-10-25) bkz. `docs/v4_I_mevcut_santral_ekleme.md`. Modüller
+  `src/ekleme/` (santraller: anonim liste `izleme/durum.csv` kodlarıyla; analiz: `ekleme_analizi(EklemeVarsayimlari)` + `hafif_tarama`
+  + `ges_egrisi` başabaş CAPEX + `csv_olcekle` MCP). Profil modu `kalibrasyon="santral:<epias_id>"` (`genel.k_matrisi`, güven
+  `v4.ekleme.santral_guven`). Artımsal config `artimsal_cfg`; Monte Carlo ortak rastgele sayılarla. Sayfa `uygulama/sayfa_ekleme.py`
+  (`/ekleme`), tarama paketi `data/atlas/v4_ekleme_tarama.csv`. Betik `src/v4_I1_ekleme.py` (~10 dk) → `outputs/v4I/`. Testler
+  `tests/test_v4_I.py`. Önbellek `data/onbellek/ekleme/`.
 - **Faz J — YEKA teklif stratejisi.**
 - **Faz K — Temel model (merit order) fiyat projeksiyonu.**

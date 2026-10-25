@@ -755,3 +755,27 @@ v4:
       P_x/P50 oranı olarak hem RES hem GES çarpanına uygulanır. Paylar yıllık gelire oranla: sözleşmeli (YEKDEM/PPA), batarya
       (arbitraj + SFK), kalan tüccar enerji; harmanlanmış DSCR = 1 / (p_s/DSCR_s + p_b/DSCR_b + p_t/DSCR_t) (v1 borc_boyutla kuralının
       üç gelir türüne genişletilmesi). Monte Carlo şelalesi COD gecikmesini içermez (borç metrikleri COD'a koşullu)
+  ekleme:
+    value:
+      santral_guven: {medyan_puan: 1.0, p90_puan: 2.5, rmse_puan: 1.5, goreli_rmse: 0.045}
+      insaat_suresi: 1
+      baslangic_yili: 2027
+      ges_ust_carpani: 1.5
+      eski_yekdem_usd_mwh: 73.0
+      egri_noktasi: 9
+    birim: "puan (KF), yıl, bağlantı MWe'ye oran, USD/MWh (nominal)"
+    kaynak: >-
+      Mevzuat: Elektrik Piyasası Lisans Yönetmeliği ve YEK Destekleme Yönetmeliği 08.03.2020 değişiklikleri (birden çok kaynaklı üretim
+      tesisi; yardımcı kaynak = ana kaynak dışındaki kaynak, RG 28.05.2021 tanımı). Yardımcı kaynak eklenince mekanik kurulu güç (MWm)
+      artar, elektriksel güç (MWe = bağlantı) değişmez; lisans tadili gerekir. Ana kaynak YEKDEM'deyse yardımcı kaynak, ana kaynağın
+      kalan YEKDEM süresince ve tesisteki en düşük yenilenebilir kaynağın fiyatından YEKDEM'den yararlanır (Aydem Yenilenebilir izahnamesi
+      s. 69'daki özet; yönetmelik maddesi birincil metinden doğrulanmadı → TAHMİN olarak işaretli). Eski YEKDEM (5346 sayılı Kanun
+      I sayılı cetvel): rüzgâr ve güneş 7,3 ABD doları sent/kWh, 10 yıl, nominal → 73 USD/MWh. Bütünleşik depolama: Depolama Faaliyetleri
+      Yönetmeliği (Aralık 2025 değişikliği, 01.01.2026 yürürlük): üretim tesisine bütünleşik depolama ünitesi tanımlı; depolamalı
+      üretime özel 7189 fiyatı bütünleşik ünitelere uygulanmaz. İnşaat süresi 1 yıl (GES 9–12 ay, sektör pratiği). Santral güveni: kendi
+      kalibrasyonunun yerinde kalıntısı TAHMİN (gün içi RMSE ve korelasyon atlas tablosunda; ortalama KF tanım gereği uyar)
+    not: >-
+      Artımsal değerleme: mevcut RES'in maliyetleri (CAPEX, O&M, arazi, söküm, TEİAŞ kapasite bedeli, şebeke) iki durumda da ortak olduğu
+      için sıfırlanır; artımsal NPV = NPV(RES + ekleme) − NPV(yalnız RES), aynı Monte Carlo senaryolarıyla (ortak rastgele sayılar).
+      RES'in analiz ufku boyunca (ömür uzatma/yenileme dahil) çalıştığı varsayılır. Kapasite MILP'inde santral tek bir "türbin"
+      (turbin_gucu = kurulu güç, N = 1 sabit) olarak temsil edilir

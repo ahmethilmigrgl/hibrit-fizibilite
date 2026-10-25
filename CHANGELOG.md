@@ -18,6 +18,18 @@ Proje aşamalar halinde geliştirildi. Her aşama bir commit; revizyonlar ve ön
 
 ## [Yayınlanmadı] — v4 (dal `v4-sektor`)
 
+### Faz I — Mevcut RES'e GES ve batarya ekleme (2026-10-25)
+- **Yardımcı kaynak analizi** (`src/ekleme/`): mevcut santral kendi kalibrasyon matrisi ve türbin vekiliyle (86 santralde
+  model–gözlenen KF farkı mutlak medyan 0,6 puan); ortak maliyetler sıfırlanmış artımsal ekonomi; MILP'te santral tek
+  "türbin" (N = 1 sabit), GES ve batarya serbest; bağlantı = MWe.
+- **Ortak rastgele sayılar:** artımsal NPV aynı senaryolarla; varyans %10–79 azalıyor.
+- **MCP:** kullanıcının üretim CSV'si model dönemiyle örtüşüyorsa oran aynı saatlerden (uzun dönem düzeltmeli). Doğrulama
+  ilk sürümdeki hatayı yakaladı (1,146 → 1,100).
+- **GES başabaş CAPEX'i** ve 86 santrallik Türkiye taraması (`data/atlas/v4_ekleme_tarama.csv`): bugünkü maliyetle (620 bin
+  $/MW) hiçbir santralde GES eklemesi kârlı değil (başabaş medyan 437); batarya 85/86 santralde değer yaratıyor (SFK ağırlıklı).
+- Arayüz: yeni sayfa "Mevcut santrale ekleme" (`/ekleme`; anonim kod, CSV yükleme). Belge `docs/v4_I_mevcut_santral_ekleme.md`,
+  betik `src/v4_I1_ekleme.py` → `outputs/v4I/`, testler `tests/test_v4_I.py`.
+
 ### Faz H — Bankaya sunulabilir verim ve proje finansmanı (2026-10-25)
 - **Belirsizlik bütçesi** (`src/finansman/verim.py`): yıllık / kalıcı bileşenler, hibritte RES–GES korelasyonu, 1 ve 10
   yıllık P50…P99; Monte Carlo'nun satılan enerji P değerleriyle karşılaştırma. Atlas model hatası iz/kayıp içerdiği için

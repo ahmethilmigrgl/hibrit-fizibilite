@@ -1,0 +1,18 @@
+{
+ "kalibrasyon": {
+  "n": 86,
+  "ort_fark_puan": -0.0677873917902,
+  "mutlak_medyan_puan": 0.5873916796777595,
+  "mutlak_azami_puan": 1.864108975900497
+ },
+ "csv_olcekleme": {
+  "kullanici_kf": 0.2592561605811034,
+  "model_kf": 0.22154394692530352,
+  "olcekli_kf": 0.24369834161783394,
+  "hucre": 288,
+  "mcp": true,
+  "ortak_saat": 17520,
+  "oran": 1.1000000000000003,
+  "beklenen": 1.1
+ }
+}

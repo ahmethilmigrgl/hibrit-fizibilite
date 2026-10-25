@@ -55,7 +55,7 @@ class KullaniciVarsayimlari:
     gelir_yapilari: tuple[str, ...] = GELIR_YAPILARI
     sfk_katilimi: bool = True
     sabit_tasarim: dict | None = None  # {"res_mw", "ges_mw", "bess_mw", "bess_mwh"} → optimizasyon yerine
-    kalibrasyon: str = "atlas"  # atlas / gwa / v1 (yalnız Ezine regresyonu)
+    kalibrasyon: str = "atlas"  # atlas / gwa / v1 (yalnız Ezine regresyonu) / santral:<epias_id> (v4 Faz I, mevcut santral)
     ruzgar_kaynagi: str = "otomatik"  # otomatik (ERA5 grid → Open-Meteo) / grid / open_meteo / cds (çevrimdışı)
     turbin: str | None = None
     gobek: float | None = None
@@ -75,7 +75,7 @@ class KullaniciVarsayimlari:
     ekstra: dict = field(default_factory=dict)  # gelişmiş: config anahtar yolu → değer
 
     def v3_aktif(self) -> bool:
-        return bool(self.yerlesim_bakim) and self.kalibrasyon != "v1"
+        return bool(self.yerlesim_bakim) and self.kalibrasyon != "v1" and not self.kalibrasyon.startswith("santral:")
 
     def sozluk(self) -> dict:
         d = asdict(self)

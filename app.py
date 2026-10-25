@@ -45,6 +45,12 @@ sayfalar = [
         icon=":material/tune:",
         url_path="cok-kriterli",
     ),
+    st.Page(
+        str(KOK / "uygulama" / "sayfa_ekleme.py"),
+        title=T("Mevcut santrale ekleme", "Add-on to existing plant"),
+        icon=":material/add_circle:",
+        url_path="ekleme",
+    ),
     st.Page(str(KOK / "uygulama" / "sayfa_portfoy.py"), title=T("Portföy", "Portfolio"), icon=":material/hub:", url_path="portfoy"),
     st.Page(
         str(KOK / "uygulama" / "sayfa_performans.py"),

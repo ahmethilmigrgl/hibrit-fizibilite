@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 
 from src import veri_katmani
-from src.ayarlar import KOK, deger
+from src.ayarlar import KOK, config_oku, deger
 from src.finans.model import Varsayimlar
 from src.finans.veri import UretimProfili, profil_df_den
 from src.motor.varsayimlar import KullaniciVarsayimlari, MotorHatasi, Uyari
@@ -103,6 +103,9 @@ def _profil_anahtari(saha: Saha, cfg: dict, kv: KullaniciVarsayimlari, y1: int, 
 
 def guven_bilgisi(kal: dict) -> dict:
     """Profil kalibrasyon bilgisinden güven seviyesi ve tipik hata (data/atlas/guven_seviyeleri.csv)."""
+    if kal.get("mod") == "santral":  # v4 Faz I: santralin kendi kalibrasyonu (gerçek üretime uydurulmuş)
+        g = deger(config_oku()["v4"]["ekleme"])["santral_guven"]
+        return {"seviye": "kalibre (santral)", **g, "komsu": [], "mesafe_km": []}
     seviye = kal.get("guven") if kal.get("mod") == "atlas" else ("kalibre (v1)" if kal.get("mod") == "v1" else "düşük")
     t = pd.read_csv(veri_katmani.yol("atlas/guven_seviyeleri.csv"), index_col=0)
     satir = t.loc[seviye] if seviye in t.index else t.loc["düşük"]
