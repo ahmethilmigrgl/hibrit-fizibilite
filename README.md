@@ -4,7 +4,7 @@
 ![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)
 [![License: MIT (code)](https://img.shields.io/badge/license-MIT%20(code)-green.svg)](LICENSE)
 
-[Türkçe](README.tr.md) · **Live dashboard:** _link will be added after deployment_
+[Türkçe](README.tr.md) · **Live app:** [huggingface.co/spaces/HFKULLANICI/hibrit-fizibilite](https://huggingface.co/spaces/HFKULLANICI/hibrit-fizibilite)
 
 **Documents (Turkish):** [Investment memo (PDF)](outputs/08/Yatirim_Memosu.pdf) · [Presentation (PDF)](outputs/08/Sunum.pdf) ·
 [Full report (PDF)](outputs/RAPOR.pdf) · [Excel financial model](outputs/08/Ezine_Hibrit_Finansal_Model.xlsx)
@@ -40,7 +40,17 @@ where, under which revenue structure, and with what risk? The project grew in th
   | Portfolio | 40 sites × 147 designs on common scenarios; two-stage mean–CVaR MILP; synergies; Bayesian shrinkage against the optimiser's curse | Selection effect was over half the naive portfolio value (expected disappointment 46 M$); shrunk portfolio 4 sites, 20 M$; no investment below 52 $/MWh or for λ ≥ 0.25 | Brute force, exact CVaR |
   | Performance monitoring | Peer-adjusted SPC (EWMA / CUSUM) for 90 plants | 71% detection of 6-month 10% drops at 0.28 false alarms per plant-year | Synthetic faults |
 
-Summary: [docs/PROJE_OZETI.md](docs/PROJE_OZETI.md) (Turkish).
+- **v4: industry modules** (what IPP, developer and investor teams actually ask).
+
+  | Module | Method | Finding | Validation |
+  |---|---|---|---|
+  | Bankable yield + project finance | P50–P99 uncertainty budget; multi-case debt-sizing LP (duals show the binding case); cash waterfall (DSRA, lock-up, default) over the Monte Carlo; chance-constrained sizing (P(default) ≤ 5%) | DSCR-rule debt carries a 12–43% default probability because price and ancillary-market risk escape the lender cases; an on-site measurement campaign raises debt capacity by 52% | LP equals the closed-form sculpted debt; simulated vs analytic P-values |
+  | Solar/battery add-on to existing wind farms | 86 farms with their own calibration (CF error 0.6 pts); incremental MILP with the plant fixed; common-random-number Monte Carlo; MCP rescaling of an uploaded production file | Adding solar is not profitable anywhere at today's capex (break-even median 437 k$/MW vs 620); a battery adds value at 85/86 farms | Model vs observed CF for all 86 farms; CRN variance reduction 10–79% |
+  | YEKA auction bidding | English auction → observed fee = second-highest value; truncated order-statistic MLE; leave-one-out | Market pays ~0.8 M€/MW above our valuation, explained only by five optimistic assumptions together (winner's curse); forecasts for the 2 Nov 2026 auctions | Synthetic recovery, 64% LOO coverage |
+  | Merit-order price model | Hourly supply stack (water-filling hydro, storage arbitrage, cycling discount), calibrated 2018–23 | Levelised price 67–74 $/MWh (vs 58 assumed); solar capture 0.48 by 2035, wind ≥ 0.93; storage is the main lever on cannibalisation | Out-of-sample 2024–25 R² 0.68 / 0.73 |
+
+Summary: [docs/PROJE_OZETI.md](docs/PROJE_OZETI.md) (Turkish). v4 formulations: `docs/v4_H_finansman.md`, `docs/v4_I_mevcut_santral_ekleme.md`,
+`docs/v4_J_yeka_teklif.md`, `docs/v4_K_merit_order.md`.
 
 **v2 (branch `v2-genel`, release candidate):** a **Türkiye-wide site screening and analysis app**. Pick any point on land and
 get a quick scan in seconds or a full optimisation + Monte Carlo analysis in minutes; see [Türkiye-wide app](#türkiye-wide-app-v2).

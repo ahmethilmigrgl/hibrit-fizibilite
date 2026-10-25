@@ -4,7 +4,7 @@
 ![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)
 [![Lisans: MIT (kod)](https://img.shields.io/badge/license-MIT%20(code)-green.svg)](LICENSE)
 
-[English](README.md) · **Canlı dashboard:** _yayından sonra eklenecek_
+[English](README.md) · **Canlı uygulama:** [huggingface.co/spaces/HFKULLANICI/hibrit-fizibilite](https://huggingface.co/spaces/HFKULLANICI/hibrit-fizibilite)
 
 **Belgeler:** [Yatırım memosu (PDF)](outputs/08/Yatirim_Memosu.pdf) · [Sunum (PDF)](outputs/08/Sunum.pdf) ·
 [Rapor (PDF)](outputs/RAPOR.pdf) · [Rapor (Markdown)](docs/RAPOR.md) · [Excel finansal model](outputs/08/Ezine_Hibrit_Finansal_Model.xlsx)
@@ -14,6 +14,17 @@ Bir nokta seçin; saniyeler içinde hızlı tarama ya da dakikalar içinde optim
 (bkz. [Türkiye geneli uygulama](#türkiye-geneli-uygulama-v2)). İlk Ezine çalışması (v1.0.0) aşağıda vaka çalışması olarak duruyor.
 
 **v3 (`v3-ie` dalı, 3.0.0-rc2):** uygulamaya endüstri mühendisliği eklentileri; bkz. [v3 eklentileri](#endüstri-mühendisliği-eklentileri-v3); proje özeti [docs/PROJE_OZETI.md](docs/PROJE_OZETI.md).
+
+**v4 (4.0.0): sektör modülleri.** Proje geliştirme, IPP ve yatırım ekiplerinin gerçekten sorduğu dört soru:
+
+| Modül | Yöntem | Bulgu | Doğrulama |
+|---|---|---|---|
+| Bankaya sunulabilir verim + proje finansmanı | P50–P99 belirsizlik bütçesi; çok senaryolu borç LP'si (dualler bağlayan senaryoyu gösterir); Monte Carlo üzerinde nakit şelalesi (DSRA, kilit, temerrüt); şans kısıtlı boyutlandırma | DSCR kurallarıyla borçta temerrüt olasılığı %12–43 (fiyat ve SFK riski kredi veren senaryolarına sığmıyor); saha ölçümü borç kapasitesini %52 artırıyor | LP = kapalı form; simülasyon ↔ analitik P değerleri |
+| Mevcut RES'e GES/batarya ekleme | 86 santral kendi kalibrasyonuyla; RES sabit artımsal MILP; ortak rastgele sayılarla Monte Carlo; üretim CSV'sinde MCP | Bugünkü maliyetle GES eklemesi hiçbir yerde kârlı değil (başabaş medyan 437 bin $/MW); batarya 85/86 santralde değer yaratıyor | 86 santralde KF farkı 0,6 puan; varyans azaltma %10–79 |
+| YEKA teklif stratejisi | İngiliz artırması → katkı payı = ikinci en yüksek değer; kesilmiş sıra istatistiği MLE | Piyasa bizim değerlemenin ~0,8 M€/MW üstünde ödüyor (kazananın laneti); 2 Kasım 2026 yarışmaları için tahminler | Sentetik geri bulma, BDB kapsama %64 |
+| Merit order fiyat modeli | Saatlik arz yığını (su doldurma, depolama, döngü indirimi), 2018–23 kalibre | Seviyelendirilmiş fiyat 67–74 $/MWh (varsayım 58); güneş yakalanma 2035'te 0,48, rüzgâr ≥ 0,93 | Örneklem dışı 2024–25 R² 0,68 / 0,73 |
+
+Formülasyonlar: `docs/v4_H_finansman.md`, `docs/v4_I_mevcut_santral_ekleme.md`, `docs/v4_J_yeka_teklif.md`, `docs/v4_K_merit_order.md`.
 **Düzeltme notu:** v1'de sigorta ve arazi kirası çift sayılmıştı. Düzeltilince Ezine önerisi "rafa kaldır"dan "durum
 tespiti + ≤0,9 M$ teklif"e dönüyor ([docs/v1_duzeltme_notu.md](docs/v1_duzeltme_notu.md)).
 

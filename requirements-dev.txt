@@ -2,3 +2,4 @@
 -r requirements.txt
 ruff==0.16.10
 playwright==1.63.0   # C8 ekran görüntüleri (yüklü Chrome ile: channel="chrome")
+huggingface_hub==2.3.0  # yayın (src/v4_yayin.py)
