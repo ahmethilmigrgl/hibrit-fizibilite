@@ -102,7 +102,14 @@ def veri(kuru: bool) -> None:
     api = HfApi(token=_token("HF_TOKEN"))
     api.create_repo(d["repo_id"], repo_type="dataset", exist_ok=True, private=False)
     api.upload_file(path_or_fileobj=str(KOK / "hf" / "README.md"), path_in_repo="README.md", repo_id=d["repo_id"], repo_type="dataset")
-    api.upload_large_folder(repo_id=d["repo_id"], repo_type="dataset", folder_path=str(data), allow_patterns=VERI_DESEN)
+    for klasor in sorted((data / "grid").iterdir()):  # klasör başına bir commit (≤ ~1.500 dosya)
+        if not (klasor / "v1").is_dir():
+            continue
+        print(f"  yükleniyor: {klasor.name}")
+        api.upload_folder(
+            repo_id=d["repo_id"], repo_type="dataset", folder_path=str(klasor), path_in_repo=f"grid/{klasor.name}",
+            allow_patterns=["v1/**/*.npz", "v1/*.npz", "v1/manifest.json", "v1/*.tif"], commit_message=f"{klasor.name} gridi",
+        )  # fmt: skip
     try:
         api.create_tag(d["repo_id"], tag=d["revizyon"], repo_type="dataset")
     except Exception as ex:  # etiket zaten varsa
