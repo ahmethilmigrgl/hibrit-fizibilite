@@ -26,7 +26,7 @@ def birim_sekiller(cfg: dict, u: UretimProfili, h_izgara: np.ndarray) -> tuple[d
         for h in h_izgara:
             hedef = _gunes_orani(sh, g, 0.0) - (oran0 - h)
             d = _derinlik(sh, g, hedef)
-            q = sh * (1 - d * g)
+            q = np.clip(sh * (1 - d * g), 0.0, None)
             out[(s, h)] = np.clip(q / q.mean(), 0.0, None)
     return out, oran0
 

@@ -72,6 +72,9 @@ class KullaniciVarsayimlari:
     # v4 Faz H: verim bütçesi (P50/P90), çok senaryolu borç LP'si ve nakit şelalesi; Monte Carlo'ya GES model belirsizliği eklenir.
     # False → v3 davranışı (NPV dağılımı aynen).
     finansman: bool = True
+    # v4 Faz K: fiyat görüşü. "varsayilan" = config (58 $/MWh, kanibalizasyon 0,60 / 2033); "merit:<senaryo>" = merit order
+    # projeksiyonunun seviyelendirilmiş fiyatı ve güneş yakalanma yolu (data/atlas/v4_merit.json)
+    fiyat_kaynagi: str = "varsayilan"
     ekstra: dict = field(default_factory=dict)  # gelişmiş: config anahtar yolu → değer
 
     def v3_aktif(self) -> bool:
@@ -116,6 +119,15 @@ def dogrula(kv: KullaniciVarsayimlari) -> list[Uyari]:
             "Yerleşim yöntemi sa, ga, milp, izgara ya da acgozlu olmalı.",
             "Layout method must be sa, ga, milp, izgara or acgozlu.",
         )
+    if kv.fiyat_kaynagi != "varsayilan":
+        from src.merit.motor import senaryolar
+
+        if not kv.fiyat_kaynagi.startswith("merit:") or kv.fiyat_kaynagi.split(":", 1)[1] not in senaryolar():
+            raise MotorHatasi(
+                "fiyat_kaynagi",
+                f"Fiyat kaynağı 'varsayilan' ya da merit:<{'/'.join(senaryolar())}> olmalı.",
+                f"Price source must be 'varsayilan' or merit:<{'/'.join(senaryolar())}>.",
+            )
     if kv.bakim_modeli not in ("yeni", "sabit"):
         raise MotorHatasi("bakim", "Bakım modeli yeni ya da sabit olmalı.", "Maintenance model must be yeni or sabit.")
     if kv.isletme_modeli is not None and kv.isletme_modeli not in ("fsa", "kendi"):

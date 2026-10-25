@@ -36,8 +36,14 @@ DEGER_DURUM = {"deger": "iyi", "sinirda": "uyari", "degmez": "kotu"}
 UI_ALANLAR = [
     "baglanti_mw", "proje_asamasi", "fiyat_senaryosu", "gelir_yapilari", "azami_res_mw", "azami_ges_mw", "turbin_yerlesimi",
     "yerlesim_yaricap_km", "fiyat_seviyesi", "kanibalizasyon", "wacc", "capex_carpani_res", "capex_carpani_ges",
-    "capex_carpani_bess", "sfk_katilimi",
+    "capex_carpani_bess", "sfk_katilimi", "fiyat_kaynagi",
 ]  # fmt: skip
+FIYAT_KAYNAGI_AD = {
+    "varsayilan": ("Varsayılan (58 $/MWh, kanibalizasyon 0,60 / 2033)", "Default (58 $/MWh, cannibalisation 0.60 / 2033)"),
+    "merit:baz": ("Merit order: baz (Ulusal Enerji Planı)", "Merit order: base (National Energy Plan)"),
+    "merit:hizli_donusum": ("Merit order: hızlı dönüşüm (120 GW)", "Merit order: fast transition (120 GW)"),
+    "merit:yavas": ("Merit order: yavaş", "Merit order: slow"),
+}
 VARSAYILAN = KullaniciVarsayimlari()
 
 
@@ -327,6 +333,14 @@ def varsayim_paneli() -> dict:
         kv["fiyat_senaryosu"] = c[0].selectbox(
             T("Fiyat senaryosu", "Price scenario"), list(FIYAT_AD), index=list(FIYAT_AD).index(kv["fiyat_senaryosu"]),
             format_func=lambda x: T(*FIYAT_AD[x]), help=T("Uzun vadeli reel ortalama elektrik fiyatı (beklenen değer).", "Long-term real average power price (expected value)."),
+        )  # fmt: skip
+        kv["fiyat_kaynagi"] = c[0].selectbox(
+            T("Fiyat görüşü", "Price view"), list(FIYAT_KAYNAGI_AD), index=list(FIYAT_KAYNAGI_AD).index(kv.get("fiyat_kaynagi", "varsayilan")),
+            format_func=lambda x: T(*FIYAT_KAYNAGI_AD[x]),
+            help=T("Merit order: talep, kapasite, yakıt ve karbon senaryosundan arz yığını modeliyle hesaplanan seviyelendirilmiş fiyat ve "
+                   "güneş kanibalizasyonu yolu (Fiyat projeksiyonu sayfası). Fiyat senaryosu bu seviyeye göre ölçeklenir.",
+                   "Merit order: levelised price and solar cannibalisation path from a supply-stack model of demand, capacity, fuel and "
+                   "carbon scenarios (Price outlook page). The price scenario scales to this level."),
         )  # fmt: skip
         kv["gelir_yapilari"] = tuple(
             c[1].multiselect(

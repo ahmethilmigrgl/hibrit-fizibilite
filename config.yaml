@@ -835,3 +835,72 @@ v4:
       yakın trafo. Sözleşme yılı 2026, COD 2029; alım dönemi sözleşme + 72 ay → 2033–2052; öncesi ve sonrası tüccar. Katkı payı
       sözleşmede peşin ödenir ve 10 yılda itfa edilir (TAHMİN). Tüm yarışmalar bugünkü model görüşüyle değerlenir (piyasanın o günkü
       görüşü değil); sistematik fark açık artırma modelinde δ (piyasa primi) olarak tahmin edilir
+  merit:
+    value:
+      kalibrasyon_yillari: [2018, 2023]
+      test_yillari: [2024, 2025]
+      sekil_yillari: [2024, 2025]
+      kapasite_yuzdeligi: 0.995
+      gunes_tepe_kf: 0.80
+      hidro_asgari_oran: 0.15
+      baslangic: {MC_L: 30.0, HR_min: 1.75, HR_max: 2.9, kappa: 2.0, v: 3.0, sigma_RL: 1500.0, must_oran: 0.45, alpha: 1.5}
+      emisyon_t_mwh_e: {linyit: 1.10, ithal_komur: 0.95}
+      emisyon_gaz_t_mwh_th: 0.202
+      tavan_usd_mwh: 95.0
+      depolama_verim: 0.87
+      senaryolar:
+        baz:
+          talep_buyume: 0.03
+          gunes_gw: {2025: 25.1, 2030: 40.0, 2035: 52.9, 2050: 90.0}
+          ruzgar_gw: {2025: 14.8, 2030: 22.0, 2035: 29.6, 2050: 50.0}
+          nukleer_gw: {2026: 0.0, 2027: 1.2, 2028: 2.4, 2029: 3.6, 2030: 4.8, 2035: 7.2, 2050: 7.2}
+          depolama_gw: {2025: 0.2, 2030: 3.0, 2035: 7.5, 2050: 15.0}
+          depolama_saat: 2.0
+          gaz_usd_mwh_th: {2026: 1.0, 2030: 0.95, 2050: 0.95}
+          komur_carpani: {2026: 1.0, 2050: 1.0}
+          karbon_usd_t: {2026: 0.0, 2027: 2.0, 2035: 23.0, 2050: 40.0}
+          termik_gw_degisim: {gaz: 0.0, ithal_komur: 0.0, linyit: 0.0}
+        hizli_donusum:
+          talep_buyume: 0.035
+          gunes_gw: {2025: 25.1, 2030: 50.0, 2035: 77.0, 2050: 120.0}
+          ruzgar_gw: {2025: 14.8, 2030: 25.0, 2035: 43.0, 2050: 65.0}
+          nukleer_gw: {2026: 0.0, 2027: 1.2, 2028: 2.4, 2029: 3.6, 2030: 4.8, 2035: 7.2, 2050: 12.0}
+          depolama_gw: {2025: 0.2, 2030: 6.0, 2035: 15.0, 2050: 30.0}
+          depolama_saat: 4.0
+          gaz_usd_mwh_th: {2026: 1.0, 2030: 0.95, 2050: 0.95}
+          komur_carpani: {2026: 1.0, 2050: 1.0}
+          karbon_usd_t: {2026: 0.0, 2027: 5.0, 2035: 46.0, 2050: 80.0}
+          termik_gw_degisim: {gaz: 0.0, ithal_komur: {2026: 0.0, 2035: -2.0}, linyit: {2026: 0.0, 2035: -1.0}}
+        yavas:
+          talep_buyume: 0.02
+          gunes_gw: {2025: 25.1, 2030: 33.0, 2035: 40.0, 2050: 60.0}
+          ruzgar_gw: {2025: 14.8, 2030: 19.0, 2035: 23.0, 2050: 35.0}
+          nukleer_gw: {2026: 0.0, 2028: 1.2, 2030: 2.4, 2032: 4.8, 2050: 4.8}
+          depolama_gw: {2025: 0.2, 2030: 1.5, 2035: 3.0, 2050: 6.0}
+          depolama_saat: 2.0
+          gaz_usd_mwh_th: {2026: 1.0, 2030: 1.10, 2050: 1.10}
+          komur_carpani: {2026: 1.0, 2050: 1.0}
+          karbon_usd_t: {2026: 0.0, 2027: 1.0, 2035: 6.0, 2050: 15.0}
+          termik_gw_degisim: {gaz: 0.0, ithal_komur: 0.0, linyit: 0.0}
+    birim: "GW (yıl sonu kurulu), oran/yıl, gaz: 2025 kalibre seviyesine çarpan, USD/tCO2 (reel 2026), saat"
+    kaynak: >-
+      Kalibrasyon verisi EPİAŞ Şeffaflık Platformu gerçek zamanlı üretim (kaynak bazında, saatlik) ve PTF (USD), 2018–2025
+      (data/processed; çevrimdışı). Kapasite: yıl içindeki saatlik üretimin %99,5 yüzdeliği (kullanılabilir kapasite vekili; kurulu
+      gücün altında — bakım, yakıt, kısıtlar). Güneş: EPİAŞ verisi yalnız lisanslı güneşi içerir (Ocak 2024: güneşin %86'sı lisanssız);
+      toplam güneş = lisanslı profil × (TEİAŞ toplam kurulu / etkin lisanslı kurulu), etkin lisanslı = yıllık azami lisanslı üretim /
+      gunes_tepe_kf (0,80 TAHMİN); toplam talep = EPİAŞ toplam üretimi + lisanssız güneş. Senaryolar: "baz" ETKB Türkiye Ulusal Enerji
+      Planı (Ocak 2023): 2035'te güneş 52,9 GW, rüzgâr 29,6 GW, nükleer 7,2 GW, depolama 7,5 GW (2030/2050 ara noktaları TAHMİN);
+      "hizli_donusum" ETKB'nin Ekim 2024'te açıkladığı 2035 rüzgâr + güneş 120 GW hedefi (77 güneş + 43 rüzgâr bölüşümü TAHMİN), depolama
+      15 GW / 4 saat TAHMİN; "yavas" TAHMİN (gecikmeler). Akkuyu NGS 4 × 1,2 GW: yıllık devreye alma TAHMİN (resmî takvim ertelendi).
+      Talep büyümesi: UEP 2035 talebi ~510 TWh ile 2025'ten yıllık ~%4; baz %3 TAHMİN. Karbon: İklim Kanunu 7552 (2025) ETS pilot
+      2026–27 ücretsiz tahsisat; 2035 fiyatı karbon.ets_fiyat_eur_t_2035 aralığından (5 / 20 / 40 €/t × 1,15) TAHMİN. Gaz fiyatı
+      2025 kalibre edilmiş aylık gaz maliyet seviyesinin çarpanı (reel) TAHMİN. Emisyon yoğunlukları: kömür 0,95 (karbon.marjinal_yogunluk_komur),
+      linyit 1,10 TAHMİN, doğalgaz 0,202 tCO2/MWh_th (IPCC 2006 varsayılan 56,1 kg/GJ). Tavan 95 $/MWh: 2024–25 gözlenen azami PTF
+      (~92 / 90 $/MWh, GÖP azami fiyat limiti) TAHMİN
+    not: >-
+      Fiyat = arz eğrisi(termik artık yük): linyit (sabit MC_L) → ithal kömür (yıllık gizli seviye C_y) → doğalgaz (aylık gizli yakıt
+      maliyeti G_m × ısı oranı HR(q), q filo içindeki konum, HR(q) = HR_min + (HR_max − HR_min) q^κ) → tavan; zorunlu çalışma altında
+      fiyat (RL/M)^α ile sıfıra iner; eğri kapasite/ithalat belirsizliği N(0, σ_RL) ile düzgünleştirilir. G_m ve C_y her θ için doğrusal
+      en küçük kareler; θ Nelder–Mead ile kalibrasyon yıllarında. Barajlı hidro aylık su bütçesiyle su doldurma (water-filling), depolama
+      günlük arbitraj. Projeksiyon şekil yılları 2024–2025 (iki "hava/talep" yılı), barajlı hidro bütçesi 2018–2025 ay ortalaması.
+      termik_gw_degisim: kullanılabilir kapasiteye eklenen GW (sabit ya da {yıl: GW} yolu)

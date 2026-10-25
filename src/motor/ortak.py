@@ -78,6 +78,10 @@ def cfg_uygula(cfg: dict, kv: KullaniciVarsayimlari) -> dict:
         for k in ("capex_enerji", "capex_guc"):
             _ata(cfg, f"teknoloji.bess.{k}", deger(cfg["teknoloji"]["bess"][k]) * kv.capex_carpani_bess)
     _ata(cfg, "fiyat_senaryolari.kanibalizasyon", {**deger(cfg["fiyat_senaryolari"]["kanibalizasyon"]), "varyant": kv.kanibalizasyon})
+    if kv.fiyat_kaynagi.startswith("merit:"):  # v4 Faz K: merit order senaryosunun fiyat seviyesi ve kanibalizasyon yolu
+        from src.merit.motor import uygula
+
+        uygula(cfg, kv.fiyat_kaynagi.split(":", 1)[1])
     return cfg
 
 

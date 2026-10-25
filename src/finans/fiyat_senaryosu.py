@@ -39,16 +39,23 @@ class FiyatSenaryosu:
     yan_hizmet: np.ndarray | None = None  # (işletme_yılı, şekil_yılı, 8760) USD/MW-saat kapasite fiyatı
 
 
+D_AZAMI = 6.0  # v4 Faz K: d > 1 → güneşin yüksek olduğu saatlerde fiyat sıfırda kırpılır (derin kanibalizasyon)
+
+
 def _gunes_orani(sekil: np.ndarray, g: np.ndarray, d: float) -> float:
-    p = sekil * (1 - d * g)
-    return float((p * g).sum() / g.sum() / p.mean())
+    p = np.clip(sekil * (1 - d * g), 0.0, None)  # d ≤ 1'de kırpma etkisiz (g ≤ 1): v1–v3 ile birebir aynı
+    return float((p * g).sum() / g.sum() / max(p.mean(), 1e-12))
 
 
 def _derinlik(sekil: np.ndarray, g: np.ndarray, hedef: float) -> float:
-    """Ezine GES yakalanma oranını hedefe eşitleyen d (0 ≤ d < 1)."""
+    """Ezine GES yakalanma oranını hedefe eşitleyen d (0 ≤ d ≤ D_AZAMI; hedef ulaşılamıyorsa D_AZAMI)."""
     if _gunes_orani(sekil, g, 0.0) <= hedef:
         return 0.0
-    return brentq(lambda d: _gunes_orani(sekil, g, d) - hedef, 0.0, 0.999, xtol=1e-6)
+    if _gunes_orani(sekil, g, 0.999) <= hedef:  # v1–v3 aralığı (d < 1) — aynı kök
+        return brentq(lambda d: _gunes_orani(sekil, g, d) - hedef, 0.0, 0.999, xtol=1e-6)
+    if _gunes_orani(sekil, g, D_AZAMI) >= hedef:
+        return D_AZAMI
+    return brentq(lambda d: _gunes_orani(sekil, g, d) - hedef, 0.999, D_AZAMI, xtol=1e-6)
 
 
 def fiyat_senaryosu_uret(
@@ -96,7 +103,7 @@ def fiyat_senaryosu_uret(
                 fark = oran0 - hedef[i]
                 hedef_j = _gunes_orani(s, g, 0.0) - fark
                 d = _derinlik(s, g, hedef_j)
-                p = s * (1 - d * g)
+                p = np.clip(s * (1 - d * g), 0.0, None)
                 onbellek[anahtar] = np.clip(L * p / p.mean(), 0.0, None)
             fiyatlar[i, j] = onbellek[anahtar]
 

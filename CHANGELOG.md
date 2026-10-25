@@ -18,6 +18,19 @@ Proje aşamalar halinde geliştirildi. Her aşama bir commit; revizyonlar ve ön
 
 ## [Yayınlanmadı] — v4 (dal `v4-sektor`)
 
+### Faz K — Merit order fiyat projeksiyonu (2026-10-25)
+- **Saatlik arz yığını modeli** (`src/merit/`): talep, rüzgâr, güneş (lisanssız dahil), akarsu, nükleer → barajlı hidro (aylık su
+  doldurma) → depolama (günlük arbitraj, vektörize) → termik artık yük → linyit / ithal kömür / verim dağılımlı doğalgaz eğrisi,
+  N(0, σ) ile düzgünleştirilmiş; **döngü indirimi** (öğle çukurunda maliyetin altında satış) güneş yakalanmasını açıklamada belirleyici.
+- **Kalibrasyon:** θ (şekil) Nelder–Mead, aylık gaz maliyeti ve yıllık kömür bandı doğrusal en küçük kareler; 2018–23 kalibrasyon,
+  2024–25 örneklem dışı R² 0,68 / 0,73, gün içi korelasyon 0,91 / 0,93, rüzgâr yakalanma birebir, güneş +2–4 puan.
+- **Projeksiyon 2026–2050** (baz = Ulusal Enerji Planı, hızlı dönüşüm = 120 GW, yavaş): seviyelendirilmiş fiyat 67–74 $/MWh (v1: 58);
+  güneş yakalanma 2035'te 0,48 (baz) — v1'in 0,60 tabanından çok derin; rüzgâr 0,93–0,99. Depolama ×2 → güneş 0,48 → 0,60.
+- **Motor bağlantısı:** `KullaniciVarsayimlari(fiyat_kaynagi="merit:<senaryo>")` (arayüz: Varsayımlar → Fiyat görüşü); fiyat şekli
+  d > 1 (kırpmalı) ve işletme tablosu ızgarası derin kanibalizasyona genişletildi (varsayılanda sonuçlar aynı).
+- Arayüz: yeni sayfa "Fiyat projeksiyonu" (`/fiyat`). Belge `docs/v4_K_merit_order.md`, betik `src/v4_K1_merit_order.py` →
+  `outputs/v4K/`, paket `data/atlas/v4_merit.json`, testler `tests/test_v4_K.py`.
+
 ### Faz J — YEKA RES teklif stratejisi (2026-10-25)
 - **Lot değerlemesi** (`src/yeka/deger.py`): 18 yarışma (2024–26) temsilî noktada (il rüzgârlı hücreleri), TEİAŞ bağlantı görüşüyle,
   72 ay tüccar + 20 yıl alım (`mc_calistir(..., sozlesme=)`); MW başına başabaş katkı payı.

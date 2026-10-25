@@ -22,7 +22,7 @@ from dataclasses import asdict, replace
 
 import numpy as np
 
-from src.ayarlar import KOK
+from src.ayarlar import KOK, deger
 from src.risk.isletme import IsletmeLP, IsletmeLPHizli, tablo_uret
 from src.risk.senaryo import birim_sekiller
 from src.risk.tasarim import Tasarim
@@ -38,7 +38,11 @@ def izgara(seviye: str, o, sigma: float = 0.125) -> dict:
         return {"H": [0.55, 0.62, 0.70, round(o.oran0, 4)], "M": [0.80, 0.94, 1.08], "A": [0.0, *A_DUSUK, 0.25, 0.6, 1.0], "W": None}
     if seviye == "kucuk":  # yalnız testler (MOTOR_KUCUK=1)
         return {"H": [0.55, round(o.oran0, 4)], "M": [0.9, 1.1], "A": [0.0, 1.0], "W": 3}
-    H = [0.55, round(o.oran0, 4)]
+    # v4 Faz K: merit order senaryosu daha derin kanibalizasyon verirse ızgara aşağı uzar (varsayılan config'de değişmez: 0,55)
+    h_alt = min(
+        0.55, deger(o.cfg["fiyat_senaryolari"]["kanibalizasyon"])["taban_oran"], deger(o.cfg["monte_carlo"]["kanibalizasyon_tabani"])["alt"]
+    )
+    H = [0.55, round(o.oran0, 4)] if h_alt >= 0.55 - 1e-9 else [round(h_alt, 3), 0.55, round(o.oran0, 4)]
     W = None if seviye == "hafif" else 5
     d = float(min(0.5, max(0.2, 2 * sigma)))
     return {"H": H, "M": [round(1 - d, 3), 1.0, round(1 + d, 3)], "A": [0.0, 0.05, 0.25, 1.0], "W": W}

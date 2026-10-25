@@ -52,6 +52,12 @@ sayfalar = [
         url_path="ekleme",
     ),
     st.Page(
+        str(KOK / "uygulama" / "sayfa_fiyat.py"),
+        title=T("Fiyat projeksiyonu", "Price outlook"),
+        icon=":material/trending_up:",
+        url_path="fiyat",
+    ),
+    st.Page(
         str(KOK / "uygulama" / "sayfa_yeka.py"),
         title=T("YEKA teklif stratejisi", "YEKA bidding strategy"),
         icon=":material/gavel:",

@@ -268,4 +268,12 @@ mevcut santral adları gizli (anonim kod + CSV yükleme), sıra H → I → J �
   `bootstrap`, `birini_disarida_birak`, `strateji`, `fiyat_asamasi`). Config `v4.yeka` (yarışmalar, mekanizma, duyarlılık). Sayfa
   `uygulama/sayfa_yeka.py` (`/yeka`), paket `data/atlas/v4_yeka.json`. Betik `src/v4_J1_yeka.py` (~10 dk) → `outputs/v4J/`. Testler
   `tests/test_v4_J.py`. R26 sonuçları (2 Kasım 2026) açıklanınca modelin dış sınaması yapılmalı.
-- **Faz K — Temel model (merit order) fiyat projeksiyonu.**
+- **Faz K — Temel model (merit order) fiyat projeksiyonu.** ✅ (2026-10-25) bkz. `docs/v4_K_merit_order.md`. Modüller `src/merit/`
+  (veri: EPİAŞ ulusal saatlik üretim + PTF, lisanssız güneş ölçeklemesi; model: `su_doldur`, `depolama_gunluk`, `bilesenler`/`fiyat`
+  arz eğrisi + `gun_derinligi` döngü indirimi; kalibrasyon: `seviyeler` (aylık G, yıllık C) + `kalibre` (θ); projeksiyon:
+  `senaryo_calistir`, `motor_parametreleri`; motor: `uygula`). Config `v4.merit` (senaryolar). Motor: `KullaniciVarsayimlari(fiyat_kaynagi=
+  "merit:<baz|hizli_donusum|yavas>")`; `fiyat_senaryosu._derinlik` d ≤ 6 (kırpmalı), `tablolar.izgara` H alt sınırı config'den.
+  Sayfa `uygulama/sayfa_fiyat.py` (`/fiyat`), paket `data/atlas/v4_merit.json`. Betik `src/v4_K1_merit_order.py` → `outputs/v4K/`.
+  Testler `tests/test_v4_K.py`. Kalibrasyon verisi `data/processed/` (EPİAŞ, çevrimdışı; uygulama yalnız paketi okur).
+
+**v4 durumu (2026-10-25):** H, I, J, K tamam; push/yayın yok. Sıradaki adım: yayın (kullanıcı kararı).
