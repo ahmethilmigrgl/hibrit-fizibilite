@@ -68,11 +68,14 @@ def mc_calistir(
     sfk: bool,
     tohum_saha: int | None = None,
     finans: bool = False,
+    sozlesme: dict | None = None,
 ) -> dict:
     """tohum: ortak sürücüler (fiyat yolu, hava yılı, SFK/doyum, CAPEX/OPEX, kesinti, YEKDEM koridoru). tohum_saha (Faz F
     portföyü): sahaya özgü belirsizlikler (RES model hatası, bağlantı mesafesi) için ayrı tohum; verilmezse tohum.
     finans (v4 Faz H): GES model belirsizliği (m_ges) eklenir; gecikmesiz (kd = 0) yıllık CFADS/vergi/enerji ve kredi veren
-    senaryosu için ortalama girdi yolları döndürülür."""
+    senaryosu için ortalama girdi yolları döndürülür.
+    sozlesme (v4 Faz J): {"phi": (N + KMAX,) sözleşmeli pay yolu, "fiyat": (N + KMAX,) reel USD/MWh} → "sozlesme" yapısı
+    (ör. YEKA: tüccar dönem + sabit fiyatlı alım dönemi; sözleşmeli yıllarda YEKDEM kesinti tazmini)."""
     ts = tohum if tohum_saha is None else tohum_saha
     cfg, v = o.cfg, o.v
     N = v.omur
@@ -144,6 +147,17 @@ def mc_calistir(
                 r = nakit_akislari(replace(t, ppa=True), tb_Y, c_y, gk)
                 if kd == 0:
                     ek[y] = {"katilim_yil": katil[:, : yk["sure_yil"]].mean(0).round(3).tolist()}
+            elif y == "sozlesme":
+                ph = np.broadcast_to(np.asarray(sozlesme["phi"], float)[sl], (n, N))
+                gk.update(
+                    {
+                        "phi": ph,
+                        "ppa_fiyat": np.broadcast_to(np.asarray(sozlesme["fiyat"], float)[sl], (n, N)),
+                        "kesinti_gelir": np.where(ph > 0.5, kes_y[0][:, sl], kes_m[0][:, sl]),
+                        "kesinti_enerji": np.where(ph > 0.5, kes_y[1][:, sl], kes_m[1][:, sl]),
+                    }
+                )
+                r = nakit_akislari(t, tb_T, o.c, gk)
             else:
                 gk.update({"kesinti_gelir": kes_m[0][:, sl], "kesinti_enerji": kes_m[1][:, sl]})
                 tt = t

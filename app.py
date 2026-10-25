@@ -51,6 +51,12 @@ sayfalar = [
         icon=":material/add_circle:",
         url_path="ekleme",
     ),
+    st.Page(
+        str(KOK / "uygulama" / "sayfa_yeka.py"),
+        title=T("YEKA teklif stratejisi", "YEKA bidding strategy"),
+        icon=":material/gavel:",
+        url_path="yeka",
+    ),
     st.Page(str(KOK / "uygulama" / "sayfa_portfoy.py"), title=T("Portföy", "Portfolio"), icon=":material/hub:", url_path="portfoy"),
     st.Page(
         str(KOK / "uygulama" / "sayfa_performans.py"),

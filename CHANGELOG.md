@@ -18,6 +18,19 @@ Proje aşamalar halinde geliştirildi. Her aşama bir commit; revizyonlar ve ön
 
 ## [Yayınlanmadı] — v4 (dal `v4-sektor`)
 
+### Faz J — YEKA RES teklif stratejisi (2026-10-25)
+- **Lot değerlemesi** (`src/yeka/deger.py`): 18 yarışma (2024–26) temsilî noktada (il rüzgârlı hücreleri), TEİAŞ bağlantı görüşüyle,
+  72 ay tüccar + 20 yıl alım (`mc_calistir(..., sozlesme=)`); MW başına başabaş katkı payı.
+- **Rakip değer modeli** (`src/yeka/muzayede.py`): İngiliz artırması → gözlenen katkı payı = ikinci en yüksek değer; V = v̂ + δ +
+  γ ln(MW/150) + sε; **kesilmiş** (tabana inme koşullu) en çok olabilirlik, bootstrap, AIC, birini dışarıda bırak doğrulaması.
+  δ = 804 bin €/MW (piyasa primi), γ = −200 bin, s = 116 bin.
+- **Piyasa primi duyarlılığı:** tek varsayım yetmiyor; ancak CAPEX −%20 + WACC %5 + fiyat 70 + endeks + 40 yıl birlikte açıklıyor
+  (kazananın laneti tartışması).
+- **R26 (2 Kasım 2026) tahminleri:** 4 teklifli yarışmalarda katkı payı 2025'e göre düşük (Balıkesir ~165 bin €/MW, n = 12 olsaydı
+  ~260); Sivas ve Kütahya'da fiyatın tabana inmemesi bekleniyor (%10 / %2). Teklif eğrisi: kazanma olasılığı, beklenen ödeme/fazla.
+- Arayüz: yeni sayfa "YEKA teklif stratejisi" (`/yeka`). Belge `docs/v4_J_yeka_teklif.md`, betik `src/v4_J1_yeka.py` →
+  `outputs/v4J/`, paket `data/atlas/v4_yeka.json`, testler `tests/test_v4_J.py`.
+
 ### Faz I — Mevcut RES'e GES ve batarya ekleme (2026-10-25)
 - **Yardımcı kaynak analizi** (`src/ekleme/`): mevcut santral kendi kalibrasyon matrisi ve türbin vekiliyle (86 santralde
   model–gözlenen KF farkı mutlak medyan 0,6 puan); ortak maliyetler sıfırlanmış artımsal ekonomi; MILP'te santral tek

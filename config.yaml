@@ -779,3 +779,59 @@ v4:
       için sıfırlanır; artımsal NPV = NPV(RES + ekleme) − NPV(yalnız RES), aynı Monte Carlo senaryolarıyla (ortak rastgele sayılar).
       RES'in analiz ufku boyunca (ömür uzatma/yenileme dahil) çalıştığı varsayılır. Kapasite MILP'inde santral tek bir "türbin"
       (turbin_gucu = kurulu güç, N = 1 sabit) olarak temsil edilir
+  yeka:
+    value:
+      mekanizma: {tavan_sent: 5.50, taban_sent: 3.50, katki_baslangic_eur_mw: 10000, serbest_donem_ay: 72, alim_suresi_yil: 20, insaat_azami_ay: 36}
+      zaman: {sozlesme_yili: 2026, cod_yili: 2029}
+      kur: {eurusd: 1.15, eurusd_2025_ocak: 1.035}
+      eur_enflasyonu: 0.02
+      katki_amortisman_yil: 10
+      temsili_mw: 100.0
+      duyarlilik:   # "piyasa primini (δ) ne kapatır?" — bizim varsayımlarımızın piyasanınkine yaklaştırılması
+        - {ad: "CAPEX −%20", ad_en: "Capex −20%", ekstra: {"teknoloji.res.capex": 920000}}
+        - {ad: "CAPEX −%40", ad_en: "Capex −40%", ekstra: {"teknoloji.res.capex": 690000}}
+        - {ad: "Reel WACC %5", ad_en: "Real WACC 5%", ekstra: {"finans.wacc_reel": 0.05}}
+        - {ad: "Reel WACC %3", ad_en: "Real WACC 3%", ekstra: {"finans.wacc_reel": 0.03}}
+        - {ad: "Uzun dönem fiyat 70 $/MWh", ad_en: "Long-run price 70 $/MWh", ekstra: {"monte_carlo.fiyat_uzun_ortalama.value.seviye": 70}}
+        - {ad: "Uzun dönem fiyat 85 $/MWh", ad_en: "Long-run price 85 $/MWh", ekstra: {"monte_carlo.fiyat_uzun_ortalama.value.seviye": 85}}
+        - {ad: "Bileşik: CAPEX −%20, WACC %5, fiyat 70", ad_en: "Combined: capex −20%, WACC 5%, price 70", ekstra: {"teknoloji.res.capex": 920000, "finans.wacc_reel": 0.05, "monte_carlo.fiyat_uzun_ortalama.value.seviye": 70}}
+        - {ad: "Alım fiyatı avro enflasyonuna endeksli", ad_en: "Purchase price indexed to euro inflation", ekstra: {"v4.yeka.value.eur_enflasyonu": 0.0}}
+        - {ad: "Ömür 40 yıl (lisans 49 yıl)", ad_en: "40-year life (49-year licence)", ekstra: {"proje.omur": 40, "teknoloji.res.omur": 40}}
+        - {ad: "Bileşik + endeks + 40 yıl", ad_en: "Combined + indexation + 40 years", ekstra: {"teknoloji.res.capex": 920000, "finans.wacc_reel": 0.05, "monte_carlo.fiyat_uzun_ortalama.value.seviye": 70, "v4.yeka.value.eur_enflasyonu": 0.0, "proje.omur": 40, "teknoloji.res.omur": 40}}
+      yarismalar:
+        - {kod: "R24-Edirne", yil: 2024, il: "Edirne", mw: 410, para: "USD", fiyat_sent: 3.50, katki_mw: 60000, teklif: 14}
+        - {kod: "R24-Balkaya", yil: 2024, il: "Kırklareli", mw: 340, para: "USD", fiyat_sent: 3.50, katki_mw: 92000, teklif: 16}
+        - {kod: "R24-Serges", yil: 2024, il: "Kırklareli", mw: 200, para: "USD", fiyat_sent: 3.50, katki_mw: 140000, teklif: 21}
+        - {kod: "R24-Yellice", yil: 2024, il: "Sivas", mw: 160, para: "USD", fiyat_sent: 3.50, katki_mw: 140000, teklif: 23}
+        - {kod: "R24-Gürün", yil: 2024, il: "Sivas", mw: 90, para: "USD", fiyat_sent: 3.50, katki_mw: 148000, teklif: 26}
+        - {kod: "R25-Sivas", yil: 2025, il: "Sivas", mw: 500, para: "EUR", fiyat_sent: 3.50, katki_mw: 56000, teklif: 12, hat_km: 210, kv: 400, girdi_cikti: false}
+        - {kod: "R25-Balıkesir-1", yil: 2025, il: "Balıkesir", mw: 160, para: "EUR", fiyat_sent: 3.50, katki_mw: 212000, teklif: 12, hat_km: 46, kv: 400, girdi_cikti: false}
+        - {kod: "R25-Balıkesir-2", yil: 2025, il: "Balıkesir", mw: 120, para: "EUR", fiyat_sent: 3.50, katki_mw: 218000, teklif: 12, hat_km: 52, kv: 400, girdi_cikti: false}
+        - {kod: "R25-Balıkesir-3", yil: 2025, il: "Balıkesir", mw: 110, para: "EUR", fiyat_sent: 3.50, katki_mw: 312000, teklif: 12, hat_km: 26, kv: 400, girdi_cikti: false}
+        - {kod: "R25-Aydın-Denizli", yil: 2025, il: "Aydın", mw: 140, para: "EUR", fiyat_sent: 3.50, katki_mw: 170000, teklif: 12, hat_km: 14, kv: 154, girdi_cikti: true}
+        - {kod: "R25-Kütahya", yil: 2025, il: "Kütahya", mw: 120, para: "EUR", fiyat_sent: 3.50, katki_mw: 222000, teklif: 12, hat_km: 24, kv: 154, girdi_cikti: false}
+        - {kod: "R26-Sivas", yil: 2026, il: "Sivas", mw: 320, para: "EUR", teklif: 4, hat_km: 16, kv: 400, girdi_cikti: true}
+        - {kod: "R26-Balıkesir-1", yil: 2026, il: "Balıkesir", mw: 140, para: "EUR", teklif: 4, hat_km: 34, kv: 400, girdi_cikti: false}
+        - {kod: "R26-Balıkesir-2", yil: 2026, il: "Balıkesir", mw: 235, para: "EUR", teklif: 4, hat_km: 12, kv: 400, girdi_cikti: true}
+        - {kod: "R26-Balıkesir-3", yil: 2026, il: "Balıkesir", mw: 170, para: "EUR", teklif: 4, hat_km: 34, kv: 400, girdi_cikti: false}
+        - {kod: "R26-Balıkesir-4", yil: 2026, il: "Balıkesir", mw: 140, para: "EUR", teklif: 5, hat_km: 16, kv: 400, girdi_cikti: true}
+        - {kod: "R26-Manisa", yil: 2026, il: "Manisa", mw: 235, para: "EUR", teklif: 4, hat_km: 60, kv: 400, girdi_cikti: false}
+        - {kod: "R26-Kütahya", yil: 2026, il: "Kütahya", mw: 260, para: "EUR", teklif: 4, hat_km: 35, kv: 400, girdi_cikti: false}
+    birim: "sent/kWh (para biriminde), €/MW ya da $/MW katkı payı, MW, adet teklif"
+    kaynak: >-
+      2024: AA Enerji Terminali "YEKA RES-2024 yarışmalarında 5 bölge için en iyi teklifler belli oldu" (Ocak 2025): fiyat 3,50 ABD doları
+      sent/kWh (taban), katkı payı $/MW ve başvuru sayısı proje başına; il eşleşmesi Edirne ve Gürün (Sivas) dışında TAHMİN (Balkaya,
+      Serges Kırklareli; Yellice Sivas — haber yalnız "Edirne, Kırklareli ve Sivas" diyor). 2025: Enerji Günlüğü / Yeşil Ekonomi
+      (09.12.2025): fiyat 3,50 Avro-sent/kWh, katkı payı €/MW; proje başına teklif sayısı yayımlanmadı → 75 teklif / 6 proje ≈ 12 TAHMİN;
+      TEİAŞ bağlantı görüşleri data/atlas/teias_yeka_baglanti.csv. 2026: RG 11.07.2026/33307, Rüzgar Enerjisi ve Yeşil Haber
+      (2026-07-16): tavan 5,50, taban 3,50 Avro-sent/kWh; tabanda katkı payı artırması 10.000 €/MW'den; serbest piyasa dönemi sözleşmeden
+      itibaren 72 ay, ardından 20 yıl alım; inşaat 36 ay; Yatırımlar Dergisi: 12 firma, 29 teklif (Balıkesir-4'te 5, diğerlerinde 4);
+      Kütahya iki alan (140 + 120 MW) tek yarışma, hat ortalaması. Kur: EUR/USD 1,15 TAHMİN (2026), Ocak 2025 ≈ 1,035 (2024 $
+      katkılarının € karşılığı). Euro alım fiyatının nominal sabit olduğu varsayıldı (şartnamede endeksleme bulunamadı; TAHMİN).
+      Serbest dönemde 4,75 Avro-sent taban (tek ikincil kaynak, doğrulanmadı) modellenmedi → değerleme bu açıdan ihtiyatlı
+    not: >-
+      Değerleme: lot ilinin rüzgârlı ön tarama hücrelerinin (RES KF ≥ il 75. yüzdeliği) medyan KF'sine en yakın hücre temsilî nokta;
+      temsilî 100 MW RES (v2 motoru, toplu kayıp), bağlantı maliyeti TEİAŞ görüşünden (TM + fider + toplam hat km; girdi-çıktıda iki kol toplamı), yoksa en
+      yakın trafo. Sözleşme yılı 2026, COD 2029; alım dönemi sözleşme + 72 ay → 2033–2052; öncesi ve sonrası tüccar. Katkı payı
+      sözleşmede peşin ödenir ve 10 yılda itfa edilir (TAHMİN). Tüm yarışmalar bugünkü model görüşüyle değerlenir (piyasanın o günkü
+      görüşü değil); sistematik fark açık artırma modelinde δ (piyasa primi) olarak tahmin edilir

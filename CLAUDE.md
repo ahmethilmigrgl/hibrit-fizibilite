@@ -263,5 +263,9 @@ mevcut santral adları gizli (anonim kod + CSV yükleme), sıra H → I → J �
   `v4.ekleme.santral_guven`). Artımsal config `artimsal_cfg`; Monte Carlo ortak rastgele sayılarla. Sayfa `uygulama/sayfa_ekleme.py`
   (`/ekleme`), tarama paketi `data/atlas/v4_ekleme_tarama.csv`. Betik `src/v4_I1_ekleme.py` (~10 dk) → `outputs/v4I/`. Testler
   `tests/test_v4_I.py`. Önbellek `data/onbellek/ekleme/`.
-- **Faz J — YEKA teklif stratejisi.**
+- **Faz J — YEKA teklif stratejisi.** ✅ (2026-10-25) bkz. `docs/v4_J_yeka_teklif.md`. Modüller `src/yeka/` (deger: `lot_degerle`
+  temsilî nokta + TEİAŞ bağlantısı + `mc_calistir(..., sozlesme={"phi","fiyat"})`; muzayede: kesilmiş sıra istatistiği MLE `tahmin`,
+  `bootstrap`, `birini_disarida_birak`, `strateji`, `fiyat_asamasi`). Config `v4.yeka` (yarışmalar, mekanizma, duyarlılık). Sayfa
+  `uygulama/sayfa_yeka.py` (`/yeka`), paket `data/atlas/v4_yeka.json`. Betik `src/v4_J1_yeka.py` (~10 dk) → `outputs/v4J/`. Testler
+  `tests/test_v4_J.py`. R26 sonuçları (2 Kasım 2026) açıklanınca modelin dış sınaması yapılmalı.
 - **Faz K — Temel model (merit order) fiyat projeksiyonu.**

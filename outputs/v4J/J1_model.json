@@ -1,0 +1,115 @@
+{
+ "secilen": "buyukluk",
+ "buyukluk": {
+  "delta": 803987.9036028353,
+  "gamma": -199892.1562142533,
+  "s": 115862.83547596692,
+  "nll": 133.28685465672658,
+  "basarili": true,
+  "k": 3,
+  "aic": 272.57370931345315
+ },
+ "sabit": {
+  "delta": 517380.53412905434,
+  "gamma": 0.0,
+  "s": 289031.11870026984,
+  "nll": 140.46083408764395,
+  "basarili": true,
+  "k": 2,
+  "aic": 284.9216681752879
+ },
+ "guven_araligi_90": {
+  "delta": [
+   766794.8419089845,
+   862296.6619598432
+  ],
+  "gamma": [
+   -317353.83288016496,
+   -160292.78543765077
+  ],
+  "s": [
+   61353.58211517887,
+   150981.40070432788
+  ]
+ },
+ "loo_kapsama_80": 0.6363636363636364,
+ "duyarlilik": [
+  {
+   "ad": "Bizim varsayımlarımız",
+   "ad_en": "Our assumptions",
+   "delta": 803987.9036028353,
+   "kapanan_oran": 0.0,
+   "v_ort_ortalama": -775675.7947570059
+  },
+  {
+   "ad": "CAPEX −%20",
+   "ad_en": "Capex −20%",
+   "delta": 579065.400376,
+   "kapanan_oran": 0.27975856629050166,
+   "v_ort_ortalama": -547534.4908499207
+  },
+  {
+   "ad": "CAPEX −%40",
+   "ad_en": "Capex −40%",
+   "delta": 358845.57524172484,
+   "kapanan_oran": 0.5536679424731841,
+   "v_ort_ortalama": -323140.26536213845
+  },
+  {
+   "ad": "Reel WACC %5",
+   "ad_en": "Real WACC 5%",
+   "delta": 713798.675719592,
+   "kapanan_oran": 0.11217734430964288,
+   "v_ort_ortalama": -741891.5113547269
+  },
+  {
+   "ad": "Reel WACC %3",
+   "ad_en": "Real WACC 3%",
+   "delta": 512965.95116980496,
+   "kapanan_oran": 0.3619730485109304,
+   "v_ort_ortalama": -669359.4419356567
+  },
+  {
+   "ad": "Uzun dönem fiyat 70 $/MWh",
+   "ad_en": "Long-run price 70 $/MWh",
+   "delta": 687741.9216416412,
+   "kapanan_oran": 0.14458673002450895,
+   "v_ort_ortalama": -674948.3442950397
+  },
+  {
+   "ad": "Uzun dönem fiyat 85 $/MWh",
+   "ad_en": "Long-run price 85 $/MWh",
+   "delta": 547372.3413598089,
+   "kapanan_oran": 0.31917838700443024,
+   "v_ort_ortalama": -556348.9555853592
+  },
+  {
+   "ad": "Bileşik: CAPEX −%20, WACC %5, fiyat 70",
+   "ad_en": "Combined: capex −20%, WACC 5%, price 70",
+   "delta": 329300.5301288619,
+   "kapanan_oran": 0.5904160639069338,
+   "v_ort_ortalama": -380274.2403502849
+  },
+  {
+   "ad": "Alım fiyatı avro enflasyonuna endeksli",
+   "ad_en": "Purchase price indexed to euro inflation",
+   "delta": 613223.1706787582,
+   "kapanan_oran": 0.23727313815198092,
+   "v_ort_ortalama": -692392.7020361333
+  },
+  {
+   "ad": "Ömür 40 yıl (lisans 49 yıl)",
+   "ad_en": "40-year life (49-year licence)",
+   "delta": 738091.9876710027,
+   "kapanan_oran": 0.08196132757288932,
+   "v_ort_ortalama": -726192.4869021705
+  },
+  {
+   "ad": "Bileşik + endeks + 40 yıl",
+   "ad_en": "Combined + indexation + 40 years",
+   "delta": -220108.92149542726,
+   "kapanan_oran": 1.2737714342579955,
+   "v_ort_ortalama": -128431.84161524312
+  }
+ ]
+}
