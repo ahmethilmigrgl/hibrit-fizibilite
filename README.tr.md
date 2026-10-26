@@ -4,7 +4,7 @@
 ![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)
 [![Lisans: MIT (kod)](https://img.shields.io/badge/license-MIT%20(code)-green.svg)](LICENSE)
 
-[English](README.md) · **Canlı uygulama:** [huggingface.co/spaces/hilmi777/hibrit-fizibilite](https://huggingface.co/spaces/hilmi777/hibrit-fizibilite)
+[English](README.md) · **Canlı uygulama:** [hibrit-fizibilite.streamlit.app](https://hibrit-fizibilite.streamlit.app)
 
 **Belgeler:** [Yatırım memosu (PDF)](outputs/08/Yatirim_Memosu.pdf) · [Sunum (PDF)](outputs/08/Sunum.pdf) ·
 [Rapor (PDF)](outputs/RAPOR.pdf) · [Rapor (Markdown)](docs/RAPOR.md) · [Excel finansal model](outputs/08/Ezine_Hibrit_Finansal_Model.xlsx)

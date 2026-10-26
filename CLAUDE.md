@@ -277,3 +277,10 @@ mevcut santral adları gizli (anonim kod + CSV yükleme), sıra H → I → J �
   Testler `tests/test_v4_K.py`. Kalibrasyon verisi `data/processed/` (EPİAŞ, çevrimdışı; uygulama yalnız paketi okur).
 
 **v4 durumu (2026-10-25):** H, I, J, K tamam; push/yayın yok. Sıradaki adım: yayın (kullanıcı kararı).
+
+**Yayın (2026-10-26, etiket v4.0.0):** GitHub `ahmethilmigrgl/hibrit-fizibilite` (public, `main` = v4; tüm dallar/etiketler),
+veri Hugging Face dataset `hilmi777/hibrit-fizibilite-veri` (gridler, `v1` etiketi), canlı uygulama Streamlit Community Cloud
+https://hibrit-fizibilite.streamlit.app (`app.py`, Python 3.11, kökteki `requirements.txt`; `main`'e push otomatik yeniden dağıtır).
+HF Docker Space ücretsiz planda PRO istediği için kullanılmadı (`space/` ileride için duruyor). Bulut `ayarlar.bulut_mu()` ile
+algılanır (/mount/src): veri modu "uzak", kapasite MILP'i `tam_milp_temsili_gun_bulut: 48` (bellek ~2,7 GB sınırı).
+Yayın betiği `src/v4_yayin.py github|veri|space` (token'lar `.env`'den; GitHub token'ında Workflows izni gerekli).
