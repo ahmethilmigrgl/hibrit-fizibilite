@@ -16,7 +16,7 @@ from src.ayarlar import KOK, deger
 from src.motor import mc as MC
 from src.motor import tablolar
 from src.motor.hizli import _fiyat, uretim_ozeti
-from src.motor.ortak import Hazirlik, ortam, sfk_milp_carpani
+from src.motor.ortak import Hazirlik, milp_temsili_gun, ortam, sfk_milp_carpani
 from src.motor.varsayimlar import KullaniciVarsayimlari
 from src.risk.degerleme import nakit_akislari
 from src.risk.tasarim import Tasarim
@@ -43,7 +43,6 @@ def tasarim_sec(h: Hazirlik, o, kv: KullaniciVarsayimlari, seviye, f=None) -> tu
         kal = {"dz", "yekg"} | ({"yh"} if kv.sfk_katilimi else set())
         o.opt["mip_bosluk"] = 0.005  # tam analiz: %0,5 MIP boşluğu (v1 %0,1); değer farkı ihmal edilebilir, süre kısalır
         yh_c = sfk_milp_carpani(o)
-        mot = deger(h.cfg["v2"]["motor"])
         if kucuk():
             milp = o.milp(kal, seviye, K=24, zaman=240, yh_carpan=yh_c)
         elif os.environ.get("MOTOR_TAM_MILP") == "tamyil":  # karşılaştırma için eski yol (240 s sınırında %0,5'e ulaşmıyor)
@@ -51,7 +50,7 @@ def tasarim_sec(h: Hazirlik, o, kv: KullaniciVarsayimlari, seviye, f=None) -> tu
         else:
             # R5: tasarım seçimi temsilî günlerle (kesin optimum, ≤ ~15 s); değerleme 10 hava yılı × 8760 saatlik işletme
             # tablolarıyla Monte Carlo'da. Tam yıl (2 × 8760 saat) MILP'i 240 s'de %2 boşlukla zaman sınırına çarpıyordu.
-            milp = o.milp(kal, seviye, K=mot["tam_milp_temsili_gun"], zaman=240, yh_carpan=yh_c)
+            milp = o.milp(kal, seviye, K=milp_temsili_gun(h.cfg), zaman=240, yh_carpan=yh_c)
         d = {
             "res_mw": milp["RES [MW]"],
             "ges_mw": round(milp["GES [MWac]"], 1),

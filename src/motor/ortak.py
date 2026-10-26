@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 
 from src import veri_katmani
-from src.ayarlar import KOK, config_oku, deger
+from src.ayarlar import KOK, bulut_mu, config_oku, deger
 from src.finans.model import Varsayimlar
 from src.finans.veri import UretimProfili, profil_df_den
 from src.motor.varsayimlar import KullaniciVarsayimlari, MotorHatasi, Uyari
@@ -258,6 +258,12 @@ def sayisal(x: float) -> float:
 
 
 _SFK_ONBELLEK: dict = {}
+
+
+def milp_temsili_gun(cfg: dict) -> int:
+    """Tam analiz kapasite MILP'inin temsilî gün sayısı; Streamlit Community Cloud'da bellek sınırı için daha az gün."""
+    mot = deger(cfg["v2"]["motor"])
+    return mot["tam_milp_temsili_gun_bulut"] if bulut_mu() else mot["tam_milp_temsili_gun"]
 
 
 def sfk_milp_carpani(o) -> float:

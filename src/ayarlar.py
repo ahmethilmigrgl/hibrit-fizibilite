@@ -20,6 +20,11 @@ ISLENMIS_VERI = KOK / "data" / "processed"
 CIKTILAR = KOK / "outputs"
 
 
+def bulut_mu() -> bool:
+    """Streamlit Community Cloud'da mı çalışıyoruz? (repo /mount/src/<repo> altına klonlanır; bellek ~2,7 GB ile sınırlı)."""
+    return KOK.as_posix().startswith("/mount/src/")
+
+
 def config_oku() -> dict:
     """config.yaml'ı sözlük olarak döndürür."""
     with open(KOK / "config.yaml", encoding="utf-8") as f:

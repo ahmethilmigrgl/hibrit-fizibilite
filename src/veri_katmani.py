@@ -8,7 +8,7 @@ Mantıksal yol → yerel dosya. Mantıksal yollar data/ altındaki göreli yolla
     grid/gwa_tr/v1/karolar/...     GWA 250 m karoları
     grid/rakim_tr/v1/rakim_002.npz rakım ızgarası
     tarama/v1/on_tarama.parquet    Türkiye ön tarama haritası
-Modlar (config v2.veri_erisim.mod; ortam değişkeni VERI_ERISIM önceliklidir — Hugging Face Space'te "uzak"):
+Modlar (config v2.veri_erisim.mod; ortam değişkeni VERI_ERISIM önceliklidir; Streamlit Community Cloud'da otomatik "uzak"):
     "yerel" — yalnız yerel dosyalar; ağ çağrısı yok. Eksik dosya → VeriYok (iki dilli mesaj).
     "uzak"  — grid/ dosyaları yerelde yoksa Hugging Face veri deposundan indirilir (src/kaynaklar/hf_veri.py). Depo düzeni
               data/ altıyla birebir aynıdır (grid/era5_tr/v1/..., grid/cbs_tr/v1/... — hf/README.md); atlas/ uygulamayla gelir.
@@ -18,7 +18,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from src.ayarlar import KOK, config_oku, deger
+from src.ayarlar import KOK, bulut_mu, config_oku, deger
 
 DATA = KOK / "data"
 _YOK: set[str] = set()  # uzak modda depoda bulunmayan yollar (deniz hücreleri vb.): tekrar istek atılmaz
@@ -39,6 +39,8 @@ def mod() -> str:
 
     if os.environ.get("VERI_ERISIM") in ("yerel", "uzak"):
         return os.environ["VERI_ERISIM"]
+    if bulut_mu():  # Streamlit Community Cloud: gridler repoda yok, Hugging Face veri deposundan iner
+        return "uzak"
     try:
         return deger(config_oku()["v2"]["veri_erisim"])["mod"]
     except KeyError:

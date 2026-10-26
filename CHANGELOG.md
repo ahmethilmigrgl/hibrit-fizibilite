@@ -18,6 +18,12 @@ Proje aşamalar halinde geliştirildi. Her aşama bir commit; revizyonlar ve ön
 
 ## [4.0.0] — 2026-10-26 (etiket v4.0.0)
 
+### Yayın (2026-10-26)
+- GitHub: `ahmethilmigrgl/hibrit-fizibilite` (public); veri: Hugging Face dataset `hilmi777/hibrit-fizibilite-veri` (gridler, v1).
+- Canlı uygulama Streamlit Community Cloud'da (HF Docker Space'leri ücretsiz planda PRO gerektiriyor; `space/` Dockerfile'ı
+  ileride kullanılmak üzere duruyor). Bulut otomatik algılanır (`ayarlar.bulut_mu`): veri HF'den iner, kapasite MILP'i
+  ~2,7 GB bellek sınırı için 48 temsilî günle (`v2.motor.tam_milp_temsili_gun_bulut`; tepe bellek 2,1 → 1,0 GB).
+
 ### Faz K — Merit order fiyat projeksiyonu (2026-10-25)
 - **Saatlik arz yığını modeli** (`src/merit/`): talep, rüzgâr, güneş (lisanssız dahil), akarsu, nükleer → barajlı hidro (aylık su
   doldurma) → depolama (günlük arbitraj, vektörize) → termik artık yük → linyit / ithal kömür / verim dağılımlı doğalgaz eğrisi,

@@ -38,7 +38,7 @@ from src.finans.fiyat_senaryosu import fiyat_senaryosu_uret
 from src.finans.model import proje_degerle
 from src.motor import mc as MC
 from src.motor import tablolar
-from src.motor.ortak import hazirla, ortam, profil_degistir, sfk_milp_carpani
+from src.motor.ortak import hazirla, milp_temsili_gun, ortam, profil_degistir, sfk_milp_carpani
 from src.motor.varsayimlar import KullaniciVarsayimlari, MotorHatasi
 from src.risk.degerleme import nakit_akislari
 from src.risk.tasarim import Tasarim
@@ -190,7 +190,7 @@ def ekleme_analizi(ev: EklemeVarsayimlari, ilerleme=None, onbellek_kullan: bool 
     else:
         kal = {"dz", "yekg"} | ({"yh"} if ev.sfk_katilimi else set())
         o.opt["mip_bosluk"] = 0.005
-        K = 24 if _kucuk() else deger(h.cfg["v2"]["motor"])["tam_milp_temsili_gun"]
+        K = 24 if _kucuk() else milp_temsili_gun(h.cfg)
         milp = o.milp(kal, ev.fiyat_senaryosu, K=K, zaman=240, yh_carpan=sfk_milp_carpani(o), sabit={"N": 1})
         d = {"ges_mw": round(milp["GES [MWac]"], 1), "bess_mw": round(milp["BESS [MW]"], 1), "bess_mwh": round(milp["BESS [MWh]"], 1)}
     sure_milp = time.perf_counter() - t1_

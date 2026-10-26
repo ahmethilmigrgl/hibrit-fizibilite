@@ -406,6 +406,7 @@ v2:
       tam_sure_hedefi_s: 300
       tam_zaman_asimi_s: 900
       tam_milp_temsili_gun: 96
+      tam_milp_temsili_gun_bulut: 48
       onbellek_azami_mb: 500
       mc_baslangic: 2000
       mc_azami: 16000
@@ -413,7 +414,7 @@ v2:
       karar: {yatirim_p_asgari: 0.65, yatirim_cvar_capex_orani: -0.25}
     birim: "çeşitli"
     kaynak: "Proje kararı (Faz B). Kesinti kurtarma payı ve değer faktörü: v1 outputs/07/kesinti_batarya_kurtarma.csv (Ezine referans santralleri)"
-    not: "Karar kuralı v1'in genişletilmesi: E[NPV] > 0, P(NPV>0) ≥ 0,65 ve CVaR %5 ≥ −0,25 × CAPEX → yatırım yap; yalnız E[NPV] > 0 → durum tespiti + sınırlı teklif (azami prim = E[NPV]); aksi halde rafa kaldır. tam_milp_temsili_gun (R5): tam analizde kapasite MILP'i 96 temsilî günle çözülür (kesin optimum ≤ ~15 s); tam yıl (2 × 8760 saat) MILP'i 2 çekirdekte 240 s sınırında %2 boşlukla kalıyordu ve tasarımlar ±1 türbin / ±1 MW batarya içinde aynıydı. Değerleme 10 hava yılı × 8760 saatlik işletme tablolarıyla. İşletme LP'si highspy ile (IsletmeLPHizli; Pyomo sürümüyle aynı sonuç, ~3,5× hızlı)"
+    not: "Karar kuralı v1'in genişletilmesi: E[NPV] > 0, P(NPV>0) ≥ 0,65 ve CVaR %5 ≥ −0,25 × CAPEX → yatırım yap; yalnız E[NPV] > 0 → durum tespiti + sınırlı teklif (azami prim = E[NPV]); aksi halde rafa kaldır. tam_milp_temsili_gun (R5): tam analizde kapasite MILP'i 96 temsilî günle çözülür (kesin optimum ≤ ~15 s); tam yıl (2 × 8760 saat) MILP'i 2 çekirdekte 240 s sınırında %2 boşlukla kalıyordu ve tasarımlar ±1 türbin / ±1 MW batarya içinde aynıydı. Değerleme 10 hava yılı × 8760 saatlik işletme tablolarıyla. İşletme LP'si highspy ile (IsletmeLPHizli; Pyomo sürümüyle aynı sonuç, ~3,5× hızlı). tam_milp_temsili_gun_bulut (yayın, 2026-10-26): Streamlit Community Cloud'da (~2,7 GB bellek) 96 günlük Pyomo modeli tepe belleği ~2,1 GB'a çıkarıyor; 48 günle ~1,0 GB. 3 saha sınaması: Ezine ve Karaburun tasarım ve E[NPV] aynı; Konya'da tasarım değişti (E[NPV] −8,96 → −8,51 M$), karar aynı (rafa kaldır)"
 
 # =====================================================================
 # v3 — Endüstri mühendisliği eklentileri (dal v3-ie). Faz D: türbin yerleşimi + bakım ve güvenilirlik.

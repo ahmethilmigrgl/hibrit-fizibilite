@@ -1,4 +1,4 @@
-# v2 uygulaması (app.py) çalışma anı bağımlılıkları — Streamlit Community Cloud bu dosyayı kullanır (dashboard/requirements.txt ile aynı tutun).
+# v2 uygulaması (app.py) çalışma anı bağımlılıkları — Docker imajı (space/Dockerfile) bu dosyayı kullanır; Streamlit Community Cloud kökteki requirements.txt dosyasını kurar.
 # Uygulama çalışırken optimizasyon (Pyomo + HiGHS), üretim modeli (pvlib, windpowerlib) ve harita (folium) gerekir; CDS/EPİAŞ istemcileri gerekmez.
 streamlit==1.65.0
 plotly==7.1.0
